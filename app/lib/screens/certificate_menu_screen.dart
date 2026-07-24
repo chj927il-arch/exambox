@@ -3,8 +3,8 @@ import '../theme/app_theme.dart';
 import 'exam_intro_screen.dart';
 import 'exam_subjects_screen.dart';
 import 'korean_history_intro_screen.dart';
+import 'korean_history_level_screen.dart';
 import 'study_screen.dart';
-import 'subject_chapters_screen.dart';
 
 /// 학습하기 화면의 라우트 이름 — 퀴즈 완료 후 "끝내기"를 눌렀을 때 이 화면까지만
 /// 되돌아가기 위해 사용한다(popUntil(isFirst)는 자격증 탭 목록까지 돌아가버리므로 부적절).
@@ -47,10 +47,10 @@ class CertificateMenuScreen extends StatelessWidget {
           ),
           _MenuEntry(
             label: '학습하기',
-            subtitle: '시대별 유사문제 풀이',
+            subtitle: '심화·기본 등급별 시대별 유사문제 풀이',
             icon: Icons.edit_note_outlined,
             color: AppColors.correct,
-            builder: (_) => const SubjectChaptersScreen(subjectId: 'korean_history', subjectName: '한국사능력검정시험'),
+            builder: (_) => const KoreanHistoryLevelScreen(),
             routeName: studyScreenRouteName,
           ),
         ];

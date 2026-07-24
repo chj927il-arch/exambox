@@ -97,12 +97,24 @@ const List<TopicStat> koreanHistoryTopicStats = [
   TopicStat(topic: '근대(개항기)', questionCount: 7, totalQuestions: 50),
 ];
 
+/// 한국사능력검정시험(기본) — 시대별 6구간 출제 비중.
+/// 기본 등급도 심화와 마찬가지로 대체로 시대순 50문항 구성이므로 동일한 6구간을 사용한다.
+const List<TopicStat> koreanHistoryBasicTopicStats = [
+  TopicStat(topic: '일제강점기와 현대', questionCount: 11, totalQuestions: 50),
+  TopicStat(topic: '조선전기', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '조선후기', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '고려', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '선사·고대', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '근대(개항기)', questionCount: 7, totalQuestions: 50),
+];
+
 /// 이 과목의 챕터(유형) 통계가 실제 기출 분석 기반인지 여부.
 const Map<String, bool> subjectStatsIsAnalyzed = {
   'economic_law': true,
   'civil_law': false,
   'business_admin': false,
   'korean_history': true,
+  'korean_history_basic': true,
 };
 
 List<TopicStat> chapterStatsFor(String subjectId) {
@@ -116,6 +128,8 @@ List<TopicStat> chapterStatsFor(String subjectId) {
       return businessAdminTopicStats;
     case 'korean_history':
       return koreanHistoryTopicStats;
+    case 'korean_history_basic':
+      return koreanHistoryBasicTopicStats;
     default:
       return const [];
   }
