@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'exam_intro_screen.dart';
 import 'exam_subjects_screen.dart';
+import 'korean_history_intro_screen.dart';
 import 'study_screen.dart';
+import 'subject_chapters_screen.dart';
 
 /// 학습하기 화면의 라우트 이름 — 퀴즈 완료 후 "끝내기"를 눌렀을 때 이 화면까지만
 /// 되돌아가기 위해 사용한다(popUntil(isFirst)는 자격증 탭 목록까지 돌아가버리므로 부적절).
@@ -25,37 +27,65 @@ class _MenuEntry {
   });
 }
 
-/// 자격증(예: 가맹거래사) 선택 시 보여주는 하위 메뉴 — 시험소개 · 시험과목 · 학습하기.
+/// 자격증(예: 가맹거래사, 한국사능력검정) 선택 시 보여주는 하위 메뉴.
+/// 자격증마다 메뉴 구성이 달라 certId로 분기한다.
 class CertificateMenuScreen extends StatelessWidget {
+  final String certId;
   final String certName;
-  const CertificateMenuScreen({super.key, required this.certName});
+  const CertificateMenuScreen({super.key, required this.certId, required this.certName});
+
+  List<_MenuEntry> _entriesFor(String certId) {
+    switch (certId) {
+      case 'korean_history':
+        return [
+          _MenuEntry(
+            label: '시험소개',
+            subtitle: '자격 소개 · 시험 안내',
+            icon: Icons.info_outline_rounded,
+            color: const Color(0xFF8C3B3B),
+            builder: (_) => const KoreanHistoryIntroScreen(),
+          ),
+          _MenuEntry(
+            label: '학습하기',
+            subtitle: '시대별 유사문제 풀이',
+            icon: Icons.edit_note_outlined,
+            color: AppColors.correct,
+            builder: (_) => const SubjectChaptersScreen(subjectId: 'korean_history', subjectName: '한국사능력검정시험'),
+            routeName: studyScreenRouteName,
+          ),
+        ];
+      case 'franchise_broker':
+      default:
+        return [
+          _MenuEntry(
+            label: '시험소개',
+            subtitle: '자격 소개 · 시험 안내',
+            icon: Icons.info_outline_rounded,
+            color: AppColors.primary,
+            builder: (_) => const ExamIntroScreen(),
+          ),
+          _MenuEntry(
+            label: '시험과목',
+            subtitle: '과목별 소개 · 출제경향',
+            icon: Icons.menu_book_outlined,
+            color: AppColors.accentGold,
+            builder: (_) => const ExamSubjectsScreen(),
+          ),
+          _MenuEntry(
+            label: '학습하기',
+            subtitle: '챕터별 유사문제 풀이',
+            icon: Icons.edit_note_outlined,
+            color: AppColors.correct,
+            builder: (_) => const StudyScreen(),
+            routeName: studyScreenRouteName,
+          ),
+        ];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final entries = [
-      _MenuEntry(
-        label: '시험소개',
-        subtitle: '자격 소개 · 시험 안내',
-        icon: Icons.info_outline_rounded,
-        color: AppColors.primary,
-        builder: (_) => const ExamIntroScreen(),
-      ),
-      _MenuEntry(
-        label: '시험과목',
-        subtitle: '과목별 소개 · 출제경향',
-        icon: Icons.menu_book_outlined,
-        color: AppColors.accentGold,
-        builder: (_) => const ExamSubjectsScreen(),
-      ),
-      _MenuEntry(
-        label: '학습하기',
-        subtitle: '챕터별 유사문제 풀이',
-        icon: Icons.edit_note_outlined,
-        color: AppColors.correct,
-        builder: (_) => const StudyScreen(),
-        routeName: studyScreenRouteName,
-      ),
-    ];
+    final entries = _entriesFor(certId);
 
     return Scaffold(
       appBar: AppBar(title: Text(certName), centerTitle: false),

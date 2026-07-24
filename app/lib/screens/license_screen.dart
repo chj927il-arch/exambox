@@ -10,10 +10,11 @@ class _LicenseCategory {
 }
 
 class _LicenseItem {
+  final String id;
   final String name;
   final String? subtitle;
   final bool ready;
-  const _LicenseItem({required this.name, this.subtitle, this.ready = true});
+  const _LicenseItem({required this.id, required this.name, this.subtitle, this.ready = true});
 }
 
 const _categories = [
@@ -21,25 +22,25 @@ const _categories = [
     name: '전문자격사',
     icon: Icons.balance_outlined,
     items: [
-      _LicenseItem(name: '가맹거래사', subtitle: '1차 시험대비'),
-      _LicenseItem(name: '공인노무사', ready: false),
-      _LicenseItem(name: '변리사', ready: false),
+      _LicenseItem(id: 'franchise_broker', name: '가맹거래사', subtitle: '1차 시험대비'),
+      _LicenseItem(id: 'labor_attorney', name: '공인노무사', ready: false),
+      _LicenseItem(id: 'patent_attorney', name: '변리사', ready: false),
     ],
   ),
   _LicenseCategory(
     name: 'IT',
     icon: Icons.memory_outlined,
     items: [
-      _LicenseItem(name: '정보처리기사', ready: false),
-      _LicenseItem(name: 'SQLD', ready: false),
+      _LicenseItem(id: 'info_processing', name: '정보처리기사', ready: false),
+      _LicenseItem(id: 'sqld', name: 'SQLD', ready: false),
     ],
   ),
   _LicenseCategory(
     name: '취업/기타',
     icon: Icons.work_outline_rounded,
     items: [
-      _LicenseItem(name: 'NCS 직업기초능력', ready: false),
-      _LicenseItem(name: '한국사능력검정', ready: false),
+      _LicenseItem(id: 'ncs', name: 'NCS 직업기초능력', ready: false),
+      _LicenseItem(id: 'korean_history', name: '한국사능력검정', subtitle: '심화 대비'),
     ],
   ),
 ];
@@ -142,7 +143,7 @@ class _LicenseListTile extends StatelessWidget {
         child: InkWell(
           onTap: item.ready
               ? () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => CertificateMenuScreen(certName: item.name)),
+                    MaterialPageRoute(builder: (_) => CertificateMenuScreen(certId: item.id, certName: item.name)),
                   )
               : () => ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('${item.name}은(는) 준비 중이에요.')),

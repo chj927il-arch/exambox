@@ -85,11 +85,24 @@ const List<TopicStat> businessAdminTopicStats = [
   TopicStat(topic: '생산관리', questionCount: 0, totalQuestions: 0),
 ];
 
+/// 한국사능력검정시험(심화) — 시대별 6구간 출제 비중.
+/// 매 회차 50문항이 대체로 시대순으로 출제되는 점에 착안해, 일반적으로 알려진
+/// 심화 등급 출제 비중(선사~현대)을 시대별로 구간화한 추정치이다(추후 회차별 실측 반영 예정).
+const List<TopicStat> koreanHistoryTopicStats = [
+  TopicStat(topic: '일제강점기와 현대', questionCount: 11, totalQuestions: 50),
+  TopicStat(topic: '조선전기', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '조선후기', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '고려', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '선사·고대', questionCount: 8, totalQuestions: 50),
+  TopicStat(topic: '근대(개항기)', questionCount: 7, totalQuestions: 50),
+];
+
 /// 이 과목의 챕터(유형) 통계가 실제 기출 분석 기반인지 여부.
 const Map<String, bool> subjectStatsIsAnalyzed = {
   'economic_law': true,
   'civil_law': false,
   'business_admin': false,
+  'korean_history': true,
 };
 
 List<TopicStat> chapterStatsFor(String subjectId) {
@@ -101,6 +114,8 @@ List<TopicStat> chapterStatsFor(String subjectId) {
       return civilLawTopicStats;
     case 'business_admin':
       return businessAdminTopicStats;
+    case 'korean_history':
+      return koreanHistoryTopicStats;
     default:
       return const [];
   }
