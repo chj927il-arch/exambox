@@ -48,7 +48,7 @@ class DailyOxListScreen extends StatelessWidget {
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                '경제법·민법·경영학 과목별 1문제씩, 총 ${quiz.questions.length}문제',
+                '${quiz.questions.map((q) => q.subjectName).toSet().join('·')} 과목별 1문제씩, 총 ${quiz.questions.length}문제',
                 style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
               ),
             ),

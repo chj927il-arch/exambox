@@ -23,6 +23,39 @@ class DailyOxQuiz {
 
 const dailyOxQuizzes = [
   DailyOxQuiz(
+    date: '2026-07-25',
+    questions: [
+      OxQuestion(
+        subjectId: 'economic_law',
+        subjectName: '경제법',
+        statement: '공정거래위원회 위원의 임기는 3년이며 1차에 한하여 연임할 수 있다.',
+        answer: true,
+        explanation: '공정거래위원회 위원(위원장·부위원장 포함)의 임기는 3년이며, 1차에 한하여 연임할 수 있습니다.',
+      ),
+      OxQuestion(
+        subjectId: 'civil_law',
+        subjectName: '민법',
+        statement: '저당권은 목적물의 점유를 채권자에게 이전해야만 성립하는 담보물권이다.',
+        answer: false,
+        explanation: '저당권은 점유를 이전하지 않는 비점유 담보물권입니다. 점유를 이전해야 하는 것은 질권입니다.',
+      ),
+      OxQuestion(
+        subjectId: 'business_admin',
+        subjectName: '경영학',
+        statement: '마케팅믹스의 4P는 제품, 가격, 유통, 촉진으로 구성된다.',
+        answer: true,
+        explanation: '4P는 Product(제품), Price(가격), Place(유통), Promotion(촉진)으로 구성됩니다.',
+      ),
+      OxQuestion(
+        subjectId: 'korean_history',
+        subjectName: '한국사',
+        statement: '고인돌은 청동기 시대 지배층의 무덤으로, 계급 사회의 모습을 보여 준다.',
+        answer: true,
+        explanation: '고인돌은 거대한 돌을 옮기려면 많은 인력이 필요했기 때문에, 이를 주도할 수 있었던 지배층의 권력과 계급 사회의 성립을 보여 주는 유적입니다.',
+      ),
+    ],
+  ),
+  DailyOxQuiz(
     date: '2026-07-17',
     questions: [
       OxQuestion(
