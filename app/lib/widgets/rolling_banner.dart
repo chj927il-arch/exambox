@@ -9,6 +9,7 @@ class BannerItem {
   final IconData? icon;
   final List<Color>? gradient;
   final String? imageAsset;
+  final VoidCallback? onTap;
 
   const BannerItem({
     this.title,
@@ -16,13 +17,14 @@ class BannerItem {
     this.icon,
     this.gradient,
     this.imageAsset,
+    this.onTap,
   });
 }
 
 const _defaultBanners = [
   BannerItem(imageAsset: 'assets/images/rolling_banner_update.png'),
   BannerItem(imageAsset: 'assets/images/rolling_banner_chapter.png'),
-  BannerItem(imageAsset: 'assets/images/rolling_banner_premium.png'),
+  BannerItem(imageAsset: 'assets/images/rolling_banner_korean_history.png'),
 ];
 
 /// 홈 상단 프로모션/광고 영역 — 3개 배너를 자동으로 롤링하는 캐러셀.
@@ -103,7 +105,13 @@ class _BannerCard extends StatelessWidget {
     if (item.imageAsset != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(18),
-        child: Image.asset(item.imageAsset!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: item.onTap,
+            child: Image.asset(item.imageAsset!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+          ),
+        ),
       );
     }
 

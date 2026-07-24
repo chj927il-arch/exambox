@@ -64,12 +64,12 @@ flutter:
     - assets/images/top_banner_studybox.png
     - assets/images/top_banner_beta.png
     - assets/images/rolling_banner_update.png
-    - assets/images/rolling_banner_premium.png
     - assets/images/daily_ox_banner.png
     - assets/images/motivation_strip.png
     - assets/images/subject_cover_economic_law.png
     - assets/images/subject_cover_civil_law.png
     - assets/images/subject_cover_business_admin.png
+    - assets/images/rolling_banner_korean_history.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

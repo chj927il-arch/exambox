@@ -7,6 +7,7 @@ import '../theme/subject_style.dart';
 import '../widgets/launch_banner.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
+import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
 import 'faq_screen.dart';
 import 'notice_screen.dart';
@@ -36,7 +37,20 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: const RollingBanner(),
+          child: RollingBanner(
+            banners: [
+              const BannerItem(imageAsset: 'assets/images/rolling_banner_update.png'),
+              const BannerItem(imageAsset: 'assets/images/rolling_banner_chapter.png'),
+              BannerItem(
+                imageAsset: 'assets/images/rolling_banner_korean_history.png',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 24),
         const Padding(
