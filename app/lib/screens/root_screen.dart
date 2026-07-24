@@ -29,6 +29,23 @@ const _navItems = [
   _NavItem(Icons.person_outline_rounded, Icons.person_rounded, '마이페이지', 2),
 ];
 
+/// 홈 탭 네비게이터의 스택이 루트(홈 화면)인지 추적하는 옵저버.
+class _HomeDepthObserver extends NavigatorObserver {
+  final ValueChanged<bool> onDepthChanged;
+  _HomeDepthObserver({required this.onDepthChanged});
+
+  void _report() => onDepthChanged(navigator?.canPop() != true);
+
+  @override
+  void didPush(Route route, Route? previousRoute) => _report();
+
+  @override
+  void didPop(Route route, Route? previousRoute) => _report();
+
+  @override
+  void didRemove(Route route, Route? previousRoute) => _report();
+}
+
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
 
@@ -38,6 +55,10 @@ class RootScreen extends StatefulWidget {
 
 class _RootScreenState extends State<RootScreen> {
   int _tabIndex = 0;
+
+  // 홈 탭 내에서 다른 화면(공지사항 등)으로 이동하면 하단 바를 숨기기 위해
+  // 홈 탭 네비게이터의 스택 깊이를 추적한다.
+  bool _homeAtRoot = true;
 
   final List<GlobalKey<NavigatorState>> _navKeys =
       List.generate(_kTabCount, (_) => GlobalKey<NavigatorState>());
@@ -51,8 +72,13 @@ class _RootScreenState extends State<RootScreen> {
   Widget _buildTabNavigator(int index) {
     return Navigator(
       key: _navKeys[index],
+      observers: index == 0 ? [_HomeDepthObserver(onDepthChanged: _setHomeAtRoot)] : const [],
       onGenerateRoute: (settings) => MaterialPageRoute(builder: (_) => _tabScreens[index]),
     );
+  }
+
+  void _setHomeAtRoot(bool atRoot) {
+    if (_homeAtRoot != atRoot) setState(() => _homeAtRoot = atRoot);
   }
 
   void _onDestinationSelected(int i) {
@@ -133,7 +159,8 @@ class _RootScreenState extends State<RootScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _BottomStudyBar(onTap: _goToLicenseTab),
+      bottomNavigationBar:
+          _tabIndex == 0 && _homeAtRoot ? _BottomStudyBar(onTap: _goToLicenseTab) : null,
     );
   }
 }
