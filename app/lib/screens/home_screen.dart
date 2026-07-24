@@ -255,14 +255,39 @@ class _SubjectGuideCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 가맹거래사 시험과목(경제법·민법·경영학)에 이어, 별도 자격증인
+    // 한국사능력검정시험도 같은 표지 카드 형태로 안내한다.
+    final cards = <_SubjectCoverCard>[
+      ...examSubjects.map(
+        (subject) => _SubjectCoverCard(
+          id: subject.id,
+          name: subject.name,
+          categories: subject.categories,
+          onTap: (context) => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => SubjectInfoScreen(subjectId: subject.id, subjectName: subject.name)),
+          ),
+        ),
+      ),
+      _SubjectCoverCard(
+        id: 'korean_history',
+        name: '한국사능력검정시험',
+        categories: const ['심화', '기본'],
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+          ),
+        ),
+      ),
+    ];
+
     return SizedBox(
       height: 268,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: examSubjects.length,
+        itemCount: cards.length,
         separatorBuilder: (context, index) => const SizedBox(width: 14),
-        itemBuilder: (context, index) => _SubjectCoverCard(subject: examSubjects[index]),
+        itemBuilder: (context, index) => cards[index],
       ),
     );
   }
@@ -277,23 +302,26 @@ String? _subjectCoverImage(String subjectId) {
       return 'assets/images/subject_cover_civil_law.png';
     case 'business_admin':
       return 'assets/images/subject_cover_business_admin.png';
+    case 'korean_history':
+      return 'assets/images/subject_cover_korean_history.png';
     default:
       return null;
   }
 }
 
 class _SubjectCoverCard extends StatelessWidget {
-  final ExamSubject subject;
-  const _SubjectCoverCard({required this.subject});
+  final String id;
+  final String name;
+  final List<String> categories;
+  final void Function(BuildContext context) onTap;
+  const _SubjectCoverCard({required this.id, required this.name, required this.categories, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final style = subjectStyleOf(subject.id);
+    final style = subjectStyleOf(id);
 
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => SubjectInfoScreen(subjectId: subject.id, subjectName: subject.name)),
-      ),
+      onTap: () => onTap(context),
       child: Container(
         width: 190,
         clipBehavior: Clip.antiAlias,
@@ -313,8 +341,8 @@ class _SubjectCoverCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (_subjectCoverImage(subject.id) != null)
-                    Image.asset(_subjectCoverImage(subject.id)!, fit: BoxFit.cover)
+                  if (_subjectCoverImage(id) != null)
+                    Image.asset(_subjectCoverImage(id)!, fit: BoxFit.cover)
                   else
                     Container(
                       decoration: BoxDecoration(
@@ -327,7 +355,7 @@ class _SubjectCoverCard extends StatelessWidget {
                     ),
                   // 표지 이미지가 있으면 이미지 안에 이미 아이콘·제목이 포함돼 있으므로
                   // 별도 오버레이를 그리지 않는다. 이미지가 없는 과목만 색상 배경 위에 표시.
-                  if (_subjectCoverImage(subject.id) == null)
+                  if (_subjectCoverImage(id) == null)
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -336,7 +364,7 @@ class _SubjectCoverCard extends StatelessWidget {
                         children: [
                           Icon(style.icon, color: Colors.white, size: 30),
                           Text(
-                            subject.name,
+                            name,
                             style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w900),
                           ),
                         ],
@@ -353,11 +381,11 @@ class _SubjectCoverCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (subject.categories.isNotEmpty)
+                    if (categories.isNotEmpty)
                       Wrap(
                         spacing: 5,
                         runSpacing: 5,
-                        children: subject.categories
+                        children: categories
                             .map((c) => Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
