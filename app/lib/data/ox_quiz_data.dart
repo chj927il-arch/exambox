@@ -16,14 +16,25 @@ class OxQuestion {
 
 class DailyOxQuiz {
   final String date;
+
+  /// 이 회차가 속한 자격증 — 'franchise_broker'(가맹거래사) 또는 'korean_history'(한국사능력검정).
+  final String certId;
+  final String certName;
   final List<OxQuestion> questions;
 
-  const DailyOxQuiz({required this.date, required this.questions});
+  const DailyOxQuiz({
+    required this.date,
+    required this.certId,
+    required this.certName,
+    required this.questions,
+  });
 }
 
 const dailyOxQuizzes = [
   DailyOxQuiz(
     date: '2026-07-25',
+    certId: 'franchise_broker',
+    certName: '가맹거래사',
     questions: [
       OxQuestion(
         subjectId: 'economic_law',
@@ -46,6 +57,13 @@ const dailyOxQuizzes = [
         answer: true,
         explanation: '4P는 Product(제품), Price(가격), Place(유통), Promotion(촉진)으로 구성됩니다.',
       ),
+    ],
+  ),
+  DailyOxQuiz(
+    date: '2026-07-25',
+    certId: 'korean_history',
+    certName: '한국사능력검정',
+    questions: [
       OxQuestion(
         subjectId: 'korean_history',
         subjectName: '한국사',
@@ -53,10 +71,26 @@ const dailyOxQuizzes = [
         answer: true,
         explanation: '고인돌은 거대한 돌을 옮기려면 많은 인력이 필요했기 때문에, 이를 주도할 수 있었던 지배층의 권력과 계급 사회의 성립을 보여 주는 유적입니다.',
       ),
+      OxQuestion(
+        subjectId: 'korean_history',
+        subjectName: '한국사',
+        statement: '위화도 회군을 단행한 인물은 이성계이다.',
+        answer: true,
+        explanation: '이성계는 위화도 회군으로 정권을 장악한 뒤 조선을 건국하였습니다.',
+      ),
+      OxQuestion(
+        subjectId: 'korean_history',
+        subjectName: '한국사',
+        statement: '신간회는 민족주의 세력만으로 결성된 항일 단체이다.',
+        answer: false,
+        explanation: '신간회는 민족주의 세력과 사회주의 세력이 이념을 초월하여 연합한 민족 유일당 단체입니다.',
+      ),
     ],
   ),
   DailyOxQuiz(
     date: '2026-07-17',
+    certId: 'franchise_broker',
+    certName: '가맹거래사',
     questions: [
       OxQuestion(
         subjectId: 'economic_law',
@@ -83,6 +117,8 @@ const dailyOxQuizzes = [
   ),
   DailyOxQuiz(
     date: '2026-07-16',
+    certId: 'franchise_broker',
+    certName: '가맹거래사',
     questions: [
       OxQuestion(
         subjectId: 'economic_law',
@@ -109,6 +145,8 @@ const dailyOxQuizzes = [
   ),
   DailyOxQuiz(
     date: '2026-07-15',
+    certId: 'franchise_broker',
+    certName: '가맹거래사',
     questions: [
       OxQuestion(
         subjectId: 'economic_law',
@@ -135,6 +173,8 @@ const dailyOxQuizzes = [
   ),
   DailyOxQuiz(
     date: '2026-07-14',
+    certId: 'franchise_broker',
+    certName: '가맹거래사',
     questions: [
       OxQuestion(
         subjectId: 'economic_law',
