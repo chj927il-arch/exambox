@@ -70,12 +70,25 @@ const List<TopicStat> economicLawTopicStats = [
   TopicStat(topic: '경제력집중 억제', questionCount: 1, totalQuestions: 440),
 ];
 
-/// 민법 · 경영학은 기출 유형 분석이 아직 진행되지 않아, 과목 구조상의
-/// 대분류를 챕터로 우선 노출한다 (추후 기출 분석 완료 시 실제 비중으로 교체 예정).
+/// 민법 — 2020년 제18회 가맹거래사 1차 시험(민법 40문항) 직접 분석 결과.
+/// 아직 1개년치 표본이라 경제법(11개년)만큼의 신뢰도는 아니며, 향후 추가
+/// 연도 기출을 확보하는 대로 누적 반영해 정확도를 높일 예정이다.
 const List<TopicStat> civilLawTopicStats = [
-  TopicStat(topic: '채권법', questionCount: 0, totalQuestions: 0),
-  TopicStat(topic: '물권법', questionCount: 0, totalQuestions: 0),
-  TopicStat(topic: '민법총칙', questionCount: 0, totalQuestions: 0),
+  // 민법총칙 (대분류 합계 17문항)
+  TopicStat(topic: '법률행위·의사표시·무효와 취소', questionCount: 7, totalQuestions: 40),
+  TopicStat(topic: '권리능력·행위능력·법인·물건', questionCount: 5, totalQuestions: 40),
+  TopicStat(topic: '대리', questionCount: 2, totalQuestions: 40),
+  TopicStat(topic: '소멸시효', questionCount: 2, totalQuestions: 40),
+  TopicStat(topic: '민법의 법원(法源)', questionCount: 1, totalQuestions: 40),
+
+  // 채권법 (대분류 합계 17문항)
+  TopicStat(topic: '전형계약 각론(매매·임대차·도급 등)', questionCount: 12, totalQuestions: 40),
+  TopicStat(topic: '계약총론(성립·동시이행·해제 등)', questionCount: 5, totalQuestions: 40),
+
+  // 물권법 (대분류 합계 6문항)
+  TopicStat(topic: '물권변동·점유·총유', questionCount: 3, totalQuestions: 40),
+  TopicStat(topic: '담보물권(유치권·저당권)', questionCount: 2, totalQuestions: 40),
+  TopicStat(topic: '용익물권(지상권)', questionCount: 1, totalQuestions: 40),
 ];
 
 const List<TopicStat> businessAdminTopicStats = [
@@ -111,7 +124,7 @@ const List<TopicStat> koreanHistoryBasicTopicStats = [
 /// 이 과목의 챕터(유형) 통계가 실제 기출 분석 기반인지 여부.
 const Map<String, bool> subjectStatsIsAnalyzed = {
   'economic_law': true,
-  'civil_law': false,
+  'civil_law': true,
   'business_admin': false,
   'korean_history': true,
   'korean_history_basic': true,

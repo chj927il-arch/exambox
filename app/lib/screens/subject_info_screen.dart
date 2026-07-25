@@ -32,7 +32,20 @@ const Map<String, List<String>> _studyTips = {
   ],
 };
 
-/// 시험과목 상세 — 과목 소개 · 출제경향 · 시험통계(최근 11년) · 학습방법.
+/// 과목별 기출 분석 근거를 설명하는 안내 문구.
+String _analysisNoteFor(String subjectId, bool isAnalyzed) {
+  if (!isAnalyzed) return '기출 분석 준비 중입니다';
+  switch (subjectId) {
+    case 'economic_law':
+      return '2016~2026년(제15회~제24회) 기출 440문항 직접 분석';
+    case 'civil_law':
+      return '2020년(제18회) 기출 40문항 직접 분석 (추가 연도 확보 시 누적 반영 예정)';
+    default:
+      return '기출 분석 결과를 반영하였습니다';
+  }
+}
+
+/// 시험과목 상세 — 과목 소개 · 출제경향 · 시험통계 · 학습방법.
 class SubjectInfoScreen extends StatelessWidget {
   final String subjectId;
   final String subjectName;
@@ -71,10 +84,10 @@ class SubjectInfoScreen extends StatelessWidget {
             child: Text(description, style: const TextStyle(fontSize: 14, height: 1.6, color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
           ),
           const SizedBox(height: 24),
-          const _SectionTitle('출제경향 · 시험통계 (최근 11년)'),
+          const _SectionTitle('출제경향 · 시험통계'),
           const SizedBox(height: 4),
           Text(
-            isAnalyzed ? '2016~2026년(제15회~제24회) 기출 440문항 직접 분석' : '기출 분석 준비 중입니다',
+            _analysisNoteFor(subjectId, isAnalyzed),
             style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 10),
