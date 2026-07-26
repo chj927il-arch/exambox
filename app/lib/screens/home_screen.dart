@@ -72,10 +72,7 @@ class HomeScreen extends StatelessWidget {
           child: _SectionTitle(prefix: 'STUDY BOX ', highlight: '특강', color: AppColors.accentPurple),
         ),
         const SizedBox(height: 10),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _LectureGrid(),
-        ),
+        const _LectureGrid(),
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -303,7 +300,7 @@ class _SubjectGuideCarousel extends StatelessWidget {
   }
 }
 
-/// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 동일한 크기·스타일의 그리드.
+/// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 가로(190)·세로(268) 완전히 동일한 크기.
 /// 지금은 민법·한국사 2개만 노출.
 class _LectureGrid extends StatelessWidget {
   const _LectureGrid();
@@ -316,7 +313,6 @@ class _LectureGrid extends StatelessWidget {
         name: '민법 특강',
         categories: const [],
         linkLabel: '특강 보기',
-        width: double.infinity,
         onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
         ),
@@ -326,21 +322,21 @@ class _LectureGrid extends StatelessWidget {
         name: '한국사능력검정시험 특강',
         categories: const [],
         linkLabel: '특강 보기',
-        width: double.infinity,
         onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
         ),
       ),
     ];
 
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
-      childAspectRatio: 190 / 268,
-      children: cards,
+    return SizedBox(
+      height: 268,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: cards.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 14),
+        itemBuilder: (context, index) => cards[index],
+      ),
     );
   }
 }
@@ -366,14 +362,12 @@ class _SubjectCoverCard extends StatelessWidget {
   final String name;
   final List<String> categories;
   final void Function(BuildContext context) onTap;
-  final double width;
   final String linkLabel;
   const _SubjectCoverCard({
     required this.id,
     required this.name,
     required this.categories,
     required this.onTap,
-    this.width = 190,
     this.linkLabel = '과목 안내 보기',
   });
 
@@ -384,7 +378,7 @@ class _SubjectCoverCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(context),
       child: Container(
-        width: width,
+        width: 190,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: Colors.white,
