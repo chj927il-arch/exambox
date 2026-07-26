@@ -67,6 +67,16 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 10),
         const _SubjectGuideCarousel(),
         const SizedBox(height: 24),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: _SectionTitle(prefix: 'STUDY BOX ', highlight: '특강', color: AppColors.accentPurple),
+        ),
+        const SizedBox(height: 10),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: _LectureGrid(),
+        ),
+        const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
@@ -288,6 +298,81 @@ class _SubjectGuideCarousel extends StatelessWidget {
         itemCount: cards.length,
         separatorBuilder: (context, index) => const SizedBox(width: 14),
         itemBuilder: (context, index) => cards[index],
+      ),
+    );
+  }
+}
+
+/// STUDY BOX 특강 — 특강 과목을 2열 그리드 카드로 보여준다. 지금은 민법·한국사 2개만 노출.
+class _LectureGrid extends StatelessWidget {
+  const _LectureGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    const lectures = [
+      _LectureItem(id: 'civil_law', title: '민법 특강'),
+      _LectureItem(id: 'korean_history', title: '한국사능력검정시험 특강'),
+    ];
+
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.5,
+      children: lectures.map((lecture) => _LectureCard(item: lecture)).toList(),
+    );
+  }
+}
+
+class _LectureItem {
+  final String id;
+  final String title;
+  const _LectureItem({required this.id, required this.title});
+}
+
+class _LectureCard extends StatelessWidget {
+  final _LectureItem item;
+  const _LectureCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = subjectStyleOf(item.id);
+
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.glassBorder),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 6)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: style.color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+              child: Icon(style.icon, color: style.color, size: 20),
+            ),
+            Text(
+              item.title,
+              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.textPrimary, height: 1.3),
+            ),
+          ],
+        ),
       ),
     );
   }
