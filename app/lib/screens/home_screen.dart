@@ -308,11 +308,8 @@ class _LectureGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cards = [
-      _SubjectCoverCard(
-        id: 'civil_law',
-        name: '민법 특강',
-        categories: const [],
-        linkLabel: '특강 보기',
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_civil_law.png',
         onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
         ),
@@ -336,6 +333,33 @@ class _LectureGrid extends StatelessWidget {
         itemCount: cards.length,
         separatorBuilder: (context, index) => const SizedBox(width: 14),
         itemBuilder: (context, index) => cards[index],
+      ),
+    );
+  }
+}
+
+/// STUDY BOX 특강 전용 카드 — 표지 이미지가 190x268 카드 전체를 그대로 덮는다(하단 정보 영역 없음).
+class _LectureCoverCard extends StatelessWidget {
+  final String imageAsset;
+  final void Function(BuildContext context) onTap;
+  const _LectureCoverCard({required this.imageAsset, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onTap(context),
+      child: Container(
+        width: 190,
+        height: 268,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.glassBorder),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 8)),
+          ],
+        ),
+        child: Image.asset(imageAsset, fit: BoxFit.cover),
       ),
     );
   }
