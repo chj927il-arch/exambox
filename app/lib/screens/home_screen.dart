@@ -302,7 +302,7 @@ class _SubjectGuideCarousel extends StatelessWidget {
 }
 
 /// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 가로(190)·세로(268) 완전히 동일한 크기.
-/// 지금은 반사회질서 법률행위·대리행위·의사표시·불공정한 법률행위 4개만 노출.
+/// 지금은 반사회질서 법률행위·대리행위·의사표시·불공정한 법률행위·조건과 기한 5개만 노출.
 class _LectureGrid extends StatelessWidget {
   const _LectureGrid();
 
@@ -394,6 +394,29 @@ class _LectureGrid extends StatelessWidget {
               subjectId: 'civil_law',
               subjectName: '민법',
               category: '불공정한 법률행위',
+            ),
+          ),
+        ),
+      ),
+      _SubjectCoverCard(
+        id: 'condition_period',
+        name: '조건과 기한 특강',
+        categories: const [],
+        linkLabel: '특강 보기',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '조건과 기한',
+              keyPoints: [
+                '조건 — 법률행위 효력의 발생·소멸을 장래의 불확실한 사실에 의존시키는 부관(정지조건·해제조건)',
+                '조건성취의 효과 — 원칙적으로 소급효 없이 장래를 향해 발생하나, 당사자의 특약으로 소급효를 부여할 수 있음(제147조)',
+                '조건성취의 방해·의제 — 신의칙에 반하여 조건 성취를 방해하거나 성취시킨 경우, 상대방은 조건이 성취(또는 불성취)한 것으로 주장 가능(제150조)',
+                '조건에 친하지 않은 행위 — 혼인·이혼 등 신분행위와 상대방 지위를 불안정하게 하는 단독행위(상계 등)에는 원칙적으로 조건을 붙일 수 없음',
+                '기한 — 도래가 확실한 장래 사실에 의존하는 부관(시기·종기, 확정기한·불확정기한)이며, 기한은 채무자의 이익을 위한 것으로 추정되고(제153조), 도래에는 소급효가 인정되지 않음',
+              ],
+              subjectId: 'civil_law',
+              subjectName: '민법',
+              category: '조건과 기한',
             ),
           ),
         ),
