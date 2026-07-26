@@ -303,77 +303,44 @@ class _SubjectGuideCarousel extends StatelessWidget {
   }
 }
 
-/// STUDY BOX 특강 — 특강 과목을 2열 그리드 카드로 보여준다. 지금은 민법·한국사 2개만 노출.
+/// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 동일한 크기·스타일의 그리드.
+/// 지금은 민법·한국사 2개만 노출.
 class _LectureGrid extends StatelessWidget {
   const _LectureGrid();
 
   @override
   Widget build(BuildContext context) {
-    const lectures = [
-      _LectureItem(id: 'civil_law', title: '민법 특강'),
-      _LectureItem(id: 'korean_history', title: '한국사능력검정시험 특강'),
+    final cards = [
+      _SubjectCoverCard(
+        id: 'civil_law',
+        name: '민법 특강',
+        categories: const [],
+        linkLabel: '특강 보기',
+        width: double.infinity,
+        onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
+        ),
+      ),
+      _SubjectCoverCard(
+        id: 'korean_history',
+        name: '한국사능력검정시험 특강',
+        categories: const [],
+        linkLabel: '특강 보기',
+        width: double.infinity,
+        onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
+        ),
+      ),
     ];
 
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
+      mainAxisSpacing: 14,
+      crossAxisSpacing: 14,
       childAspectRatio: 190 / 268,
-      children: lectures.map((lecture) => _LectureCard(item: lecture)).toList(),
-    );
-  }
-}
-
-class _LectureItem {
-  final String id;
-  final String title;
-  const _LectureItem({required this.id, required this.title});
-}
-
-class _LectureCard extends StatelessWidget {
-  final _LectureItem item;
-  const _LectureCard({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    final style = subjectStyleOf(item.id);
-
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.glassBorder),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 6)),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(color: style.color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-              child: Icon(style.icon, color: style.color, size: 20),
-            ),
-            Text(
-              item.title,
-              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.textPrimary, height: 1.3),
-            ),
-          ],
-        ),
-      ),
+      children: cards,
     );
   }
 }
@@ -399,7 +366,16 @@ class _SubjectCoverCard extends StatelessWidget {
   final String name;
   final List<String> categories;
   final void Function(BuildContext context) onTap;
-  const _SubjectCoverCard({required this.id, required this.name, required this.categories, required this.onTap});
+  final double width;
+  final String linkLabel;
+  const _SubjectCoverCard({
+    required this.id,
+    required this.name,
+    required this.categories,
+    required this.onTap,
+    this.width = 190,
+    this.linkLabel = '과목 안내 보기',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -408,7 +384,7 @@ class _SubjectCoverCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(context),
       child: Container(
-        width: 190,
+        width: width,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -487,7 +463,7 @@ class _SubjectCoverCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '과목 안내 보기',
+                          linkLabel,
                           style: TextStyle(color: style.color, fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
                         Icon(Icons.chevron_right_rounded, size: 16, color: style.color),
