@@ -320,7 +320,7 @@ class _LectureGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.5,
+      childAspectRatio: 190 / 268,
       children: lectures.map((lecture) => _LectureCard(item: lecture)).toList(),
     );
   }
