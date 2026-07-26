@@ -10,8 +10,8 @@ import '../widgets/rolling_banner.dart';
 import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
 import 'faq_screen.dart';
+import 'lecture_intro_screen.dart';
 import 'notice_screen.dart';
-import 'quiz_screen.dart';
 import 'review_screen.dart';
 import 'subject_info_screen.dart';
 
@@ -313,7 +313,15 @@ class _LectureGrid extends StatelessWidget {
         imageAsset: 'assets/images/lecture_cover_civil_law.png',
         onTap: (context) => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => const QuizScreen(
+            builder: (_) => const LectureIntroScreen(
+              title: '반사회질서 법률행위',
+              keyPoints: [
+                '민법 제103조 — 선량한 풍속 기타 사회질서에 위반하는 내용의 법률행위는 무효',
+                '판단 기준시 — 법률행위가 이루어진 성립 당시를 기준으로 판단',
+                '동기의 불법 — 불법한 동기가 상대방에게 표시되었거나 상대방이 알았거나 알 수 있었던 경우 무효 가능',
+                '효과 — 절대적 무효(선의의 제3자에게도 대항 가능)이며, 무효행위 추인으로도 유효가 되지 않음',
+                '대표 판례유형 — 도박자금 대여, 첩계약, 형사사건 성공보수 약정, 이중매매의 적극가담, 보험사기 목적 계약 등',
+              ],
               subjectId: 'civil_law',
               subjectName: '민법',
               category: '반사회질서 법률행위',
