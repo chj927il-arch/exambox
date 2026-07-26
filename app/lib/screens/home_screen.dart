@@ -302,7 +302,7 @@ class _SubjectGuideCarousel extends StatelessWidget {
 }
 
 /// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 가로(190)·세로(268) 완전히 동일한 크기.
-/// 지금은 민법·한국사 2개만 노출.
+/// 지금은 반사회질서 법률행위·대리행위 2개만 노출.
 class _LectureGrid extends StatelessWidget {
   const _LectureGrid();
 
@@ -330,12 +330,26 @@ class _LectureGrid extends StatelessWidget {
         ),
       ),
       _SubjectCoverCard(
-        id: 'korean_history',
-        name: '한국사능력검정시험 특강',
+        id: 'agency',
+        name: '대리행위 특강',
         categories: const [],
         linkLabel: '특강 보기',
-        onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '대리행위',
+              keyPoints: [
+                '대리의 의의 — 대리인이 본인을 위한 것임을 표시(현명주의)하고 한 의사표시의 법률효과가 직접 본인에게 귀속되는 제도',
+                '대리권 발생원인 — 법률의 규정에 의한 법정대리와 본인의 수권행위에 의한 임의대리로 구분',
+                '복대리 — 대리인이 대리권의 범위 내에서 자신의 이름으로 선임한 자기의 대리인이며, 임의대리인은 원칙적으로 본인의 승낙이나 부득이한 사유가 있어야 복대리인을 선임 가능',
+                '무권대리 — 대리권 없이 한 대리행위로서 본인의 추인이 있으면 소급하여 유효, 추인 거절 시 무효이며 상대방은 최고권·철회권을 가짐',
+                '표현대리 — 대리권이 없거나 범위를 넘은 경우에도 본인에게 책임 있는 외관이 있으면 거래 상대방 보호를 위해 본인이 책임을 지는 제도(제125조·제126조·제129조)',
+              ],
+              subjectId: 'civil_law',
+              subjectName: '민법',
+              category: '대리행위',
+            ),
+          ),
         ),
       ),
     ];
