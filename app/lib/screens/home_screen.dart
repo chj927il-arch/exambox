@@ -11,6 +11,7 @@ import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
 import 'faq_screen.dart';
 import 'notice_screen.dart';
+import 'quiz_screen.dart';
 import 'review_screen.dart';
 import 'subject_info_screen.dart';
 
@@ -310,8 +311,14 @@ class _LectureGrid extends StatelessWidget {
     final cards = [
       _LectureCoverCard(
         imageAsset: 'assets/images/lecture_cover_civil_law.png',
-        onTap: (context) => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('특강 상세는 준비 중이에요.')),
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const QuizScreen(
+              subjectId: 'civil_law',
+              subjectName: '민법',
+              category: '반사회질서 법률행위',
+            ),
+          ),
         ),
       ),
       _SubjectCoverCard(
