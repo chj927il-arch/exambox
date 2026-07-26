@@ -16,6 +16,7 @@ const Map<String, SubjectStyle> _subjectStyles = {
   'korean_history_basic': SubjectStyle(icon: Icons.temple_buddhist_outlined, color: Color(0xFF2B6777)), // 딥 틸(기본 등급 구분)
   'agency': SubjectStyle(icon: Icons.handshake_outlined, color: Color(0xFF6B4F9E)), // 퍼플(대리행위 특강)
   'declaration_of_intent': SubjectStyle(icon: Icons.chat_bubble_outline, color: Color(0xFF2E7D62)), // 그린(의사표시 특강)
+  'unfair_act': SubjectStyle(icon: Icons.scale_outlined, color: Color(0xFFB0562C)), // 브라운오렌지(불공정한 법률행위 특강)
 };
 
 const SubjectStyle _fallback = SubjectStyle(icon: Icons.menu_book_outlined, color: Color(0xFF6B7280));

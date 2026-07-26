@@ -302,7 +302,7 @@ class _SubjectGuideCarousel extends StatelessWidget {
 }
 
 /// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 가로(190)·세로(268) 완전히 동일한 크기.
-/// 지금은 반사회질서 법률행위·대리행위·의사표시 3개만 노출.
+/// 지금은 반사회질서 법률행위·대리행위·의사표시·불공정한 법률행위 4개만 노출.
 class _LectureGrid extends StatelessWidget {
   const _LectureGrid();
 
@@ -371,6 +371,29 @@ class _LectureGrid extends StatelessWidget {
               subjectId: 'civil_law',
               subjectName: '민법',
               category: '의사표시',
+            ),
+          ),
+        ),
+      ),
+      _SubjectCoverCard(
+        id: 'unfair_act',
+        name: '불공정한 법률행위 특강',
+        categories: const [],
+        linkLabel: '특강 보기',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '불공정한 법률행위',
+              keyPoints: [
+                '민법 제104조 — 당사자 일방의 궁박·경솔·무경험을 이용하여 현저하게 공정을 잃은 법률행위는 무효',
+                '요건 — 궁박·경솔·무경험 중 하나만 갖추어도 되는 택일적 요건 + 급부와 반대급부의 현저한 불균형 + 폭리행위자의 이용의사(악의)',
+                '증명책임 — 무효를 주장하는 자가 궁박·경솔·무경험, 현저한 불균형, 폭리행위자의 악의를 모두 주장·증명하여야 함',
+                '적용범위 — 대가관계 없는 무상행위(증여 등)와 경매에는 적용되지 않으며, 대리행위의 경우 궁박은 본인을, 경솔·무경험은 대리인을 기준으로 판단',
+                '효과 — 절대적 무효로서 무효행위의 추인으로도 유효가 되지 않음(제103조의 특별규정으로 이해)',
+              ],
+              subjectId: 'civil_law',
+              subjectName: '민법',
+              category: '불공정한 법률행위',
             ),
           ),
         ),
