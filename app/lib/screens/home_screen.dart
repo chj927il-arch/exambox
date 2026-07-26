@@ -302,7 +302,7 @@ class _SubjectGuideCarousel extends StatelessWidget {
 }
 
 /// STUDY BOX 특강 — 과목 안내 카드(_SubjectCoverCard)와 가로(190)·세로(268) 완전히 동일한 크기.
-/// 지금은 반사회질서 법률행위·대리행위 2개만 노출.
+/// 지금은 반사회질서 법률행위·대리행위·의사표시 3개만 노출.
 class _LectureGrid extends StatelessWidget {
   const _LectureGrid();
 
@@ -348,6 +348,29 @@ class _LectureGrid extends StatelessWidget {
               subjectId: 'civil_law',
               subjectName: '민법',
               category: '대리행위',
+            ),
+          ),
+        ),
+      ),
+      _SubjectCoverCard(
+        id: 'declaration_of_intent',
+        name: '의사표시 특강',
+        categories: const [],
+        linkLabel: '특강 보기',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '의사표시',
+              keyPoints: [
+                '비진의표시(제107조) — 원칙적으로 표시된 대로 효력이 생기나, 상대방이 진의 아님을 알았거나 알 수 있었을 때에는 무효(선의의 제3자에게는 대항 불가)',
+                '통정허위표시(제108조) — 상대방과 통정한 허위 의사표시는 당사자 간에는 무효이나, 선의의 제3자에게는 대항 불가',
+                '착오(제109조) — 법률행위 내용의 중요부분에 착오가 있으면 취소 가능하나, 표의자에게 중대한 과실이 있으면 취소 불가(선의의 제3자에게는 대항 불가)',
+                '사기·강박(제110조) — 기망행위·해악의 고지로 인한 의사표시는 취소 가능, 제3자의 사기·강박은 상대방이 알았거나 알 수 있었던 경우에 한하여 취소 가능(선의의 제3자에게는 대항 불가)',
+                '효력발생시기(제111조) — 상대방 있는 의사표시는 그 통지가 상대방에게 도달한 때 효력이 생김(도달주의)',
+              ],
+              subjectId: 'civil_law',
+              subjectName: '민법',
+              category: '의사표시',
             ),
           ),
         ),
