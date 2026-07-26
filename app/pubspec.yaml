@@ -72,7 +72,6 @@ flutter:
     - assets/images/rolling_banner_korean_history.png
     - assets/images/subject_cover_korean_history.png
     - assets/images/lecture_cover_civil_law.png
-    - assets/images/study_result_strip.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

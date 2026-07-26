@@ -61,8 +61,6 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 10),
         const _DailyOxBanner(),
         const SizedBox(height: 24),
-        const _StudyResultStrip(),
-        const SizedBox(height: 24),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: _SectionTitle(prefix: '과목 ', highlight: '안내', color: AppColors.primary),
@@ -137,24 +135,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// 오늘의 OX 퀴즈 아래·과목 안내 위 띠배너 — 첨부 이미지(1536x1024 비율) 그대로 표시.
-class _StudyResultStrip extends StatelessWidget {
-  const _StudyResultStrip();
-
-  @override
-  Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1536 / 1024,
-      child: const Image(
-        image: AssetImage('assets/images/study_result_strip.png'),
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-      ),
     );
   }
 }
