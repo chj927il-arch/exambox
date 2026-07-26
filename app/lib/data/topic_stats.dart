@@ -70,26 +70,20 @@ const List<TopicStat> economicLawTopicStats = [
   TopicStat(topic: '경제력집중 억제', questionCount: 1, totalQuestions: 440),
 ];
 
-/// 민법 — 2016년(15회)·2017년(원문 표기 기준)·2018년(16회)·2020년(18회)
-/// 가맹거래사 1차 시험 민법 4개년 160문항을 직접 분석한 결과. 경제법(11개년
-/// 440문항)만큼의 표본은 아니지만 계속 누적 중이며, 향후 나머지 연도
-/// (2019·2021~2026)를 추가로 분석해 반영할 예정이다.
+/// 민법 — 2016~2026년(제15회~제24회) 기출 440문항 직접 분석 결과.
+/// 경제법과 동일하게 11개년 전 회차를 분석 완료했다.
 const List<TopicStat> civilLawTopicStats = [
-  // 민법총칙 (대분류 합계 66문항)
-  TopicStat(topic: '법률행위·의사표시·무효와 취소', questionCount: 26, totalQuestions: 160),
-  TopicStat(topic: '권리능력·행위능력·법인·물건', questionCount: 21, totalQuestions: 160),
-  TopicStat(topic: '대리', questionCount: 10, totalQuestions: 160),
-  TopicStat(topic: '소멸시효', questionCount: 9, totalQuestions: 160),
-  TopicStat(topic: '민법의 법원(法源)', questionCount: 2, totalQuestions: 160),
-
-  // 채권법 (대분류 합계 68문항)
-  TopicStat(topic: '전형계약 각론(매매·임대차·도급 등)', questionCount: 46, totalQuestions: 160),
-  TopicStat(topic: '계약총론(성립·동시이행·해제 등)', questionCount: 22, totalQuestions: 160),
-
-  // 물권법 (대분류 합계 26문항)
-  TopicStat(topic: '물권변동·점유·총유', questionCount: 11, totalQuestions: 160),
-  TopicStat(topic: '담보물권(유치권·저당권)', questionCount: 7, totalQuestions: 160),
-  TopicStat(topic: '용익물권(지상권)', questionCount: 6, totalQuestions: 160),
+  // 민법총칙 (대분류 합계 186문항)
+  TopicStat(topic: '전형계약 각론(매매·임대차·도급 등)', questionCount: 126, totalQuestions: 440),
+  TopicStat(topic: '법률행위·의사표시·무효와 취소', questionCount: 70, totalQuestions: 440),
+  TopicStat(topic: '계약총론(성립·동시이행·해제 등)', questionCount: 59, totalQuestions: 440),
+  TopicStat(topic: '권리능력·행위능력·법인·물건', questionCount: 56, totalQuestions: 440),
+  TopicStat(topic: '물권변동·점유·총유', questionCount: 35, totalQuestions: 440),
+  TopicStat(topic: '대리', questionCount: 24, totalQuestions: 440),
+  TopicStat(topic: '소멸시효', questionCount: 24, totalQuestions: 440),
+  TopicStat(topic: '담보물권(유치권·저당권)', questionCount: 19, totalQuestions: 440),
+  TopicStat(topic: '용익물권(지상권)', questionCount: 15, totalQuestions: 440),
+  TopicStat(topic: '민법의 법원(法源)', questionCount: 12, totalQuestions: 440),
 ];
 
 const List<TopicStat> businessAdminTopicStats = [

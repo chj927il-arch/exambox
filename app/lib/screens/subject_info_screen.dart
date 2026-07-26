@@ -39,7 +39,7 @@ String _analysisNoteFor(String subjectId, bool isAnalyzed) {
     case 'economic_law':
       return '2016~2026년(제15회~제24회) 기출 440문항 직접 분석';
     case 'civil_law':
-      return '2016·2017·2018·2020년(4개년) 기출 160문항 직접 분석 (나머지 연도 확보 시 누적 반영 예정)';
+      return '2016~2026년(제15회~제24회) 기출 440문항 직접 분석';
     default:
       return '기출 분석 결과를 반영하였습니다';
   }
