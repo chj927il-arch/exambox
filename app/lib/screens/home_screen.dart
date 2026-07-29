@@ -329,11 +329,8 @@ class _LectureGrid extends StatelessWidget {
           ),
         ),
       ),
-      _SubjectCoverCard(
-        id: 'agency',
-        name: '대리행위 특강',
-        categories: const [],
-        linkLabel: '특강 보기',
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_agency.png',
         onTap: (context) => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => const LectureIntroScreen(
@@ -352,11 +349,8 @@ class _LectureGrid extends StatelessWidget {
           ),
         ),
       ),
-      _SubjectCoverCard(
-        id: 'declaration_of_intent',
-        name: '의사표시 특강',
-        categories: const [],
-        linkLabel: '특강 보기',
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_declaration_of_intent.png',
         onTap: (context) => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => const LectureIntroScreen(
@@ -375,11 +369,8 @@ class _LectureGrid extends StatelessWidget {
           ),
         ),
       ),
-      _SubjectCoverCard(
-        id: 'unfair_act',
-        name: '불공정한 법률행위 특강',
-        categories: const [],
-        linkLabel: '특강 보기',
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_unfair_act.png',
         onTap: (context) => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => const LectureIntroScreen(
@@ -398,11 +389,8 @@ class _LectureGrid extends StatelessWidget {
           ),
         ),
       ),
-      _SubjectCoverCard(
-        id: 'condition_period',
-        name: '조건과 기한 특강',
-        categories: const [],
-        linkLabel: '특강 보기',
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_condition_period.png',
         onTap: (context) => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => const LectureIntroScreen(
@@ -484,13 +472,11 @@ class _SubjectCoverCard extends StatelessWidget {
   final String name;
   final List<String> categories;
   final void Function(BuildContext context) onTap;
-  final String linkLabel;
   const _SubjectCoverCard({
     required this.id,
     required this.name,
     required this.categories,
     required this.onTap,
-    this.linkLabel = '과목 안내 보기',
   });
 
   @override
@@ -579,7 +565,7 @@ class _SubjectCoverCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          linkLabel,
+                          '과목 안내 보기',
                           style: TextStyle(color: style.color, fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
                         Icon(Icons.chevron_right_rounded, size: 16, color: style.color),

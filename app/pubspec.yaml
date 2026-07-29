@@ -72,6 +72,10 @@ flutter:
     - assets/images/rolling_banner_korean_history.png
     - assets/images/subject_cover_korean_history.png
     - assets/images/lecture_cover_civil_law.png
+    - assets/images/lecture_cover_agency.png
+    - assets/images/lecture_cover_declaration_of_intent.png
+    - assets/images/lecture_cover_unfair_act.png
+    - assets/images/lecture_cover_condition_period.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
