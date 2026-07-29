@@ -70,10 +70,17 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 24),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _SectionTitle(prefix: 'STUDY BOX ', highlight: '특강', color: AppColors.accentPurple),
+          child: _SectionTitle(prefix: '민법 ', highlight: '특강', color: AppColors.accentPurple),
         ),
         const SizedBox(height: 10),
         const _LectureGrid(),
+        const SizedBox(height: 24),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: _SectionTitle(prefix: '한능검 ', highlight: '특강', color: AppColors.accentPurple),
+        ),
+        const SizedBox(height: 10),
+        const _KoreanHistoryLectureGrid(),
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -425,6 +432,28 @@ class _LectureGrid extends StatelessWidget {
           ),
         ),
       ),
+    ];
+
+    return SizedBox(
+      height: 268,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: cards.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 14),
+        itemBuilder: (context, index) => cards[index],
+      ),
+    );
+  }
+}
+
+/// 한능검 특강 — 고려시대·조선시대·근현대사 등 한국사능력검정시험 특강 카드 그리드.
+class _KoreanHistoryLectureGrid extends StatelessWidget {
+  const _KoreanHistoryLectureGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = [
       _LectureCoverCard(
         imageAsset: 'assets/images/lecture_cover_goryeo_history.png',
         onTap: (context) => Navigator.of(context).push(
