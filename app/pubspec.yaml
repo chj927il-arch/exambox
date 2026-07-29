@@ -76,6 +76,10 @@ flutter:
     - assets/images/lecture_cover_declaration_of_intent.png
     - assets/images/lecture_cover_unfair_act.png
     - assets/images/lecture_cover_condition_period.png
+    - assets/images/lecture_cover_concurrent_performance.png
+    - assets/images/lecture_cover_goryeo_history.png
+    - assets/images/lecture_cover_joseon_history.png
+    - assets/images/lecture_cover_modern_history.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

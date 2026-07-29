@@ -409,6 +409,70 @@ class _LectureGrid extends StatelessWidget {
           ),
         ),
       ),
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_concurrent_performance.png',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '동시이행항변권',
+              keyPoints: [
+                '추후 업데이트 예정',
+              ],
+              subjectId: 'civil_law',
+              subjectName: '민법',
+              category: '동시이행항변권',
+            ),
+          ),
+        ),
+      ),
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_goryeo_history.png',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '고려시대특강',
+              keyPoints: [
+                '추후 업데이트 예정',
+              ],
+              subjectId: 'korean_history',
+              subjectName: '한국사',
+              category: '고려시대특강',
+            ),
+          ),
+        ),
+      ),
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_joseon_history.png',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '조선시대특강',
+              keyPoints: [
+                '추후 업데이트 예정',
+              ],
+              subjectId: 'korean_history',
+              subjectName: '한국사',
+              category: '조선시대특강',
+            ),
+          ),
+        ),
+      ),
+      _LectureCoverCard(
+        imageAsset: 'assets/images/lecture_cover_modern_history.jpg',
+        onTap: (context) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LectureIntroScreen(
+              title: '근현대사특강',
+              keyPoints: [
+                '추후 업데이트 예정',
+              ],
+              subjectId: 'korean_history',
+              subjectName: '한국사',
+              category: '근현대사특강',
+            ),
+          ),
+        ),
+      ),
     ];
 
     return SizedBox(
