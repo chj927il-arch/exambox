@@ -88,8 +88,8 @@ class HomeScreen extends StatelessWidget {
 
 /// 포스터 카드 공통 규격 — 민법 특강·과목별 학습 표지 이미지 모두 세로형(약 0.71 비율)이라
 /// 넷플릭스 포스터 비율에 가깝게 좁고 촘촘한 크기 하나로 통일한다.
-const double kLecturePosterWidth = 138;
-const double kLecturePosterHeight = 196;
+const double kLecturePosterWidth = 152;
+const double kLecturePosterHeight = 216;
 
 /// 원본 표지 이미지(밝은 배경의 홍보 배너 톤)를 다크 테마에 맞게 어둡게 톤다운하고,
 /// 하단에 텍스트 가독용 그라데이션 스크림을 얹는 공통 래퍼.
@@ -103,7 +103,7 @@ class TintedPoster extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(imageAsset, fit: BoxFit.cover),
+        Image.asset(imageAsset, fit: BoxFit.cover, filterQuality: FilterQuality.high),
         // 밝은 홍보 배너 톤을 다크 테마에 맞게 살짝만 톤다운(원본이 안 보일 정도로 어둡게 하지 않음).
         Positioned.fill(child: ColoredBox(color: Colors.black.withValues(alpha: 0.18))),
         Positioned.fill(
