@@ -130,7 +130,7 @@ class _HeroBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     final titleSize = isDesktop ? 40.0 : 23.0;
-    final subtitleSize = isDesktop ? 20.0 : 14.0;
+    final subtitleSize = isDesktop ? 40.0 : 14.0;
 
     return Container(
       width: double.infinity,
@@ -150,11 +150,18 @@ class _HeroBanner extends StatelessWidget {
             style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w900, color: Colors.white),
           ),
           const SizedBox(height: 6),
-          Text(
-            '가장 스마트하게, 가장 콤팩트하게 준비하세요',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '가장 스마트하게, 가장 콤팩트하게 준비하세요',
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
+              ),
+            ),
           ),
           const SizedBox(height: 22),
           GestureDetector(
