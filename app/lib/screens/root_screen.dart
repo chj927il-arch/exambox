@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../widgets/app_background.dart';
+import '../widgets/nav_items.dart';
 import 'faq_screen.dart';
 import 'home_screen.dart';
 import 'license_screen.dart';
@@ -11,24 +12,6 @@ import 'notice_screen.dart';
 
 const double _kTopNavHeight = 46;
 const int _kTabCount = 5;
-
-class _NavItem {
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-  final int tabIndex;
-  const _NavItem(this.icon, this.selectedIcon, this.label, this.tabIndex);
-}
-
-/// 상단 메뉴 — 홈 / 자격증 / 공지사항 / FAQ / 마이페이지 5개. "자격증" 안에서 전문자격사·IT·취업 등으로
-/// 분류하고, 각 자격증(예: 가맹거래사) 하위에 시험소개·시험과목·학습하기가 배치된다.
-const _navItems = [
-  _NavItem(Icons.home_outlined, Icons.home, '홈', 0),
-  _NavItem(Icons.school_outlined, Icons.school, '자격증', 1),
-  _NavItem(Icons.campaign_outlined, Icons.campaign, '공지사항', 2),
-  _NavItem(Icons.help_outline_rounded, Icons.help_rounded, 'FAQ', 3),
-  _NavItem(Icons.person_outline_rounded, Icons.person_rounded, '마이페이지', 4),
-];
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -53,13 +36,13 @@ class _RootScreenState extends State<RootScreen> {
   final List<GlobalKey<NavigatorState>> _navKeys =
       List.generate(_kTabCount, (_) => GlobalKey<NavigatorState>());
 
-  static const _tabScreens = [
-    HomeScreen(),
-    LicenseScreen(),
-    NoticeScreen(),
-    FaqScreen(),
-    MyPageScreen(),
-  ];
+  List<Widget> get _tabScreens => [
+        HomeScreen(navSelectedIndex: _tabIndex, onNavSelected: _onDestinationSelected),
+        const LicenseScreen(),
+        const NoticeScreen(),
+        const FaqScreen(),
+        const MyPageScreen(),
+      ];
 
   Widget _buildTabNavigator(int index) {
     return Navigator(
@@ -160,18 +143,18 @@ class _RootScreenState extends State<RootScreen> {
                   ),
                 ),
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                height: 68,
-                child: _DesktopHeader(
-                  selectedIndex: _tabIndex,
-                  onSelected: _onDestinationSelected,
-                  dark: isHome,
-                  transparent: overlay,
+              if (!overlay)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: 68,
+                  child: _DesktopHeader(
+                    selectedIndex: _tabIndex,
+                    onSelected: _onDestinationSelected,
+                    dark: isHome,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -281,25 +264,21 @@ class _DesktopHeader extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final bool dark;
-  final bool transparent;
   const _DesktopHeader({
     required this.selectedIndex,
     required this.onSelected,
     required this.dark,
-    this.transparent = false,
   });
 
-  /// 투명(영상 위 오버레이) 모드에서는 쿠팡플레이처럼 각 메뉴를 모서리 둥근 불투명 박스로 감싼다.
-  /// 불투명 헤더 모드에서는 기존처럼 텍스트만 보여준다.
-  Widget _navLabel(
-    BuildContext context,
-    String label, {
-    required bool selected,
-    required VoidCallback onTap,
-    required Color textSecondary,
-    required Color accent,
-  }) {
-    if (!transparent) {
+  @override
+  Widget build(BuildContext context) {
+    final bg = dark ? OttColors.bg : AppColors.bgBase;
+    final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
+    final textPrimary = dark ? OttColors.textPrimary : AppColors.textPrimary;
+    final textSecondary = dark ? OttColors.textSecondary : AppColors.textSecondary;
+    final accent = dark ? OttColors.accentStart : AppColors.primary;
+
+    Widget navText(String label, {required bool selected, required VoidCallback onTap}) {
       return InkWell(
         onTap: onTap,
         child: Text(
@@ -312,43 +291,11 @@ class _DesktopHeader extends StatelessWidget {
         ),
       );
     }
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected ? accent : Colors.black.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = dark ? OttColors.bg : AppColors.bgBase;
-    final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
-    final textPrimary = dark ? OttColors.textPrimary : AppColors.textPrimary;
-    final textSecondary = dark ? OttColors.textSecondary : AppColors.textSecondary;
-    final accent = dark ? OttColors.accentStart : AppColors.primary;
 
     return Container(
       width: double.infinity,
       height: 68,
-      decoration: transparent
-          ? BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black.withValues(alpha: 0.45), Colors.black.withValues(alpha: 0.0)],
-              ),
-            )
-          : BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: border))),
+      decoration: BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: border))),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -362,54 +309,34 @@ class _DesktopHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 32),
                 // 마이페이지는 왼쪽 탭이 아니라 오른쪽 회원가입/로그인 옆으로 이동.
-                ..._navItems.where((item) => item.label != '마이페이지').map((item) {
+                ...kNavItems.where((item) => item.label != '마이페이지').map((item) {
                   final selected = item.tabIndex == selectedIndex;
                   return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _navLabel(
-                      context,
-                      item.label,
-                      selected: selected,
-                      onTap: () => onSelected(item.tabIndex),
-                      textSecondary: textSecondary,
-                      accent: accent,
-                    ),
+                    padding: const EdgeInsets.only(right: 32),
+                    child: navText(item.label, selected: selected, onTap: () => onSelected(item.tabIndex)),
                   );
                 }),
                 const Spacer(),
-                _navLabel(
-                  context,
+                navText(
                   '회원가입',
                   selected: false,
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
                   ),
-                  textSecondary: textSecondary,
-                  accent: accent,
                 ),
-                const SizedBox(width: 12),
-                _navLabel(
-                  context,
+                const SizedBox(width: 20),
+                navText(
                   '로그인',
                   selected: false,
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
                   ),
-                  textSecondary: textSecondary,
-                  accent: accent,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 20),
                 Builder(builder: (context) {
-                  final myPage = _navItems.firstWhere((item) => item.label == '마이페이지');
+                  final myPage = kNavItems.firstWhere((item) => item.label == '마이페이지');
                   final selected = myPage.tabIndex == selectedIndex;
-                  return _navLabel(
-                    context,
-                    myPage.label,
-                    selected: selected,
-                    onTap: () => onSelected(myPage.tabIndex),
-                    textSecondary: textSecondary,
-                    accent: accent,
-                  );
+                  return navText(myPage.label, selected: selected, onTap: () => onSelected(myPage.tabIndex));
                 }),
               ],
             ),
@@ -441,7 +368,7 @@ class _TopNavBar extends StatelessWidget {
     final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
     final accent = dark ? OttColors.accentStart : AppColors.primary;
     final muted = dark ? OttColors.textMuted : AppColors.textMuted;
-    final tabItems = _navItems.where((item) => item.label != '마이페이지').toList();
+    final tabItems = kNavItems.where((item) => item.label != '마이페이지').toList();
 
     return Container(
       height: _kTopNavHeight,

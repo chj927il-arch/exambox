@@ -18,7 +18,9 @@ import 'subject_info_screen.dart';
 
 /// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 히어로 배너 + 가로 포스터행)로 개편.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final int navSelectedIndex;
+  final ValueChanged<int> onNavSelected;
+  const HomeScreen({super.key, required this.navSelectedIndex, required this.onNavSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +33,14 @@ class HomeScreen extends StatelessWidget {
         padding: EdgeInsets.only(top: isDesktop ? 0 : 14, bottom: 28),
         children: [
           VideoStripBanner(
+            navSelectedIndex: navSelectedIndex,
+            onNavSelected: onNavSelected,
             onCtaTap: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
               ),
             ),
           ),
-          const SizedBox(height: 22),
-          const _HeroBanner(),
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -132,109 +134,6 @@ class TintedPoster extends StatelessWidget {
         if (bottomOverlay != null)
           Positioned(left: 0, right: 0, bottom: 0, child: bottomOverlay!),
       ],
-    );
-  }
-}
-
-/// 히어로 배너 — 진한 네이비→퍼플 그라데이션 위에 브랜드 워드마크 + 한 줄 소개 + CTA 버튼.
-class _HeroBanner extends StatelessWidget {
-  const _HeroBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1B1240), Color(0xFF141B33), OttColors.bg],
-        ),
-      ),
-      child: isDesktop ? _buildDesktop(context) : _buildMobile(context),
-    );
-  }
-
-  /// 데스크톱 — 제목+부제를 한 줄로 합치고 끝에 CTA 버튼을 인라인 배치해 배너 높이를 줄인다.
-  Widget _buildDesktop(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '가맹거래사 1차 시험 — 가장 스마트하게, 가장 콤팩트하게 준비하세요',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.2),
-            ),
-          ),
-          const SizedBox(width: 12),
-          _ctaButton(context, compact: true),
-        ],
-      ),
-    );
-  }
-
-  /// 모바일 — 이전 버전 그대로: 제목/부제 두 줄 + 전체 폭 CTA 버튼.
-  Widget _buildMobile(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '가맹거래사 1차 시험',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: Colors.white),
-          ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '가장 스마트하게, 가장 콤팩트하게 준비하세요',
-                maxLines: 1,
-                softWrap: false,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          _ctaButton(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _ctaButton(BuildContext context, {bool compact = false}) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
-        ),
-      ),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: compact ? 16 : 22, vertical: compact ? 10 : 12),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
-          borderRadius: BorderRadius.circular(compact ? 12 : 13),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.play_arrow_rounded, color: Colors.white, size: compact ? 17 : 19),
-            SizedBox(width: compact ? 4 : 5),
-            Text(
-              '지금 학습 시작하기',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: compact ? 14 : 17),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

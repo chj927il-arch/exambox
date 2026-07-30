@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
+import 'nav_items.dart';
 import 'rolling_banner.dart';
 
 /// 쿠팡플레이 스타일 히어로 — 데스크톱에서만 영상을 화면 폭 전체(가장자리 없이)로 재생하고,
@@ -14,12 +15,16 @@ class VideoStripBanner extends StatefulWidget {
   final String videoAsset;
   final double aspectRatio;
   final VoidCallback? onCtaTap;
+  final int navSelectedIndex;
+  final ValueChanged<int> onNavSelected;
 
   const VideoStripBanner({
     super.key,
     this.videoAsset = 'assets/videos/studybox_intro.mp4',
     this.aspectRatio = 3.6,
     this.onCtaTap,
+    required this.navSelectedIndex,
+    required this.onNavSelected,
   });
 
   @override
@@ -102,28 +107,16 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
         Positioned(
           left: 28,
           top: 26,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.black.withValues(alpha: 0.55), Colors.black.withValues(alpha: 0.25)],
-              ),
-            ),
-            child: Text(
-              '나만의 화면 속,\n합격 상자가 열린다.\nSTUDY BOX',
-              style: GoogleFonts.blackHanSans(
-                fontSize: 40,
-                color: Colors.white,
-                letterSpacing: 0.3,
-                height: 1.3,
-                shadows: [
-                  Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
-                  Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
-                ],
-              ),
+          child: Text(
+            'STUDY BOX - 나만의 화면 속, 합격 상자가 열린다',
+            style: GoogleFonts.blackHanSans(
+              fontSize: 22,
+              color: Colors.white,
+              letterSpacing: 0.3,
+              shadows: [
+                Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
+                Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
+              ],
             ),
           ),
         ),
@@ -156,6 +149,11 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
               ),
             ),
           ),
+        ),
+        Positioned(
+          left: 28,
+          bottom: 28,
+          child: _HeroNavRow(selectedIndex: widget.navSelectedIndex, onSelected: widget.onNavSelected),
         ),
       ],
     );
@@ -208,6 +206,69 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
         aspectRatio: widget.aspectRatio,
         child: ColoredBox(color: Colors.black, child: _videoBox()),
       ),
+    );
+  }
+}
+
+/// 영상 좌측 하단에 오버레이하는 메뉴 — 쿠팡플레이 스타일 둥근 불투명 필, 간격 촘촘하게 한 줄로 배치.
+class _HeroNavRow extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  const _HeroNavRow({required this.selectedIndex, required this.onSelected});
+
+  Widget _pill(BuildContext context, String label, {required bool selected, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? OttColors.accentStart : Colors.black.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mainItems = kNavItems.where((item) => item.label != '마이페이지');
+    final myPage = kNavItems.firstWhere((item) => item.label == '마이페이지');
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ...mainItems.map(
+          (item) => _pill(
+            context,
+            item.label,
+            selected: item.tabIndex == selectedIndex,
+            onTap: () => onSelected(item.tabIndex),
+          ),
+        ),
+        _pill(
+          context,
+          '회원가입',
+          selected: false,
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
+          ),
+        ),
+        _pill(
+          context,
+          '로그인',
+          selected: false,
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
+          ),
+        ),
+        _pill(context, myPage.label, selected: myPage.tabIndex == selectedIndex, onTap: () => onSelected(myPage.tabIndex)),
+      ],
     );
   }
 }
