@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
 import '../models/exam_subject.dart';
+import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/encourage_bar.dart';
@@ -127,6 +128,10 @@ class _HeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+    final titleSize = isDesktop ? 40.0 : 23.0;
+    final subtitleSize = isDesktop ? 20.0 : 14.0;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
@@ -140,16 +145,16 @@ class _HeroBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '가맹거래사 1차 시험',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: Colors.white),
+            style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w900, color: Colors.white),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             '가장 스마트하게, 가장 콤팩트하게 준비하세요',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
+            style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
           ),
           const SizedBox(height: 22),
           GestureDetector(
