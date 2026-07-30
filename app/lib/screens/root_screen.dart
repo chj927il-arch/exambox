@@ -39,6 +39,16 @@ class RootScreen extends StatefulWidget {
 
 class _RootScreenState extends State<RootScreen> {
   int _tabIndex = 0;
+  bool _homeHeaderSolid = false;
+
+  bool _onHomeScrollNotification(ScrollNotification notification) {
+    if (_tabIndex != 0) return false;
+    final solid = notification.metrics.pixels > 220;
+    if (solid != _homeHeaderSolid) {
+      setState(() => _homeHeaderSolid = solid);
+    }
+    return false;
+  }
 
   final List<GlobalKey<NavigatorState>> _navKeys =
       List.generate(_kTabCount, (_) => GlobalKey<NavigatorState>());
@@ -119,32 +129,41 @@ class _RootScreenState extends State<RootScreen> {
 
   /// PC/데스크톱(900 이상) — 일반 웹사이트처럼 상단에 가로로 긴 헤더(로고+메뉴) +
   /// 화면 폭에 맞춰 넓게 펼쳐지는 콘텐츠(최대 1200까지, 사이드바 없음).
+  /// 홈 탭에서는 헤더가 상단 영상 위에 투명하게 떠 있다가(쿠팡플레이 스타일), 영상을 지나
+  /// 스크롤하면 불투명 배경으로 전환된다.
   Widget _buildDesktop(BuildContext context) {
     final isHome = _tabIndex == 0;
+    final overlay = isHome && !_homeHeaderSolid;
+
     return Scaffold(
       body: ColoredBox(
         color: isHome ? OttColors.bg : AppColors.trackBg,
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              _DesktopHeader(
-                selectedIndex: _tabIndex,
-                onSelected: _onDestinationSelected,
-                dark: isHome,
-              ),
-              Expanded(
+              Positioned.fill(
+                top: isHome ? 0 : 68,
                 child: ColoredBox(
                   color: isHome ? OttColors.bg : AppColors.bgBase,
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
-                      child: IndexedStack(
-                        index: _tabIndex,
-                        children: List.generate(_kTabCount, _buildTabNavigator),
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: _onHomeScrollNotification,
+                        child: IndexedStack(
+                          index: _tabIndex,
+                          children: List.generate(_kTabCount, _buildTabNavigator),
+                        ),
                       ),
                     ),
                   ),
                 ),
+              ),
+              _DesktopHeader(
+                selectedIndex: _tabIndex,
+                onSelected: _onDestinationSelected,
+                dark: isHome,
+                transparent: overlay,
               ),
             ],
           ),
@@ -255,10 +274,12 @@ class _DesktopHeader extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final bool dark;
+  final bool transparent;
   const _DesktopHeader({
     required this.selectedIndex,
     required this.onSelected,
     required this.dark,
+    this.transparent = false,
   });
 
   @override
@@ -272,7 +293,15 @@ class _DesktopHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: 68,
-      decoration: BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: border))),
+      decoration: transparent
+          ? BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black.withValues(alpha: 0.45), Colors.black.withValues(alpha: 0.0)],
+              ),
+            )
+          : BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: border))),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),

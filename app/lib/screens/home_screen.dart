@@ -23,14 +23,23 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 데스크톱은 영상이 화면 맨 위(y=0)에서 시작해 투명 헤더가 그 위에 떠 있는 형태라
+    // 영상을 맨 먼저 배치하고 위쪽 여백도 없앤다. 모바일은 기존 순서(응원바 먼저) 그대로.
+    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
       child: ListView(
-        padding: const EdgeInsets.only(top: 14, bottom: 28),
+        padding: EdgeInsets.only(top: isDesktop ? 0 : 14, bottom: 28),
         children: [
-          const EncourageBar(),
-          const SizedBox(height: 14),
-          const VideoStripBanner(),
+          if (isDesktop) ...[
+            const VideoStripBanner(),
+            const SizedBox(height: 14),
+            const EncourageBar(),
+          ] else ...[
+            const EncourageBar(),
+            const SizedBox(height: 14),
+            const VideoStripBanner(),
+          ],
           const SizedBox(height: 22),
           const _HeroBanner(),
           const SizedBox(height: 22),
