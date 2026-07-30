@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/feature_flags.dart';
 import '../data/board_data.dart';
 import '../data/topic_stats.dart';
 import '../models/exam_subject.dart';
@@ -42,14 +43,15 @@ class HomeScreen extends StatelessWidget {
             banners: [
               const BannerItem(imageAsset: 'assets/images/rolling_banner_update.png'),
               const BannerItem(imageAsset: 'assets/images/rolling_banner_chapter.png'),
-              BannerItem(
-                imageAsset: 'assets/images/rolling_banner_korean_history.png',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+              if (kKoreanHistoryEnabled)
+                BannerItem(
+                  imageAsset: 'assets/images/rolling_banner_korean_history.png',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -74,13 +76,15 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         const _LectureGrid(),
-        const SizedBox(height: 24),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _SectionTitle(prefix: '한능검 ', highlight: '특강', color: AppColors.accentPurple),
-        ),
-        const SizedBox(height: 10),
-        const _KoreanHistoryLectureGrid(),
+        if (kKoreanHistoryEnabled) ...[
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _SectionTitle(prefix: '한능검 ', highlight: '특강', color: AppColors.accentPurple),
+          ),
+          const SizedBox(height: 10),
+          const _KoreanHistoryLectureGrid(),
+        ],
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -283,16 +287,17 @@ class _SubjectGuideCarousel extends StatelessWidget {
           ),
         ),
       ),
-      _SubjectCoverCard(
-        id: 'korean_history',
-        name: '한국사능력검정시험',
-        categories: const ['심화', '기본'],
-        onTap: (context) => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+      if (kKoreanHistoryEnabled)
+        _SubjectCoverCard(
+          id: 'korean_history',
+          name: '한국사능력검정시험',
+          categories: const ['심화', '기본'],
+          onTap: (context) => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+            ),
           ),
         ),
-      ),
     ];
 
     return SizedBox(

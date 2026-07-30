@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/feature_flags.dart';
 import '../theme/app_theme.dart';
 import 'certificate_menu_screen.dart';
 
@@ -40,7 +41,12 @@ const _categories = [
     icon: Icons.work_outline_rounded,
     items: [
       _LicenseItem(id: 'ncs', name: 'NCS 직업기초능력', ready: false),
-      _LicenseItem(id: 'korean_history', name: '한국사능력검정', subtitle: '심화 대비'),
+      _LicenseItem(
+        id: 'korean_history',
+        name: '한국사능력검정',
+        subtitle: kKoreanHistoryEnabled ? '심화 대비' : null,
+        ready: kKoreanHistoryEnabled,
+      ),
     ],
   ),
 ];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/feature_flags.dart';
 import '../data/ox_quiz_data.dart';
 import '../theme/app_theme.dart';
 import 'daily_ox_detail_screen.dart';
@@ -6,7 +7,7 @@ import 'daily_ox_detail_screen.dart';
 /// 자격증 필터에 노출할 순서 — 가맹거래사를 기본값으로 먼저 보여준다.
 const _certFilters = [
   ('franchise_broker', '가맹거래사'),
-  ('korean_history', '한국사능력검정'),
+  if (kKoreanHistoryEnabled) ('korean_history', '한국사능력검정'),
 ];
 
 /// 데일리 OX 퀴즈 목록 — 자격증(가맹거래사/한국사능력검정)별로 구분해서 보여주는 게시판.
