@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 
+import 'vertical_rolling_banner.dart';
+
 /// 홈 상단 인트로 영상 — 음소거 자동재생 + 끊김 없는 무한 반복.
-/// 밝기를 살짝 낮추고 위에 검은 그라데이션을 덧대 텍스트/UI와 잘 어울리게 한다.
+/// 영상을 왼쪽으로 정렬해 오른쪽에 생기는 여백에는 세로 롤링배너를 배치한다.
 class IntroVideo extends StatefulWidget {
   const IntroVideo({super.key});
 
@@ -42,49 +44,84 @@ class _IntroVideoState extends State<IntroVideo> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      // 원본 영상 비율(16:9)보다 넓게 잡고 BoxFit.contain으로 표시해, 잘리는 부분 없이
-      // 전체 영상이 다 보이면서 영역 높이만 줄어들게 한다(좌우는 검은 배경과 자연스럽게 이어짐).
       aspectRatio: 21 / 9,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const ColoredBox(color: Colors.black),
-          if (_ready)
-            FittedBox(
-              fit: BoxFit.contain,
-              child: SizedBox(
-                width: _controller.value.size.width,
-                height: _controller.value.size.height,
-                child: VideoPlayer(_controller),
-              ),
-            ),
-          // 영상이 너무 밝지 않도록 살짝 어둡게 + 검은 그라데이션.
-          Positioned.fill(child: ColoredBox(color: Colors.black.withValues(alpha: 0.22))),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.35),
-                    Colors.black.withValues(alpha: 0.05),
-                    Colors.black.withValues(alpha: 0.45),
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final videoAspect = _ready ? _controller.value.aspectRatio : 16 / 9;
+          final videoWidth = (constraints.maxHeight * videoAspect).clamp(0.0, constraints.maxWidth);
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              const ColoredBox(color: Colors.black),
+              // 영상을 왼쪽 끝에 정렬 — 원본 비율 그대로, 잘리지 않게 표시.
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: videoWidth,
+                  height: constraints.maxHeight,
+                  child: _ready
+                      ? FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _controller.value.size.width,
+                            height: _controller.value.size.height,
+                            child: VideoPlayer(_controller),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            right: 14,
-            top: 12,
-            child: Text(
-              'STUDY BOX',
-              style: GoogleFonts.blackHanSans(fontSize: 18, color: Colors.white, letterSpacing: 0.5),
-            ),
-          ),
-        ],
+              // 영상 영역에만 어둡게 + 검은 그라데이션 (오른쪽 배너 영역은 그대로 둠).
+              Positioned(
+                left: 0,
+                top: 0,
+                width: videoWidth,
+                height: constraints.maxHeight,
+                child: IgnorePointer(
+                  child: Stack(
+                    children: [
+                      ColoredBox(color: Colors.black.withValues(alpha: 0.22)),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.35),
+                              Colors.black.withValues(alpha: 0.05),
+                              Colors.black.withValues(alpha: 0.45),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 14,
+                        top: 12,
+                        child: Text(
+                          'STUDY BOX',
+                          style: GoogleFonts.blackHanSans(fontSize: 18, color: Colors.white, letterSpacing: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // 영상 오른쪽 여백 — 세로 롤링배너.
+              Positioned(
+                left: videoWidth,
+                top: 0,
+                right: 0,
+                bottom: 0,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: VerticalRollingBanner(),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
