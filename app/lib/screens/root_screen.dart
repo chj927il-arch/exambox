@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../theme/ott_theme.dart';
 import '../widgets/app_background.dart';
 import '../widgets/marquee_text.dart';
+import 'faq_screen.dart';
 import 'home_screen.dart';
 import 'license_screen.dart';
 import 'mypage_screen.dart';
+import 'notice_screen.dart';
 
 const double _kEncourageBarHeight = 25;
 const double _kTopNavHeight = 46;
-const int _kTabCount = 3;
+const int _kTabCount = 5;
 
 const double _kBottomBarHeight = 52;
 
@@ -21,12 +24,14 @@ class _NavItem {
   const _NavItem(this.icon, this.selectedIcon, this.label, this.tabIndex);
 }
 
-/// 상단 메뉴 — 홈 / 자격증 / 마이페이지 3개. "자격증" 안에서 전문자격사·IT·취업 등으로 분류하고,
-/// 각 자격증(예: 가맹거래사) 하위에 시험소개·시험과목·학습하기가 배치된다.
+/// 상단 메뉴 — 홈 / 자격증 / 공지사항 / FAQ / 마이페이지 5개. "자격증" 안에서 전문자격사·IT·취업 등으로
+/// 분류하고, 각 자격증(예: 가맹거래사) 하위에 시험소개·시험과목·학습하기가 배치된다.
 const _navItems = [
   _NavItem(Icons.home_outlined, Icons.home, '홈', 0),
   _NavItem(Icons.school_outlined, Icons.school, '자격증', 1),
-  _NavItem(Icons.person_outline_rounded, Icons.person_rounded, '마이페이지', 2),
+  _NavItem(Icons.campaign_outlined, Icons.campaign, '공지사항', 2),
+  _NavItem(Icons.help_outline_rounded, Icons.help_rounded, 'FAQ', 3),
+  _NavItem(Icons.person_outline_rounded, Icons.person_rounded, '마이페이지', 4),
 ];
 
 /// 홈 탭 네비게이터의 스택이 루트(홈 화면)인지 추적하는 옵저버.
@@ -66,6 +71,8 @@ class _RootScreenState extends State<RootScreen> {
   static const _tabScreens = [
     HomeScreen(),
     LicenseScreen(),
+    NoticeScreen(),
+    FaqScreen(),
     MyPageScreen(),
   ];
 
@@ -99,28 +106,30 @@ class _RootScreenState extends State<RootScreen> {
     return isDesktop ? _buildDesktop(context) : _buildMobile(context);
   }
 
-  /// PC/데스크톱(900 이상) — 왼쪽 사이드 내비게이션 + 가운데 정렬된 콘텐츠(폰 폭 유지).
+  /// PC/데스크톱(900 이상) — 일반 웹사이트처럼 상단에 가로로 긴 헤더(로고+메뉴) +
+  /// 화면 폭에 맞춰 넓게 펼쳐지는 콘텐츠(최대 1200까지, 사이드바 없음).
   Widget _buildDesktop(BuildContext context) {
+    final isHome = _tabIndex == 0;
     return Scaffold(
-      body: Row(
-        children: [
-          _SideNavRail(
-            selectedIndex: _tabIndex,
-            onSelected: _onDestinationSelected,
-            onStudyTap: _goToLicenseTab,
-          ),
-          Expanded(
-            child: ColoredBox(
-              color: AppColors.trackBg,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 640),
-                  child: ColoredBox(
-                    color: AppColors.bgBase,
-                    child: SafeArea(
+      body: ColoredBox(
+        color: isHome ? OttColors.bg : AppColors.trackBg,
+        child: SafeArea(
+          child: Column(
+            children: [
+              _DesktopHeader(
+                selectedIndex: _tabIndex,
+                onSelected: _onDestinationSelected,
+                dark: isHome,
+              ),
+              Expanded(
+                child: ColoredBox(
+                  color: isHome ? OttColors.bg : AppColors.bgBase,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
                       child: Column(
                         children: [
-                          if (_tabIndex == 0) const _EncourageBar(),
+                          if (isHome) const _EncourageBar(),
                           Expanded(
                             child: IndexedStack(
                               index: _tabIndex,
@@ -133,9 +142,9 @@ class _RootScreenState extends State<RootScreen> {
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -143,8 +152,9 @@ class _RootScreenState extends State<RootScreen> {
   /// 폰/태블릿(900 미만) — 기존 상단 탭 + 하단 "학습하러가기" 바 레이아웃.
   Widget _buildMobile(BuildContext context) {
     const titleBarHeight = 84.0;
-    final showEncourage = _tabIndex == 0;
-    final showTitle = _tabIndex == 0;
+    final isHome = _tabIndex == 0;
+    final showEncourage = isHome;
+    final showTitle = isHome;
 
     return Scaffold(
       appBar: PreferredSize(
@@ -160,6 +170,7 @@ class _RootScreenState extends State<RootScreen> {
               if (showTitle)
                 AppBar(
                   toolbarHeight: titleBarHeight,
+                  backgroundColor: OttColors.bg,
                   title: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Column(
@@ -169,7 +180,7 @@ class _RootScreenState extends State<RootScreen> {
                         'STUDY BOX',
                         style: GoogleFonts.blackHanSans(
                           fontSize: 34,
-                          color: AppColors.textPrimary,
+                          color: OttColors.textPrimary,
                           letterSpacing: 0.5,
                           height: 0.95,
                         ),
@@ -178,7 +189,7 @@ class _RootScreenState extends State<RootScreen> {
                         offset: const Offset(0, -6),
                         child: const Text(
                           '바쁜 일상, 가장 스마트하게, 가장 콤팩트하게.',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: AppColors.textSecondary),
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: OttColors.textSecondary),
                         ),
                       ),
                     ],
@@ -190,102 +201,103 @@ class _RootScreenState extends State<RootScreen> {
           ),
         ),
       ),
-      body: AppBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              _TopNavBar(selectedIndex: _tabIndex, onSelected: _onDestinationSelected),
-              Expanded(
-                child: IndexedStack(
-                  index: _tabIndex,
-                  children: List.generate(_kTabCount, _buildTabNavigator),
+      body: isHome
+          ? ColoredBox(
+              color: OttColors.bg,
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    _TopNavBar(selectedIndex: _tabIndex, onSelected: _onDestinationSelected, dark: true),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _tabIndex,
+                        children: List.generate(_kTabCount, _buildTabNavigator),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            )
+          : AppBackground(
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    _TopNavBar(selectedIndex: _tabIndex, onSelected: _onDestinationSelected, dark: false),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _tabIndex,
+                        children: List.generate(_kTabCount, _buildTabNavigator),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
       bottomNavigationBar:
           _tabIndex == 0 && _homeAtRoot ? _BottomStudyBar(onTap: _goToLicenseTab) : null,
     );
   }
 }
 
-/// 데스크톱 전용 왼쪽 사이드 내비게이션 — 로고/태그라인 + 탭 메뉴 + 하단 "학습하러가기" 버튼.
-class _SideNavRail extends StatelessWidget {
+/// 데스크톱 전용 상단 헤더 — 일반 웹사이트처럼 화면 폭 전체를 가로지르는 가로형 내비게이션.
+/// 로고(왼쪽) + 메뉴(홈/자격증/마이페이지).
+class _DesktopHeader extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
-  final VoidCallback onStudyTap;
-  const _SideNavRail({required this.selectedIndex, required this.onSelected, required this.onStudyTap});
+  final bool dark;
+  const _DesktopHeader({
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.dark,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bg = dark ? OttColors.bg : AppColors.bgBase;
+    final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
+    final textPrimary = dark ? OttColors.textPrimary : AppColors.textPrimary;
+    final textSecondary = dark ? OttColors.textSecondary : AppColors.textSecondary;
+    final accent = dark ? OttColors.accentStart : AppColors.primary;
+
     return Container(
-      width: 248,
-      decoration: BoxDecoration(
-        color: AppColors.bgBase,
-        border: Border(right: BorderSide(color: AppColors.glassBorder.withValues(alpha: 0.8))),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'STUDY BOX',
-            style: GoogleFonts.blackHanSans(fontSize: 28, color: AppColors.textPrimary, letterSpacing: 0.5),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            '가맹거래사 1차 시험대비',
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 36),
-          ..._navItems.map((item) {
-            final selected = item.tabIndex == selectedIndex;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Material(
-                color: selected ? AppColors.primary.withValues(alpha: 0.10) : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () => onSelected(item.tabIndex),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    child: Row(
-                      children: [
-                        Icon(
-                          selected ? item.selectedIcon : item.icon,
-                          size: 20,
-                          color: selected ? AppColors.primary : AppColors.textMuted,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          item.label,
-                          style: TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                            color: selected ? AppColors.primary : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+      width: double.infinity,
+      height: 68,
+      decoration: BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: border))),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Text(
+                  'STUDY BOX',
+                  style: GoogleFonts.blackHanSans(fontSize: 22, color: textPrimary, letterSpacing: 0.5),
                 ),
-              ),
-            );
-          }),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: onStudyTap,
-              icon: const Icon(Icons.auto_stories_rounded, size: 18),
-              label: const Text('지금 학습하러가기'),
+                const SizedBox(width: 44),
+                ..._navItems.map((item) {
+                  final selected = item.tabIndex == selectedIndex;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 32),
+                    child: InkWell(
+                      onTap: () => onSelected(item.tabIndex),
+                      child: Text(
+                        item.label,
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                          color: selected ? accent : textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -295,21 +307,27 @@ class _SideNavRail extends StatelessWidget {
 class _TopNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
-  const _TopNavBar({required this.selectedIndex, required this.onSelected});
+  final bool dark;
+  const _TopNavBar({required this.selectedIndex, required this.onSelected, required this.dark});
 
   @override
   Widget build(BuildContext context) {
+    final bg = dark ? OttColors.bg : AppColors.bgBase;
+    final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
+    final accent = dark ? OttColors.accentStart : AppColors.primary;
+    final muted = dark ? OttColors.textMuted : AppColors.textMuted;
+
     return Container(
       height: _kTopNavHeight,
       decoration: BoxDecoration(
-        color: AppColors.bgBase,
-        border: Border(bottom: BorderSide(color: AppColors.glassBorder.withValues(alpha: 0.8))),
+        color: bg,
+        border: Border(bottom: BorderSide(color: border)),
       ),
       child: Row(
         children: List.generate(_navItems.length, (i) {
           final item = _navItems[i];
           final selected = item.tabIndex == selectedIndex;
-          final color = selected ? AppColors.primary : AppColors.textMuted;
+          final color = selected ? accent : muted;
           return Expanded(
             child: Material(
               color: Colors.transparent,
@@ -333,7 +351,7 @@ class _TopNavBar extends StatelessWidget {
                       height: 2.5,
                       width: 28,
                       decoration: BoxDecoration(
-                        color: selected ? AppColors.primary : Colors.transparent,
+                        color: selected ? accent : Colors.transparent,
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -355,14 +373,19 @@ class _EncourageBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 데스크톱(넓은 화면)에서는 바가 상대적으로 너무 얇아 보여 높이/글자 크기를 함께 키운다.
+    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+    final height = isDesktop ? 34.0 : _kEncourageBarHeight;
+    final fontSize = isDesktop ? 17.0 : 14.0;
+
     return Container(
       width: double.infinity,
-      height: _kEncourageBarHeight,
+      height: height,
       color: AppColors.primary,
       child: MarqueeText(
         text: '스터디박스를 켜는 순간 합격이 가까워집니다.',
-        style: GoogleFonts.blackHanSans(color: Colors.white, fontSize: 14, letterSpacing: -0.1),
-        height: _kEncourageBarHeight,
+        style: GoogleFonts.blackHanSans(color: Colors.white, fontSize: fontSize, letterSpacing: -0.1),
+        height: height,
         gap: 24,
       ),
     );

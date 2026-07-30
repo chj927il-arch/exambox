@@ -20,12 +20,13 @@ class FaqScreen extends StatelessWidget {
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.glassBorder),
               ),
               clipBehavior: Clip.antiAlias,
-              child: ExpansionTile(
+              child: Material(
+                color: Colors.white,
+                child: ExpansionTile(
                 iconColor: AppColors.primary,
                 collapsedIconColor: AppColors.textMuted,
                 title: Row(
@@ -51,6 +52,7 @@ class FaqScreen extends StatelessWidget {
                     ],
                   ),
                 ],
+              ),
               ),
             ),
           );

@@ -30,8 +30,15 @@ const _defaultBanners = [
 /// 홈 상단 프로모션/광고 영역 — 3개 배너를 자동으로 롤링하는 캐러셀.
 class RollingBanner extends StatefulWidget {
   final List<BannerItem> banners;
+  final Color activeDotColor;
+  final Color inactiveDotColor;
 
-  const RollingBanner({super.key, this.banners = _defaultBanners});
+  const RollingBanner({
+    super.key,
+    this.banners = _defaultBanners,
+    this.activeDotColor = AppColors.primary,
+    this.inactiveDotColor = AppColors.trackBg,
+  });
 
   @override
   State<RollingBanner> createState() => _RollingBannerState();
@@ -85,7 +92,7 @@ class _RollingBannerState extends State<RollingBanner> {
               width: active ? 16 : 6,
               height: 6,
               decoration: BoxDecoration(
-                color: active ? AppColors.primary : AppColors.trackBg,
+                color: active ? widget.activeDotColor : widget.inactiveDotColor,
                 borderRadius: BorderRadius.circular(999),
               ),
             );

@@ -67,38 +67,45 @@ class _MarqueeTextState extends State<MarqueeText> with SingleTickerProviderStat
       child: SizedBox(
         height: widget.height,
         width: double.infinity,
-        child: Stack(
-          clipBehavior: Clip.hardEdge,
-          children: [
-            if (unit == null)
-              // 최초 1회, 화면에 보이지 않게 실제 렌더 크기를 측정하기 위한 패스
-              Opacity(
-                opacity: 0,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: KeyedSubtree(key: _measureKey, child: _buildCopy()),
-                ),
-              )
-            else
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  final dx = -_controller.value * unit;
-                  return Stack(
-                    clipBehavior: Clip.hardEdge,
-                    children: [
-                      for (final offset in [dx, dx + unit, dx + unit * 2, dx + unit * 3])
-                        Positioned(
-                          left: offset,
-                          top: 0,
-                          bottom: 0,
-                          child: Align(alignment: Alignment.centerLeft, child: _buildCopy()),
-                        ),
-                    ],
-                  );
-                },
-              ),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              clipBehavior: Clip.hardEdge,
+              children: [
+                if (unit == null)
+                  // 최초 1회, 화면에 보이지 않게 실제 렌더 크기를 측정하기 위한 패스
+                  Opacity(
+                    opacity: 0,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: KeyedSubtree(key: _measureKey, child: _buildCopy()),
+                    ),
+                  )
+                else
+                  AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      final dx = -_controller.value * unit;
+                      // 컨테이너 폭(넓은 데스크톱 화면 포함)을 끊김 없이 덮을 만큼 복사본 개수를 계산한다.
+                      final visibleWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : unit * 4;
+                      final copies = (visibleWidth / unit).ceil() + 2;
+                      return Stack(
+                        clipBehavior: Clip.hardEdge,
+                        children: [
+                          for (var i = 0; i < copies; i++)
+                            Positioned(
+                              left: dx + unit * i,
+                              top: 0,
+                              bottom: 0,
+                              child: Align(alignment: Alignment.centerLeft, child: _buildCopy()),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
