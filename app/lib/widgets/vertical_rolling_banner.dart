@@ -24,10 +24,10 @@ class _VerticalRollingBannerState extends State<VerticalRollingBanner> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
       final next = (_page + 1) % _slides.length;
-      _controller.animateToPage(next, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+      _controller.animateToPage(next, duration: const Duration(milliseconds: 650), curve: Curves.easeOut);
     });
   }
 

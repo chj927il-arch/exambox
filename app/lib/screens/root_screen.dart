@@ -12,7 +12,7 @@ import 'notice_screen.dart';
 const double _kTopNavHeight = 46;
 const int _kTabCount = 5;
 
-const double _kBottomBarHeight = 52;
+const double _kBottomBarHeight = 46;
 
 class _NavItem {
   final IconData icon;
@@ -158,6 +158,35 @@ class _RootScreenState extends State<RootScreen> {
                 AppBar(
                   toolbarHeight: titleBarHeight,
                   backgroundColor: OttColors.bg,
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
+                            ),
+                            child: const Text(
+                              '회원가입',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: OttColors.textSecondary),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          InkWell(
+                            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
+                            ),
+                            child: const Text(
+                              '로그인',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: OttColors.textSecondary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   title: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Column(
@@ -454,12 +483,12 @@ class _BottomStudyBarState extends State<_BottomStudyBar> with SingleTickerProvi
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 23),
-                const SizedBox(width: 8),
+                const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 7),
                 Text(
                   '지금 학습 시작하기',
                   style: GoogleFonts.blackHanSans(
-                    fontSize: 24,
+                    fontSize: 21,
                     color: Colors.white,
                     letterSpacing: -0.2,
                   ),
