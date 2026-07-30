@@ -130,7 +130,7 @@ class _HeroBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     final titleSize = isDesktop ? 40.0 : 23.0;
-    final subtitleSize = isDesktop ? 40.0 : 14.0;
+    final subtitleSize = isDesktop ? 24.0 : 14.0;
 
     return Container(
       width: double.infinity,
