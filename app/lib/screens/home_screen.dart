@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
 import '../models/exam_subject.dart';
-import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
@@ -24,13 +23,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 데스크톱은 영상이 화면 맨 위(y=0)에서 시작해 투명 헤더가 그 위에 떠 있는 형태라
-    // 영상을 맨 먼저 배치하고 위쪽 여백도 없앤다.
-    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+    // 영상이 화면 맨 위(y=0)에서 시작해 투명 헤더가 그 위에 떠 있는 형태라
+    // 영상을 맨 먼저 배치하고 위쪽 여백도 없앤다. (모바일도 동일하게 영상 히어로를 사용)
     return ColoredBox(
       color: OttColors.bg,
       child: ListView(
-        padding: EdgeInsets.only(top: isDesktop ? 0 : 14, bottom: 28),
+        padding: const EdgeInsets.only(top: 0, bottom: 28),
         children: [
           VideoStripBanner(
             navSelectedIndex: navSelectedIndex,
@@ -41,9 +39,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          if (!isDesktop) ...[
-            const _MobileHeroBanner(),
-          ],
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -89,78 +84,6 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 10),
           const _ReviewCarousel(),
         ],
-      ),
-    );
-  }
-}
-
-/// 모바일 전용 히어로 배너 — 데스크톱은 영상 자체에 타이틀/CTA가 있어 필요 없고,
-/// 모바일은 영상이 없으므로 이전 버전의 제목+CTA를 그대로 유지한다.
-class _MobileHeroBanner extends StatelessWidget {
-  const _MobileHeroBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1B1240), Color(0xFF141B33), OttColors.bg],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '가맹거래사 1차 시험',
-              style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: Colors.white),
-            ),
-            const SizedBox(height: 6),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '가장 스마트하게, 가장 콤팩트하게 준비하세요',
-                  maxLines: 1,
-                  softWrap: false,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 22),
-            GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
-                ),
-              ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.play_arrow_rounded, color: Colors.white, size: 19),
-                    SizedBox(width: 5),
-                    Text(
-                      '지금 학습 시작하기',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

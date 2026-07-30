@@ -7,10 +7,9 @@ import 'package:video_player/video_player.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import 'nav_items.dart';
-import 'rolling_banner.dart';
 
-/// 쿠팡플레이 스타일 히어로 — 데스크톱에서만 영상을 화면 폭 전체(가장자리 없이)로 재생하고,
-/// 모바일에서는 영상 없이 배너 4개를 합친 가로 롤링배너만 보여준다.
+/// 쿠팡플레이 스타일 히어로 — 모바일/데스크톱 모두 영상을 화면 폭 전체(가장자리 없이)로 재생하고,
+/// 그 위에 타이틀·CTA·메뉴를 오버레이한다. 모바일은 폰트/여백/영상 비율만 더 작게 조정한다.
 class VideoStripBanner extends StatefulWidget {
   final String videoAsset;
   final double aspectRatio;
@@ -38,8 +37,7 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    if (isDesktop && _controller == null) {
+    if (_controller == null) {
       _initVideo();
     }
   }
@@ -68,8 +66,11 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
     super.dispose();
   }
 
-  Widget _videoBox() {
+  Widget _videoBox(bool isDesktop) {
     final controller = _controller;
+    final titlePad = isDesktop ? 28.0 : 16.0;
+    final ctaPad = isDesktop ? 24.0 : 16.0;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -104,32 +105,67 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
             ),
           ),
         ),
-        Positioned(
-          left: 28,
-          top: 26,
-          child: Text(
-            'STUDY BOX - 나만의 화면 속, 합격 상자가 열린다',
-            style: GoogleFonts.blackHanSans(
-              fontSize: 22,
-              color: Colors.white,
-              letterSpacing: 0.3,
-              shadows: [
-                Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
-                Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
+        if (isDesktop)
+          Positioned(
+            left: titlePad,
+            top: 26,
+            right: titlePad,
+            child: Text(
+              'STUDY BOX - 나만의 화면 속, 합격 상자가 열린다',
+              maxLines: 1,
+              style: GoogleFonts.blackHanSans(
+                fontSize: 22,
+                color: Colors.white,
+                letterSpacing: 0.3,
+                shadows: [
+                  Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
+                  Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
+                ],
+              ),
+            ),
+          )
+        else
+          // 모바일은 화면이 좁아 타이틀과 메뉴를 좌측 상단에 세로로 쌓아 겹치지 않게 한다.
+          Positioned(
+            left: titlePad,
+            top: 14,
+            right: titlePad,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'STUDY BOX - 나만의 화면 속, 합격 상자가 열린다',
+                  maxLines: 2,
+                  style: GoogleFonts.blackHanSans(
+                    fontSize: 15,
+                    color: Colors.white,
+                    letterSpacing: 0.3,
+                    shadows: [
+                      Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
+                      Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _HeroNavRow(
+                  selectedIndex: widget.navSelectedIndex,
+                  onSelected: widget.onNavSelected,
+                  compact: true,
+                ),
               ],
             ),
           ),
-        ),
         Positioned(
-          right: 24,
-          bottom: 28,
+          right: ctaPad,
+          bottom: isDesktop ? 28 : 16,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: widget.onCtaTap,
               borderRadius: BorderRadius.circular(14),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16, vertical: isDesktop ? 14 : 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -138,11 +174,15 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.play_arrow_rounded, color: OttColors.accentStart, size: 22),
+                    Icon(Icons.play_arrow_rounded, color: OttColors.accentStart, size: isDesktop ? 22 : 18),
                     const SizedBox(width: 6),
                     Text(
                       '지금 학습 시작하기',
-                      style: GoogleFonts.notoSansKr(color: const Color(0xFF1B1240), fontWeight: FontWeight.w800, fontSize: 16),
+                      style: GoogleFonts.notoSansKr(
+                        color: const Color(0xFF1B1240),
+                        fontWeight: FontWeight.w800,
+                        fontSize: isDesktop ? 16 : 13,
+                      ),
                     ),
                   ],
                 ),
@@ -150,61 +190,27 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
             ),
           ),
         ),
-        Positioned(
-          right: 24,
-          top: 24,
-          child: _HeroNavRow(selectedIndex: widget.navSelectedIndex, onSelected: widget.onNavSelected),
-        ),
+        if (isDesktop)
+          Positioned(
+            right: 24,
+            top: 24,
+            child: _HeroNavRow(
+              selectedIndex: widget.navSelectedIndex,
+              onSelected: widget.onNavSelected,
+              compact: false,
+            ),
+          ),
       ],
     );
   }
 
-  static const _mobileBanners = [
-    BannerItem(
-      title: '배너 1',
-      subtitle: '준비 중인 프로모션 영역',
-      icon: Icons.campaign_outlined,
-      gradient: [Color(0xFF1B1240), Color(0xFF3B2E6E)],
-    ),
-    BannerItem(
-      title: '배너 2',
-      subtitle: '준비 중인 프로모션 영역',
-      icon: Icons.campaign_outlined,
-      gradient: [Color(0xFF141B33), Color(0xFF2A3B66)],
-    ),
-    BannerItem(
-      title: '배너 3',
-      subtitle: '준비 중인 프로모션 영역',
-      icon: Icons.campaign_outlined,
-      gradient: [Color(0xFF232B45), Color(0xFF1B1240)],
-    ),
-    BannerItem(
-      title: '배너 4',
-      subtitle: '준비 중인 프로모션 영역',
-      icon: Icons.campaign_outlined,
-      gradient: [Color(0xFF1B1240), Color(0xFF2A3B66)],
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    if (!isDesktop) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: RollingBanner(
-          activeDotColor: OttColors.accentStart,
-          inactiveDotColor: OttColors.border,
-          aspectRatio: 5.2,
-          banners: _mobileBanners,
-        ),
-      );
-    }
-
     return ClipRect(
       child: AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: ColoredBox(color: Colors.black, child: _videoBox()),
+        aspectRatio: isDesktop ? widget.aspectRatio : 16 / 9,
+        child: ColoredBox(color: Colors.black, child: _videoBox(isDesktop)),
       ),
     );
   }
@@ -215,21 +221,22 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
 class _HeroNavRow extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
-  const _HeroNavRow({required this.selectedIndex, required this.onSelected});
+  final bool compact;
+  const _HeroNavRow({required this.selectedIndex, required this.onSelected, this.compact = false});
 
   Widget _pill(BuildContext context, String label, {required bool selected, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 14, vertical: compact ? 6 : 8),
         decoration: BoxDecoration(
           color: selected ? OttColors.accentStart : Colors.black.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+          style: TextStyle(fontSize: compact ? 11 : 13, fontWeight: FontWeight.w700, color: Colors.white),
         ),
       ),
     );
