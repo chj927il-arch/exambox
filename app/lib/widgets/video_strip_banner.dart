@@ -102,17 +102,28 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
         Positioned(
           left: 28,
           top: 26,
-          child: Text(
-            '나만의 화면 속,\n합격 상자가 열린다.\nSTUDY BOX',
-            style: GoogleFonts.blackHanSans(
-              fontSize: 40,
-              color: Colors.white,
-              letterSpacing: 0.3,
-              height: 1.3,
-              shadows: [
-                Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
-                Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
-              ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.black.withValues(alpha: 0.55), Colors.black.withValues(alpha: 0.25)],
+              ),
+            ),
+            child: Text(
+              '나만의 화면 속,\n합격 상자가 열린다.\nSTUDY BOX',
+              style: GoogleFonts.blackHanSans(
+                fontSize: 40,
+                color: Colors.white,
+                letterSpacing: 0.3,
+                height: 1.3,
+                shadows: [
+                  Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
+                  Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
+                ],
+              ),
             ),
           ),
         ),
