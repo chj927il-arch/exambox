@@ -95,6 +95,53 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+    return isDesktop ? _buildDesktop(context) : _buildMobile(context);
+  }
+
+  /// PC/데스크톱(900 이상) — 왼쪽 사이드 내비게이션 + 가운데 정렬된 콘텐츠(폰 폭 유지).
+  Widget _buildDesktop(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          _SideNavRail(
+            selectedIndex: _tabIndex,
+            onSelected: _onDestinationSelected,
+            onStudyTap: _goToLicenseTab,
+          ),
+          Expanded(
+            child: ColoredBox(
+              color: AppColors.trackBg,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 640),
+                  child: ColoredBox(
+                    color: AppColors.bgBase,
+                    child: SafeArea(
+                      child: Column(
+                        children: [
+                          if (_tabIndex == 0) const _EncourageBar(),
+                          Expanded(
+                            child: IndexedStack(
+                              index: _tabIndex,
+                              children: List.generate(_kTabCount, _buildTabNavigator),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 폰/태블릿(900 미만) — 기존 상단 탭 + 하단 "학습하러가기" 바 레이아웃.
+  Widget _buildMobile(BuildContext context) {
     const titleBarHeight = 84.0;
     final showEncourage = _tabIndex == 0;
     final showTitle = _tabIndex == 0;
@@ -161,6 +208,85 @@ class _RootScreenState extends State<RootScreen> {
       ),
       bottomNavigationBar:
           _tabIndex == 0 && _homeAtRoot ? _BottomStudyBar(onTap: _goToLicenseTab) : null,
+    );
+  }
+}
+
+/// 데스크톱 전용 왼쪽 사이드 내비게이션 — 로고/태그라인 + 탭 메뉴 + 하단 "학습하러가기" 버튼.
+class _SideNavRail extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final VoidCallback onStudyTap;
+  const _SideNavRail({required this.selectedIndex, required this.onSelected, required this.onStudyTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 248,
+      decoration: BoxDecoration(
+        color: AppColors.bgBase,
+        border: Border(right: BorderSide(color: AppColors.glassBorder.withValues(alpha: 0.8))),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'STUDY BOX',
+            style: GoogleFonts.blackHanSans(fontSize: 28, color: AppColors.textPrimary, letterSpacing: 0.5),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            '가맹거래사 1차 시험대비',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 36),
+          ..._navItems.map((item) {
+            final selected = item.tabIndex == selectedIndex;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Material(
+                color: selected ? AppColors.primary.withValues(alpha: 0.10) : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => onSelected(item.tabIndex),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          selected ? item.selectedIcon : item.icon,
+                          size: 20,
+                          color: selected ? AppColors.primary : AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                            color: selected ? AppColors.primary : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onStudyTap,
+              icon: const Icon(Icons.auto_stories_rounded, size: 18),
+              label: const Text('지금 학습하러가기'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

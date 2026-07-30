@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// 이 폭(가로) 이상이면 PC/데스크톱 레이아웃(사이드 내비게이션)으로 전환한다.
+const double kDesktopBreakpoint = 900;
+
 /// 화이트 배경 + 블랙 텍스트 + 네이비 키컬러의 신뢰감 있는 라이트 테마.
 class AppColors {
   AppColors._();

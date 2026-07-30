@@ -63,9 +63,22 @@ class LicenseScreen extends StatefulWidget {
 class _LicenseScreenState extends State<LicenseScreen> {
   int _categoryIndex = 0;
 
+  /// kOtherCertsEnabled가 false면 카테고리 구분 없이 가맹거래사 하나만 보여준다.
+  List<_LicenseCategory> get _visibleCategories {
+    if (kOtherCertsEnabled) return _categories;
+    return [
+      _LicenseCategory(
+        name: _categories.first.name,
+        icon: _categories.first.icon,
+        items: [_categories.first.items.first],
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final category = _categories[_categoryIndex];
+    final categories = _visibleCategories;
+    final category = categories[_categoryIndex.clamp(0, categories.length - 1)];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -75,47 +88,48 @@ class _LicenseScreenState extends State<LicenseScreen> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
         ),
         const SizedBox(height: 4),
-        const Text(
-          '분야를 선택하면 관련 자격증을 볼 수 있어요',
-          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w400, color: AppColors.textSecondary),
+        Text(
+          kOtherCertsEnabled ? '분야를 선택하면 관련 자격증을 볼 수 있어요' : '가맹거래사 1차 시험대비',
+          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w400, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: List.generate(_categories.length, (i) {
-            final selected = i == _categoryIndex;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: i == _categories.length - 1 ? 0 : 8),
-                child: GestureDetector(
-                  onTap: () => setState(() => _categoryIndex = i),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: selected ? AppColors.primary : Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: selected ? AppColors.primary : AppColors.glassBorder),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(_categories[i].icon, size: 20, color: selected ? Colors.white : AppColors.textMuted),
-                        const SizedBox(height: 4),
-                        Text(
-                          _categories[i].name,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: selected ? Colors.white : AppColors.textSecondary,
+        if (kOtherCertsEnabled)
+          Row(
+            children: List.generate(categories.length, (i) {
+              final selected = i == _categoryIndex;
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i == categories.length - 1 ? 0 : 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _categoryIndex = i),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: selected ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: selected ? AppColors.primary : AppColors.glassBorder),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(categories[i].icon, size: 20, color: selected ? Colors.white : AppColors.textMuted),
+                          const SizedBox(height: 4),
+                          Text(
+                            categories[i].name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: selected ? Colors.white : AppColors.textSecondary,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 20),
+              );
+            }),
+          ),
+        if (kOtherCertsEnabled) const SizedBox(height: 20),
         ...category.items.map(
           (item) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
