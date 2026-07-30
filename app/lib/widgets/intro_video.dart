@@ -5,8 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 
 import '../theme/app_theme.dart';
-import '../theme/ott_theme.dart';
-import 'rolling_banner.dart';
 import 'vertical_rolling_banner.dart';
 
 /// 홈 상단 인트로 영상 — 음소거 자동재생 + 끊김 없는 무한 반복.
@@ -152,43 +150,14 @@ class _IntroVideoState extends State<IntroVideo> {
     );
   }
 
-  /// 모바일 — 영상을 전체 폭(16:9)으로 두고, 그 아래에 가로로 넘어가는 롤링배너.
+  /// 모바일 — 영상을 전체 폭(16:9)으로 표시. 롤링배너는 홈 화면 상단(응원바 아래)에서 별도로 노출된다.
   Widget _buildMobile() {
-    return Column(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: _videoSurface(titleFontSize: 14),
-          ),
-        ),
-        const SizedBox(height: 10),
-        RollingBanner(
-          activeDotColor: OttColors.accentStart,
-          inactiveDotColor: OttColors.border,
-          banners: const [
-            BannerItem(
-              title: '배너 1',
-              subtitle: '준비 중인 프로모션 영역',
-              icon: Icons.campaign_outlined,
-              gradient: [Color(0xFF1B1240), Color(0xFF3B2E6E)],
-            ),
-            BannerItem(
-              title: '배너 2',
-              subtitle: '준비 중인 프로모션 영역',
-              icon: Icons.campaign_outlined,
-              gradient: [Color(0xFF141B33), Color(0xFF2A3B66)],
-            ),
-            BannerItem(
-              title: '배너 3',
-              subtitle: '준비 중인 프로모션 영역',
-              icon: Icons.campaign_outlined,
-              gradient: [Color(0xFF232B45), Color(0xFF1B1240)],
-            ),
-          ],
-        ),
-      ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: _videoSurface(titleFontSize: 14),
+      ),
     );
   }
 }
