@@ -13,11 +13,13 @@ import 'rolling_banner.dart';
 class VideoStripBanner extends StatefulWidget {
   final String videoAsset;
   final double aspectRatio;
+  final VoidCallback? onCtaTap;
 
   const VideoStripBanner({
     super.key,
     this.videoAsset = 'assets/videos/studybox_intro.mp4',
     this.aspectRatio = 3.6,
+    this.onCtaTap,
   });
 
   @override
@@ -83,22 +85,54 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.32),
+                  Colors.black.withValues(alpha: 0.4),
                   Colors.black.withValues(alpha: 0.0),
                   Colors.black.withValues(alpha: 0.0),
-                  Colors.black.withValues(alpha: 0.32),
+                  OttColors.bg.withValues(alpha: 0.9),
                 ],
-                stops: const [0.0, 0.25, 0.75, 1.0],
+                stops: const [0.0, 0.22, 0.62, 1.0],
               ),
             ),
           ),
         ),
         Positioned(
-          right: 12,
-          top: 10,
+          left: 24,
+          top: 20,
           child: Text(
-            'STUDY BOX',
-            style: GoogleFonts.blackHanSans(fontSize: 13, color: Colors.white, letterSpacing: 0.5),
+            '나만의 화면 속,\n합격 상자가 열린다.\nSTUDY BOX',
+            style: GoogleFonts.blackHanSans(
+              fontSize: 26,
+              color: Colors.white,
+              letterSpacing: 0.3,
+              height: 1.35,
+              shadows: [Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 12)],
+            ),
+          ),
+        ),
+        Positioned(
+          right: 20,
+          bottom: 24,
+          child: GestureDetector(
+            onTap: widget.onCtaTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
+                borderRadius: BorderRadius.circular(13),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 19),
+                  SizedBox(width: 5),
+                  Text(
+                    '지금 학습 시작하기',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],

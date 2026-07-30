@@ -283,6 +283,46 @@ class _DesktopHeader extends StatelessWidget {
     this.transparent = false,
   });
 
+  /// 투명(영상 위 오버레이) 모드에서는 쿠팡플레이처럼 각 메뉴를 모서리 둥근 불투명 박스로 감싼다.
+  /// 불투명 헤더 모드에서는 기존처럼 텍스트만 보여준다.
+  Widget _navLabel(
+    BuildContext context,
+    String label, {
+    required bool selected,
+    required VoidCallback onTap,
+    required Color textSecondary,
+    required Color accent,
+  }) {
+    if (!transparent) {
+      return InkWell(
+        onTap: onTap,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+            color: selected ? accent : textSecondary,
+          ),
+        ),
+      );
+    }
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: selected ? accent : Colors.black.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bg = dark ? OttColors.bg : AppColors.bgBase;
@@ -314,59 +354,55 @@ class _DesktopHeader extends StatelessWidget {
                   'STUDY BOX',
                   style: GoogleFonts.blackHanSans(fontSize: 22, color: textPrimary, letterSpacing: 0.5),
                 ),
-                const SizedBox(width: 44),
+                const SizedBox(width: 32),
                 // 마이페이지는 왼쪽 탭이 아니라 오른쪽 회원가입/로그인 옆으로 이동.
                 ..._navItems.where((item) => item.label != '마이페이지').map((item) {
                   final selected = item.tabIndex == selectedIndex;
                   return Padding(
-                    padding: const EdgeInsets.only(right: 32),
-                    child: InkWell(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: _navLabel(
+                      context,
+                      item.label,
+                      selected: selected,
                       onTap: () => onSelected(item.tabIndex),
-                      child: Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                          color: selected ? accent : textSecondary,
-                        ),
-                      ),
+                      textSecondary: textSecondary,
+                      accent: accent,
                     ),
                   );
                 }),
                 const Spacer(),
-                InkWell(
+                _navLabel(
+                  context,
+                  '회원가입',
+                  selected: false,
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
                   ),
-                  child: Text(
-                    '회원가입',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textSecondary),
-                  ),
+                  textSecondary: textSecondary,
+                  accent: accent,
                 ),
-                const SizedBox(width: 20),
-                InkWell(
+                const SizedBox(width: 12),
+                _navLabel(
+                  context,
+                  '로그인',
+                  selected: false,
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
                   ),
-                  child: Text(
-                    '로그인',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textSecondary),
-                  ),
+                  textSecondary: textSecondary,
+                  accent: accent,
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 12),
                 Builder(builder: (context) {
                   final myPage = _navItems.firstWhere((item) => item.label == '마이페이지');
                   final selected = myPage.tabIndex == selectedIndex;
-                  return InkWell(
+                  return _navLabel(
+                    context,
+                    myPage.label,
+                    selected: selected,
                     onTap: () => onSelected(myPage.tabIndex),
-                    child: Text(
-                      myPage.label,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
-                        color: selected ? accent : textSecondary,
-                      ),
-                    ),
+                    textSecondary: textSecondary,
+                    accent: accent,
                   );
                 }),
               ],
