@@ -137,11 +137,9 @@ class _HeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    final titleSize = isDesktop ? 17.0 : 15.0;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -149,6 +147,14 @@ class _HeroBanner extends StatelessWidget {
           colors: [Color(0xFF1B1240), Color(0xFF141B33), OttColors.bg],
         ),
       ),
+      child: isDesktop ? _buildDesktop(context) : _buildMobile(context),
+    );
+  }
+
+  /// 데스크톱 — 제목+부제를 한 줄로 합치고 끝에 CTA 버튼을 인라인 배치해 배너 높이를 줄인다.
+  Widget _buildDesktop(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
           Expanded(
@@ -156,36 +162,72 @@ class _HeroBanner extends StatelessWidget {
               '가맹거래사 1차 시험 — 가장 스마트하게, 가장 콤팩트하게 준비하세요',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.2),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.2),
             ),
           ),
           const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
-              ),
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 17),
-                  SizedBox(width: 4),
-                  Text(
-                    '지금 학습 시작하기',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
-                  ),
-                ],
+          _ctaButton(context, compact: true),
+        ],
+      ),
+    );
+  }
+
+  /// 모바일 — 이전 버전 그대로: 제목/부제 두 줄 + 전체 폭 CTA 버튼.
+  Widget _buildMobile(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '가맹거래사 1차 시험',
+            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: Colors.white),
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '가장 스마트하게, 가장 콤팩트하게 준비하세요',
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
               ),
             ),
           ),
+          const SizedBox(height: 22),
+          _ctaButton(context),
         ],
+      ),
+    );
+  }
+
+  Widget _ctaButton(BuildContext context, {bool compact = false}) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
+        ),
+      ),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: compact ? 16 : 22, vertical: compact ? 10 : 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
+          borderRadius: BorderRadius.circular(compact ? 12 : 13),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.play_arrow_rounded, color: Colors.white, size: compact ? 17 : 19),
+            SizedBox(width: compact ? 4 : 5),
+            Text(
+              '지금 학습 시작하기',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: compact ? 14 : 17),
+            ),
+          ],
+        ),
       ),
     );
   }

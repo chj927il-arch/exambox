@@ -16,6 +16,10 @@ class EncourageBar extends StatelessWidget {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     final height = isDesktop ? 34.0 : kEncourageBarHeight;
     final fontSize = isDesktop ? 17.0 : 14.0;
+    // 모바일은 기존 굵은 디스플레이 폰트를 유지하고, 데스크톱만 가독성 좋은 폰트로 개선.
+    final style = isDesktop
+        ? GoogleFonts.notoSansKr(color: Colors.white, fontSize: fontSize, fontWeight: FontWeight.w600, letterSpacing: -0.1)
+        : GoogleFonts.blackHanSans(color: Colors.white, fontSize: fontSize, letterSpacing: -0.1);
 
     return Container(
       width: double.infinity,
@@ -23,7 +27,7 @@ class EncourageBar extends StatelessWidget {
       color: AppColors.primary,
       child: MarqueeText(
         text: '네모난 화면 속, 나만의 합격 상자가 열린다',
-        style: GoogleFonts.notoSansKr(color: Colors.white, fontSize: fontSize, fontWeight: FontWeight.w600, letterSpacing: -0.1),
+        style: style,
         height: height,
         gap: 24,
       ),
