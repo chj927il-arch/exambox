@@ -7,8 +7,8 @@ import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/encourage_bar.dart';
 import '../widgets/hscroll_list.dart';
+import '../widgets/intro_video.dart';
 import '../widgets/marquee_row.dart';
-import '../widgets/rolling_banner.dart';
 import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
 import 'lecture_grid_screen.dart';
@@ -30,7 +30,13 @@ class HomeScreen extends StatelessWidget {
         children: [
           const EncourageBar(),
           const SizedBox(height: 14),
-          const _HomeRollingBanner(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(14)),
+              child: IntroVideo(),
+            ),
+          ),
           const SizedBox(height: 22),
           const _HeroBanner(),
           const SizedBox(height: 22),
@@ -412,43 +418,6 @@ class _DailyOxMainCard extends StatelessWidget {
           ],
         ),
         child: const TintedPoster(imageAsset: 'assets/images/daily_ox_cover.png'),
-      ),
-    );
-  }
-}
-
-/// 상단 롤링 배너 — 3장이 자동으로 순환되는 프로모션 배너. 실제 배너 이미지는 추후 교체 예정,
-/// 지금은 그라데이션 플레이스홀더 3장으로 자리를 채운다.
-class _HomeRollingBanner extends StatelessWidget {
-  const _HomeRollingBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: RollingBanner(
-        activeDotColor: OttColors.accentStart,
-        inactiveDotColor: OttColors.border,
-        banners: const [
-          BannerItem(
-            title: '배너 1',
-            subtitle: '준비 중인 프로모션 영역',
-            icon: Icons.campaign_outlined,
-            gradient: [Color(0xFF1B1240), Color(0xFF3B2E6E)],
-          ),
-          BannerItem(
-            title: '배너 2',
-            subtitle: '준비 중인 프로모션 영역',
-            icon: Icons.campaign_outlined,
-            gradient: [Color(0xFF141B33), Color(0xFF2A3B66)],
-          ),
-          BannerItem(
-            title: '배너 3',
-            subtitle: '준비 중인 프로모션 영역',
-            icon: Icons.campaign_outlined,
-            gradient: [Color(0xFF232B45), Color(0xFF1B1240)],
-          ),
-        ],
       ),
     );
   }
