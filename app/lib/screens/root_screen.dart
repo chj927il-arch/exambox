@@ -160,11 +160,17 @@ class _RootScreenState extends State<RootScreen> {
                   ),
                 ),
               ),
-              _DesktopHeader(
-                selectedIndex: _tabIndex,
-                onSelected: _onDestinationSelected,
-                dark: isHome,
-                transparent: overlay,
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 68,
+                child: _DesktopHeader(
+                  selectedIndex: _tabIndex,
+                  onSelected: _onDestinationSelected,
+                  dark: isHome,
+                  transparent: overlay,
+                ),
               ),
             ],
           ),
