@@ -69,13 +69,17 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
       fit: StackFit.expand,
       children: [
         if (_ready && controller != null)
-          FittedBox(
-            fit: BoxFit.cover,
-            clipBehavior: Clip.hardEdge,
-            child: SizedBox(
-              width: controller.value.size.width,
-              height: controller.value.size.height,
-              child: VideoPlayer(controller),
+          IgnorePointer(
+            // 웹에서 video_player가 실제 <video> DOM 엘리먼트로 그려져 위에 얹은 버튼의 클릭을
+            // 가로채는 문제가 있어, 영상 레이어는 포인터 이벤트를 무시하게 만든다.
+            child: FittedBox(
+              fit: BoxFit.cover,
+              clipBehavior: Clip.hardEdge,
+              child: SizedBox(
+                width: controller.value.size.width,
+                height: controller.value.size.height,
+                child: VideoPlayer(controller),
+              ),
             ),
           ),
         IgnorePointer(
@@ -96,41 +100,48 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
           ),
         ),
         Positioned(
-          left: 24,
-          top: 20,
+          left: 28,
+          top: 26,
           child: Text(
             '나만의 화면 속,\n합격 상자가 열린다.\nSTUDY BOX',
             style: GoogleFonts.blackHanSans(
-              fontSize: 26,
+              fontSize: 40,
               color: Colors.white,
               letterSpacing: 0.3,
-              height: 1.35,
-              shadows: [Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 12)],
+              height: 1.3,
+              shadows: [
+                Shadow(color: Colors.black.withValues(alpha: 0.7), blurRadius: 16),
+                Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4),
+              ],
             ),
           ),
         ),
         Positioned(
-          right: 20,
-          bottom: 24,
-          child: GestureDetector(
-            onTap: widget.onCtaTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
-                borderRadius: BorderRadius.circular(13),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 19),
-                  SizedBox(width: 5),
-                  Text(
-                    '지금 학습 시작하기',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
-                  ),
-                ],
+          right: 24,
+          bottom: 28,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onCtaTap,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 5))],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.play_arrow_rounded, color: OttColors.accentStart, size: 22),
+                    const SizedBox(width: 6),
+                    Text(
+                      '지금 학습 시작하기',
+                      style: GoogleFonts.notoSansKr(color: const Color(0xFF1B1240), fontWeight: FontWeight.w800, fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
