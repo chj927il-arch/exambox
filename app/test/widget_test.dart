@@ -10,6 +10,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('STUDY BOX'), findsOneWidget);
+    // 상단 앱바 타이틀 + 홈 화면 인트로 영상 오버레이, 두 곳에 표시된다.
+    expect(find.text('STUDY BOX'), findsNWidgets(2));
   });
 }

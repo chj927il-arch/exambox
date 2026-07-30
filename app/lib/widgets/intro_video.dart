@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 
 /// 홈 상단 인트로 영상 — 음소거 자동재생 + 끊김 없는 무한 반복.
@@ -41,14 +42,16 @@ class _IntroVideoState extends State<IntroVideo> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 16 / 9,
+      // 원본 영상 비율(16:9)보다 넓게 잡고 BoxFit.contain으로 표시해, 잘리는 부분 없이
+      // 전체 영상이 다 보이면서 영역 높이만 줄어들게 한다(좌우는 검은 배경과 자연스럽게 이어짐).
+      aspectRatio: 21 / 9,
       child: Stack(
         fit: StackFit.expand,
         children: [
           const ColoredBox(color: Colors.black),
           if (_ready)
             FittedBox(
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               child: SizedBox(
                 width: _controller.value.size.width,
                 height: _controller.value.size.height,
@@ -71,6 +74,14 @@ class _IntroVideoState extends State<IntroVideo> {
                   stops: const [0.0, 0.5, 1.0],
                 ),
               ),
+            ),
+          ),
+          Positioned(
+            right: 14,
+            top: 12,
+            child: Text(
+              'STUDY BOX',
+              style: GoogleFonts.blackHanSans(fontSize: 18, color: Colors.white, letterSpacing: 0.5),
             ),
           ),
         ],
