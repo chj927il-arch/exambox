@@ -88,9 +88,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // 하단 "지금 학습 시작하기" 바 → 자격증 탭(LicenseScreen)으로 전환된다.
-    // (히어로 배너 CTA와 문구가 같아졌으므로 Key로 특정한다.)
-    await tester.tap(find.byKey(const Key('bottomStudyBar')));
+    // 상단 탭바의 "자격증" → LicenseScreen으로 전환된다(하단 학습하러가기 바는 제거됨).
+    await tester.tap(find.text('자격증'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(LicenseScreen), findsOneWidget);
 

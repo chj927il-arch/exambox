@@ -12,8 +12,6 @@ import 'notice_screen.dart';
 const double _kTopNavHeight = 46;
 const int _kTabCount = 5;
 
-const double _kBottomBarHeight = 46;
-
 class _NavItem {
   final IconData icon;
   final IconData selectedIcon;
@@ -32,23 +30,6 @@ const _navItems = [
   _NavItem(Icons.person_outline_rounded, Icons.person_rounded, '마이페이지', 4),
 ];
 
-/// 홈 탭 네비게이터의 스택이 루트(홈 화면)인지 추적하는 옵저버.
-class _HomeDepthObserver extends NavigatorObserver {
-  final ValueChanged<bool> onDepthChanged;
-  _HomeDepthObserver({required this.onDepthChanged});
-
-  void _report() => onDepthChanged(navigator?.canPop() != true);
-
-  @override
-  void didPush(Route route, Route? previousRoute) => _report();
-
-  @override
-  void didPop(Route route, Route? previousRoute) => _report();
-
-  @override
-  void didRemove(Route route, Route? previousRoute) => _report();
-}
-
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
 
@@ -58,10 +39,6 @@ class RootScreen extends StatefulWidget {
 
 class _RootScreenState extends State<RootScreen> {
   int _tabIndex = 0;
-
-  // 홈 탭 내에서 다른 화면(공지사항 등)으로 이동하면 하단 바를 숨기기 위해
-  // 홈 탭 네비게이터의 스택 깊이를 추적한다.
-  bool _homeAtRoot = true;
 
   final List<GlobalKey<NavigatorState>> _navKeys =
       List.generate(_kTabCount, (_) => GlobalKey<NavigatorState>());
@@ -77,13 +54,8 @@ class _RootScreenState extends State<RootScreen> {
   Widget _buildTabNavigator(int index) {
     return Navigator(
       key: _navKeys[index],
-      observers: index == 0 ? [_HomeDepthObserver(onDepthChanged: _setHomeAtRoot)] : const [],
       onGenerateRoute: (settings) => MaterialPageRoute(builder: (_) => _tabScreens[index]),
     );
-  }
-
-  void _setHomeAtRoot(bool atRoot) {
-    if (_homeAtRoot != atRoot) setState(() => _homeAtRoot = atRoot);
   }
 
   void _onDestinationSelected(int i) {
@@ -94,9 +66,50 @@ class _RootScreenState extends State<RootScreen> {
     }
   }
 
-  /// 하단 "지금 학습하러가기" 바 — 자격증 탭(가맹거래사 등 자격증 목록)으로 이동시킨다.
-  /// 학습하기는 자격증을 먼저 선택해야 들어갈 수 있으므로, 학습화면으로 바로 건너뛰지 않는다.
-  void _goToLicenseTab() => _onDestinationSelected(1);
+  /// 모바일 상단 삼선 메뉴 — 회원가입/로그인/마이페이지를 바텀시트로 보여준다.
+  void _showMobileMoreMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _tabIndex == 0 ? OttColors.card : AppColors.bgBase,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetContext) {
+        final dark = _tabIndex == 0;
+        final textColor = dark ? OttColors.textPrimary : AppColors.textPrimary;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              ListTile(
+                title: Text('회원가입', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')));
+                },
+              ),
+              ListTile(
+                title: Text('로그인', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('로그인 기능은 준비 중이에요.')));
+                },
+              ),
+              ListTile(
+                title: Text('마이페이지', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _onDestinationSelected(4);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,35 +171,6 @@ class _RootScreenState extends State<RootScreen> {
                 AppBar(
                   toolbarHeight: titleBarHeight,
                   backgroundColor: OttColors.bg,
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          InkWell(
-                            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
-                            ),
-                            child: const Text(
-                              '회원가입',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: OttColors.textSecondary),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          InkWell(
-                            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
-                            ),
-                            child: const Text(
-                              '로그인',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: OttColors.textSecondary),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                   title: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Column(
@@ -224,7 +208,12 @@ class _RootScreenState extends State<RootScreen> {
                 bottom: false,
                 child: Column(
                   children: [
-                    _TopNavBar(selectedIndex: _tabIndex, onSelected: _onDestinationSelected, dark: true),
+                    _TopNavBar(
+                      selectedIndex: _tabIndex,
+                      onSelected: _onDestinationSelected,
+                      onMenuTap: () => _showMobileMoreMenu(context),
+                      dark: true,
+                    ),
                     Expanded(
                       child: IndexedStack(
                         index: _tabIndex,
@@ -240,7 +229,12 @@ class _RootScreenState extends State<RootScreen> {
                 bottom: false,
                 child: Column(
                   children: [
-                    _TopNavBar(selectedIndex: _tabIndex, onSelected: _onDestinationSelected, dark: false),
+                    _TopNavBar(
+                      selectedIndex: _tabIndex,
+                      onSelected: _onDestinationSelected,
+                      onMenuTap: () => _showMobileMoreMenu(context),
+                      dark: false,
+                    ),
                     Expanded(
                       child: IndexedStack(
                         index: _tabIndex,
@@ -251,9 +245,6 @@ class _RootScreenState extends State<RootScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: _tabIndex == 0 && _homeAtRoot
-          ? _BottomStudyBar(key: const Key('bottomStudyBar'), onTap: _goToLicenseTab)
-          : null,
     );
   }
 }
@@ -358,11 +349,19 @@ class _DesktopHeader extends StatelessWidget {
 }
 
 /// 상단 탭 메뉴 — 타이틀/응원바로 아래, 배너 바로 위에 고정된다.
+/// 모바일 상단 탭 — 홈/자격증/공지사항/FAQ만 아이콘 탭으로 보여주고, 마이페이지·회원가입·
+/// 로그인은 오른쪽 삼선 메뉴(onMenuTap)를 눌러야 나오는 목록으로 옮겼다.
 class _TopNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final VoidCallback onMenuTap;
   final bool dark;
-  const _TopNavBar({required this.selectedIndex, required this.onSelected, required this.dark});
+  const _TopNavBar({
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.onMenuTap,
+    required this.dark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +369,7 @@ class _TopNavBar extends StatelessWidget {
     final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
     final accent = dark ? OttColors.accentStart : AppColors.primary;
     final muted = dark ? OttColors.textMuted : AppColors.textMuted;
+    final tabItems = _navItems.where((item) => item.label != '마이페이지').toList();
 
     return Container(
       height: _kTopNavHeight,
@@ -378,126 +378,56 @@ class _TopNavBar extends StatelessWidget {
         border: Border(bottom: BorderSide(color: border)),
       ),
       child: Row(
-        children: List.generate(_navItems.length, (i) {
-          final item = _navItems[i];
-          final selected = item.tabIndex == selectedIndex;
-          final color = selected ? accent : muted;
-          return Expanded(
+        children: [
+          ...tabItems.map((item) {
+            final selected = item.tabIndex == selectedIndex;
+            final color = selected ? accent : muted;
+            return Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => onSelected(item.tabIndex),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(selected ? item.selectedIcon : item.icon, size: 17, color: color),
+                      const SizedBox(height: 1),
+                      Text(
+                        item.label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                          color: color,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Container(
+                        height: 2.5,
+                        width: 28,
+                        decoration: BoxDecoration(
+                          color: selected ? accent : Colors.transparent,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          SizedBox(
+            width: 52,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => onSelected(item.tabIndex),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(selected ? item.selectedIcon : item.icon, size: 17, color: color),
-                    const SizedBox(height: 1),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                        color: color,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Container(
-                      height: 2.5,
-                      width: 28,
-                      decoration: BoxDecoration(
-                        color: selected ? accent : Colors.transparent,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ],
-                ),
+                onTap: onMenuTap,
+                child: Icon(Icons.menu_rounded, size: 22, color: muted),
               ),
             ),
-          );
-        }),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// 하단 바 — 버튼 없이, 바 전체가 "지금 학습하러가기" 한 줄짜리 탭 영역.
-/// 파랑·보라 그라데이션 배경 위에 은은하게 깜빡이는(pulse) 효과를 줘서 눈에 띄게 한다.
-class _BottomStudyBar extends StatefulWidget {
-  final VoidCallback onTap;
-  const _BottomStudyBar({super.key, required this.onTap});
-
-  @override
-  State<_BottomStudyBar> createState() => _BottomStudyBarState();
-}
-
-class _BottomStudyBarState extends State<_BottomStudyBar> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))
-      ..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final t = _controller.value;
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Color.lerp(const Color(0xFF3B5BFF), const Color(0xFF7B3FF2), t)!,
-                Color.lerp(const Color(0xFF7B3FF2), const Color(0xFF3B5BFF), t)!,
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF7B3FF2).withValues(alpha: 0.35 + 0.35 * t),
-                blurRadius: 10 + 6 * t,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: child,
-        );
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: widget.onTap,
-          child: SizedBox(
-            height: _kBottomBarHeight,
-            width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: 7),
-                Text(
-                  '지금 학습 시작하기',
-                  style: GoogleFonts.blackHanSans(
-                    fontSize: 21,
-                    color: Colors.white,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

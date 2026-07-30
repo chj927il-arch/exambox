@@ -32,10 +32,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 14),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(14)),
-              child: IntroVideo(),
-            ),
+            child: IntroVideo(),
           ),
           const SizedBox(height: 22),
           const _HeroBanner(),
@@ -177,19 +174,19 @@ class _HeroBanner extends StatelessWidget {
               ),
             ),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(13),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
-                  SizedBox(width: 6),
+                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 19),
+                  SizedBox(width: 5),
                   Text(
                     '지금 학습 시작하기',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
                   ),
                 ],
               ),
