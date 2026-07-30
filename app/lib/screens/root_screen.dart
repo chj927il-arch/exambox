@@ -140,6 +140,7 @@ class _RootScreenState extends State<RootScreen> {
         color: isHome ? OttColors.bg : AppColors.trackBg,
         child: SafeArea(
           child: Stack(
+            fit: StackFit.expand,
             children: [
               Positioned.fill(
                 top: isHome ? 0 : 68,
