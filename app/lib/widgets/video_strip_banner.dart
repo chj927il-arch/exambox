@@ -151,8 +151,8 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
           ),
         ),
         Positioned(
-          left: 28,
-          bottom: 28,
+          right: 24,
+          top: 24,
           child: _HeroNavRow(selectedIndex: widget.navSelectedIndex, onSelected: widget.onNavSelected),
         ),
       ],
@@ -210,7 +210,8 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
   }
 }
 
-/// 영상 좌측 하단에 오버레이하는 메뉴 — 쿠팡플레이 스타일 둥근 불투명 필, 간격 촘촘하게 한 줄로 배치.
+/// 영상 우측 상단에 오버레이하는 메뉴 — 쿠팡플레이 스타일 둥근 불투명 필.
+/// 자격증/공지사항/FAQ는 요청에 따라 일단 비노출, 홈/회원가입/로그인/마이페이지만 노출.
 class _HeroNavRow extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
@@ -236,21 +237,14 @@ class _HeroNavRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mainItems = kNavItems.where((item) => item.label != '마이페이지');
+    final home = kNavItems.firstWhere((item) => item.label == '홈');
     final myPage = kNavItems.firstWhere((item) => item.label == '마이페이지');
 
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        ...mainItems.map(
-          (item) => _pill(
-            context,
-            item.label,
-            selected: item.tabIndex == selectedIndex,
-            onTap: () => onSelected(item.tabIndex),
-          ),
-        ),
+        _pill(context, home.label, selected: home.tabIndex == selectedIndex, onTap: () => onSelected(home.tabIndex)),
         _pill(
           context,
           '회원가입',
