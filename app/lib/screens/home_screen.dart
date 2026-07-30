@@ -8,7 +8,6 @@ import '../theme/subject_style.dart';
 import '../widgets/encourage_bar.dart';
 import '../widgets/hscroll_list.dart';
 import '../widgets/marquee_row.dart';
-import '../widgets/rolling_banner.dart';
 import '../widgets/video_strip_banner.dart';
 import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
@@ -32,35 +31,6 @@ class HomeScreen extends StatelessWidget {
           const EncourageBar(),
           const SizedBox(height: 14),
           const VideoStripBanner(),
-          const SizedBox(height: 14),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: RollingBanner(
-              activeDotColor: OttColors.accentStart,
-              inactiveDotColor: OttColors.border,
-              aspectRatio: 5.2,
-              banners: const [
-                BannerItem(
-                  title: '배너 1',
-                  subtitle: '준비 중인 프로모션 영역',
-                  icon: Icons.campaign_outlined,
-                  gradient: [Color(0xFF1B1240), Color(0xFF3B2E6E)],
-                ),
-                BannerItem(
-                  title: '배너 2',
-                  subtitle: '준비 중인 프로모션 영역',
-                  icon: Icons.campaign_outlined,
-                  gradient: [Color(0xFF141B33), Color(0xFF2A3B66)],
-                ),
-                BannerItem(
-                  title: '배너 3',
-                  subtitle: '준비 중인 프로모션 영역',
-                  icon: Icons.campaign_outlined,
-                  gradient: [Color(0xFF232B45), Color(0xFF1B1240)],
-                ),
-              ],
-            ),
-          ),
           const SizedBox(height: 22),
           const _HeroBanner(),
           const SizedBox(height: 22),

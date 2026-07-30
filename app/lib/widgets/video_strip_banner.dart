@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import 'side_rolling_banner.dart';
+
 /// 축구장 광고판(피치사이드 LED 보드) 같은 얇고 긴 띠 형태로 영상을 무한 반복 송출하는 배너.
 /// 화면 폭 전체를 가장자리 없이 채워서 실제 광고판에 더 가까운 느낌을 준다.
 class VideoStripBanner extends StatefulWidget {
@@ -48,6 +50,41 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
     super.dispose();
   }
 
+  Widget _videoBox() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (_ready)
+          FittedBox(
+            fit: BoxFit.cover,
+            clipBehavior: Clip.hardEdge,
+            child: SizedBox(
+              width: _controller.value.size.width,
+              height: _controller.value.size.height,
+              child: VideoPlayer(_controller),
+            ),
+          ),
+        IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.32),
+                  Colors.black.withValues(alpha: 0.0),
+                  Colors.black.withValues(alpha: 0.0),
+                  Colors.black.withValues(alpha: 0.32),
+                ],
+                stops: const [0.0, 0.25, 0.75, 1.0],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ClipRect(
@@ -55,37 +92,44 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
         aspectRatio: widget.aspectRatio,
         child: ColoredBox(
           color: Colors.black,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (_ready)
-                FittedBox(
-                  fit: BoxFit.contain,
-                  clipBehavior: Clip.hardEdge,
-                  child: SizedBox(
-                    width: _controller.value.size.width,
-                    height: _controller.value.size.height,
-                    child: VideoPlayer(_controller),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final videoAspect = _ready ? _controller.value.aspectRatio : 16 / 9;
+              final videoWidth = (constraints.maxHeight * videoAspect).clamp(0.0, constraints.maxWidth);
+              final margin = (constraints.maxWidth - videoWidth) / 2;
+              final showSideBanners = margin >= 60;
+
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Align(
+                    child: SizedBox(width: videoWidth, height: constraints.maxHeight, child: _videoBox()),
                   ),
-                ),
-              IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.32),
-                        Colors.black.withValues(alpha: 0.0),
-                        Colors.black.withValues(alpha: 0.0),
-                        Colors.black.withValues(alpha: 0.32),
-                      ],
-                      stops: const [0.0, 0.25, 0.75, 1.0],
+                  if (showSideBanners) ...[
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: margin,
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: SideRollingBanner(items: kLeftSideBanners),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ],
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: margin,
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: SideRollingBanner(items: kRightSideBanners),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),
