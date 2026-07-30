@@ -50,20 +50,23 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: widget.aspectRatio,
-      child: ColoredBox(
-        color: Colors.black,
-        child: _ready
-            ? FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller),
-                ),
-              )
-            : const SizedBox.expand(),
+    return ClipRect(
+      child: AspectRatio(
+        aspectRatio: widget.aspectRatio,
+        child: ColoredBox(
+          color: Colors.black,
+          child: _ready
+              ? FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: _controller.value.size.width,
+                    height: _controller.value.size.height,
+                    child: VideoPlayer(_controller),
+                  ),
+                )
+              : const SizedBox.expand(),
+        ),
       ),
     );
   }
