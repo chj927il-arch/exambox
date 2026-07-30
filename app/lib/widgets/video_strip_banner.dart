@@ -12,7 +12,7 @@ class VideoStripBanner extends StatefulWidget {
   const VideoStripBanner({
     super.key,
     this.videoAsset = 'assets/videos/studybox_intro.mp4',
-    this.aspectRatio = 7.2,
+    this.aspectRatio = 3.6,
   });
 
   @override

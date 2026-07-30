@@ -32,12 +32,14 @@ class RollingBanner extends StatefulWidget {
   final List<BannerItem> banners;
   final Color activeDotColor;
   final Color inactiveDotColor;
+  final double aspectRatio;
 
   const RollingBanner({
     super.key,
     this.banners = _defaultBanners,
     this.activeDotColor = AppColors.primary,
     this.inactiveDotColor = AppColors.trackBg,
+    this.aspectRatio = 2172 / 724,
   });
 
   @override
@@ -72,8 +74,8 @@ class _RollingBannerState extends State<RollingBanner> {
     return Column(
       children: [
         AspectRatio(
-          // 배너 이미지의 실제 비율(약 2172x724)에 맞춰 잘림 없이 표시한다.
-          aspectRatio: 2172 / 724,
+          // 배너 이미지의 실제 비율(약 2172x724)에 맞춰 잘림 없이 표시한다. 텍스트 플레이스홀더 등은 더 얇은 비율로 오버라이드 가능.
+          aspectRatio: widget.aspectRatio,
           child: PageView.builder(
             controller: _controller,
             itemCount: widget.banners.length,

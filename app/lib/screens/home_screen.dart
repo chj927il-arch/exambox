@@ -7,7 +7,6 @@ import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/encourage_bar.dart';
 import '../widgets/hscroll_list.dart';
-import '../widgets/intro_video.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
 import '../widgets/video_strip_banner.dart';
@@ -39,6 +38,7 @@ class HomeScreen extends StatelessWidget {
             child: RollingBanner(
               activeDotColor: OttColors.accentStart,
               inactiveDotColor: OttColors.border,
+              aspectRatio: 3.6,
               banners: const [
                 BannerItem(
                   title: '배너 1',
@@ -60,11 +60,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 22),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: IntroVideo(),
           ),
           const SizedBox(height: 22),
           const _HeroBanner(),
