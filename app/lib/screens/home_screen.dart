@@ -97,10 +97,18 @@ class TintedPoster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // CanvasKit(웹)이 큰 원본 이미지를 화면에 그릴 때 스케일을 잘못 잡아 흐릿하게 보이는 문제가 있어,
+    // 카드 실제 표시 크기(devicePixelRatio 반영)에 맞춰 미리 디코드 크기를 지정해 선명하게 그린다.
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (kLecturePosterWidth * dpr).round();
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(imageAsset, fit: BoxFit.cover, filterQuality: FilterQuality.high),
+        Image(
+          image: ResizeImage(AssetImage(imageAsset), width: cacheWidth),
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
+        ),
         // 밝은 홍보 배너 톤을 다크 테마에 맞게 살짝만 톤다운(원본이 안 보일 정도로 어둡게 하지 않음).
         Positioned.fill(child: ColoredBox(color: Colors.black.withValues(alpha: 0.18))),
         Positioned.fill(
@@ -129,12 +137,11 @@ class _HeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    final titleSize = isDesktop ? 24.0 : 23.0;
-    final subtitleSize = isDesktop ? 24.0 : 14.0;
+    final titleSize = isDesktop ? 17.0 : 15.0;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -142,28 +149,17 @@ class _HeroBanner extends StatelessWidget {
           colors: [Color(0xFF1B1240), Color(0xFF141B33), OttColors.bg],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            '가맹거래사 1차 시험',
-            style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w900, color: Colors.white),
-          ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '가장 스마트하게, 가장 콤팩트하게 준비하세요',
-                maxLines: 1,
-                softWrap: false,
-                style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
-              ),
+          Expanded(
+            child: Text(
+              '가맹거래사 1차 시험 — 가장 스마트하게, 가장 콤팩트하게 준비하세요',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.2),
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(width: 12),
           GestureDetector(
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -171,19 +167,19 @@ class _HeroBanner extends StatelessWidget {
               ),
             ),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [OttColors.accentStart, OttColors.accentEnd]),
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 19),
-                  SizedBox(width: 5),
+                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 17),
+                  SizedBox(width: 4),
                   Text(
                     '지금 학습 시작하기',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
                   ),
                 ],
               ),

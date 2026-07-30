@@ -23,7 +23,7 @@ class EncourageBar extends StatelessWidget {
       color: AppColors.primary,
       child: MarqueeText(
         text: '네모난 화면 속, 나만의 합격 상자가 열린다',
-        style: GoogleFonts.blackHanSans(color: Colors.white, fontSize: fontSize, letterSpacing: -0.1),
+        style: GoogleFonts.notoSansKr(color: Colors.white, fontSize: fontSize, fontWeight: FontWeight.w600, letterSpacing: -0.1),
         height: height,
         gap: 24,
       ),
