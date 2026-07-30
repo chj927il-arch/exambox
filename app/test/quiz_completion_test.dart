@@ -4,7 +4,6 @@ import 'package:gamyeong_exam/data/sample_questions.dart';
 import 'package:gamyeong_exam/data/user_progress.dart';
 import 'package:gamyeong_exam/main.dart';
 import 'package:gamyeong_exam/screens/certificate_menu_screen.dart';
-import 'package:gamyeong_exam/screens/license_screen.dart';
 import 'package:gamyeong_exam/screens/quiz_screen.dart';
 import 'package:gamyeong_exam/screens/study_screen.dart';
 import 'package:gamyeong_exam/screens/subject_chapters_screen.dart';
@@ -88,13 +87,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // 상단 탭바의 "자격증" → LicenseScreen으로 전환된다(하단 학습하러가기 바는 제거됨).
-    await tester.tap(find.text('자격증'));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byType(LicenseScreen), findsOneWidget);
-
-    // 가맹거래사 → 하위 메뉴(CertificateMenuScreen) → 학습하기 → StudyScreen
-    await tester.tap(find.text('가맹거래사'));
+    // 홈 화면 영상 히어로의 "지금 학습 시작하기" CTA → 가맹거래사 CertificateMenuScreen으로
+    // 바로 이동한다(자격증 탭은 상단 메뉴에서 숨겨져 더 이상 경유하지 않음).
+    await tester.tap(find.text('지금 학습 시작하기'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(CertificateMenuScreen), findsOneWidget);
 

@@ -10,8 +10,8 @@ import 'license_screen.dart';
 import 'mypage_screen.dart';
 import 'notice_screen.dart';
 
-const double _kTopNavHeight = 46;
 const int _kTabCount = 5;
+const double _kHeaderHeight = 68;
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -59,64 +59,16 @@ class _RootScreenState extends State<RootScreen> {
     }
   }
 
-  /// 모바일 상단 삼선 메뉴 — 회원가입/로그인/마이페이지를 바텀시트로 보여준다.
-  void _showMobileMoreMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: _tabIndex == 0 ? OttColors.card : AppColors.bgBase,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (sheetContext) {
-        final dark = _tabIndex == 0;
-        final textColor = dark ? OttColors.textPrimary : AppColors.textPrimary;
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              ListTile(
-                title: Text('회원가입', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')));
-                },
-              ),
-              ListTile(
-                title: Text('로그인', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('로그인 기능은 준비 중이에요.')));
-                },
-              ),
-              ListTile(
-                title: Text('마이페이지', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _onDestinationSelected(4);
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
+  /// PC/모바일 공통 레이아웃 — 홈 탭에서는 영상이 화면 맨 위(가장자리까지)를 채우고,
+  /// 그 위에 헤더가 투명하게 떠 있다가(쿠팡플레이 스타일) 영상을 지나 스크롤하면
+  /// 불투명 배경으로 전환된다. PC/모바일 차이는 전부 폭 제한(maxWidth)과 헤더 내부
+  /// 폰트/패딩 크기뿐 — 구조 자체는 완전히 동일하다.
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    return isDesktop ? _buildDesktop(context) : _buildMobile(context);
-  }
-
-  /// PC/데스크톱(900 이상) — 일반 웹사이트처럼 상단에 가로로 긴 헤더(로고+메뉴) +
-  /// 화면 폭에 맞춰 넓게 펼쳐지는 콘텐츠(최대 1200까지, 사이드바 없음).
-  /// 홈 탭에서는 헤더가 상단 영상 위에 투명하게 떠 있다가(쿠팡플레이 스타일), 영상을 지나
-  /// 스크롤하면 불투명 배경으로 전환된다.
-  Widget _buildDesktop(BuildContext context) {
     final isHome = _tabIndex == 0;
     final overlay = isHome && !_homeHeaderSolid;
+    final maxWidth = isDesktop ? 1200.0 : double.infinity;
 
     return Scaffold(
       body: ColoredBox(
@@ -126,18 +78,25 @@ class _RootScreenState extends State<RootScreen> {
             fit: StackFit.expand,
             children: [
               Positioned.fill(
-                top: isHome ? 0 : 68,
+                top: isHome ? 0 : _kHeaderHeight,
                 child: ColoredBox(
                   color: isHome ? OttColors.bg : AppColors.bgBase,
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
+                      constraints: BoxConstraints(maxWidth: maxWidth),
                       child: NotificationListener<ScrollNotification>(
                         onNotification: _onHomeScrollNotification,
-                        child: IndexedStack(
-                          index: _tabIndex,
-                          children: List.generate(_kTabCount, _buildTabNavigator),
-                        ),
+                        child: isHome
+                            ? IndexedStack(
+                                index: _tabIndex,
+                                children: List.generate(_kTabCount, _buildTabNavigator),
+                              )
+                            : AppBackground(
+                                child: IndexedStack(
+                                  index: _tabIndex,
+                                  children: List.generate(_kTabCount, _buildTabNavigator),
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -148,126 +107,35 @@ class _RootScreenState extends State<RootScreen> {
                   left: 0,
                   right: 0,
                   top: 0,
-                  height: 68,
-                  child: _DesktopHeader(
+                  height: _kHeaderHeight,
+                  child: _SiteHeader(
                     selectedIndex: _tabIndex,
                     onSelected: _onDestinationSelected,
                     dark: isHome,
+                    isDesktop: isDesktop,
                   ),
                 ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  /// 폰/태블릿(900 미만) — 기존 상단 탭 + 하단 "학습하러가기" 바 레이아웃.
-  Widget _buildMobile(BuildContext context) {
-    const titleBarHeight = 84.0;
-    final isHome = _tabIndex == 0;
-    final showTitle = isHome;
-
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(showTitle ? titleBarHeight : 0),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showTitle)
-                AppBar(
-                  toolbarHeight: titleBarHeight,
-                  backgroundColor: OttColors.bg,
-                  title: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'STUDY BOX',
-                        style: GoogleFonts.blackHanSans(
-                          fontSize: 34,
-                          color: OttColors.textPrimary,
-                          letterSpacing: 0.5,
-                          height: 0.95,
-                        ),
-                      ),
-                      Transform.translate(
-                        offset: const Offset(0, -6),
-                        child: const Text(
-                          '바쁜 일상, 가장 스마트하게, 가장 콤팩트하게.',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: OttColors.textSecondary),
-                        ),
-                      ),
-                    ],
-                    ),
-                  ),
-                  centerTitle: true,
-                ),
-            ],
-          ),
-        ),
-      ),
-      body: isHome
-          ? ColoredBox(
-              color: OttColors.bg,
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    _TopNavBar(
-                      selectedIndex: _tabIndex,
-                      onSelected: _onDestinationSelected,
-                      onMenuTap: () => _showMobileMoreMenu(context),
-                      dark: true,
-                    ),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _tabIndex,
-                        children: List.generate(_kTabCount, _buildTabNavigator),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : AppBackground(
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    _TopNavBar(
-                      selectedIndex: _tabIndex,
-                      onSelected: _onDestinationSelected,
-                      onMenuTap: () => _showMobileMoreMenu(context),
-                      dark: false,
-                    ),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _tabIndex,
-                        children: List.generate(_kTabCount, _buildTabNavigator),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
     );
   }
 }
 
-/// 데스크톱 전용 상단 헤더 — 일반 웹사이트처럼 화면 폭 전체를 가로지르는 가로형 내비게이션.
-/// 로고(왼쪽) + 메뉴(홈/자격증/마이페이지).
-class _DesktopHeader extends StatelessWidget {
+/// 상단 헤더 — PC/모바일 공통. 로고 + 홈/마이페이지 + 회원가입/로그인.
+/// 자격증/공지사항/FAQ는 영상 히어로 오버레이 메뉴와 동일하게 여기서도 숨긴다
+/// (하단 CTA로 가맹거래사 상세로 바로 진입하므로 상단 메뉴에서는 노출하지 않음).
+class _SiteHeader extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final bool dark;
-  const _DesktopHeader({
+  final bool isDesktop;
+  const _SiteHeader({
     required this.selectedIndex,
     required this.onSelected,
     required this.dark,
+    required this.isDesktop,
   });
 
   @override
@@ -278,13 +146,18 @@ class _DesktopHeader extends StatelessWidget {
     final textSecondary = dark ? OttColors.textSecondary : AppColors.textSecondary;
     final accent = dark ? OttColors.accentStart : AppColors.primary;
 
+    final logoSize = isDesktop ? 22.0 : 18.0;
+    final navGap = isDesktop ? 32.0 : 16.0;
+    final navFontSize = isDesktop ? 14.0 : 12.5;
+    final hPad = isDesktop ? 24.0 : 16.0;
+
     Widget navText(String label, {required bool selected, required VoidCallback onTap}) {
       return InkWell(
         onTap: onTap,
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: navFontSize,
             fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
             color: selected ? accent : textSecondary,
           ),
@@ -292,30 +165,26 @@ class _DesktopHeader extends StatelessWidget {
       );
     }
 
+    final home = kNavItems.firstWhere((item) => item.label == '홈');
+    final myPage = kNavItems.firstWhere((item) => item.label == '마이페이지');
+
     return Container(
       width: double.infinity,
-      height: 68,
+      height: _kHeaderHeight,
       decoration: BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: border))),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: hPad),
             child: Row(
               children: [
                 Text(
                   'STUDY BOX',
-                  style: GoogleFonts.blackHanSans(fontSize: 22, color: textPrimary, letterSpacing: 0.5),
+                  style: GoogleFonts.blackHanSans(fontSize: logoSize, color: textPrimary, letterSpacing: 0.5),
                 ),
-                const SizedBox(width: 32),
-                // 마이페이지는 왼쪽 탭이 아니라 오른쪽 회원가입/로그인 옆으로 이동.
-                ...kNavItems.where((item) => item.label != '마이페이지').map((item) {
-                  final selected = item.tabIndex == selectedIndex;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 32),
-                    child: navText(item.label, selected: selected, onTap: () => onSelected(item.tabIndex)),
-                  );
-                }),
+                SizedBox(width: navGap),
+                navText(home.label, selected: home.tabIndex == selectedIndex, onTap: () => onSelected(home.tabIndex)),
                 const Spacer(),
                 navText(
                   '회원가입',
@@ -324,7 +193,7 @@ class _DesktopHeader extends StatelessWidget {
                     const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
                   ),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: navGap * 0.6),
                 navText(
                   '로그인',
                   selected: false,
@@ -332,12 +201,8 @@ class _DesktopHeader extends StatelessWidget {
                     const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
                   ),
                 ),
-                const SizedBox(width: 20),
-                Builder(builder: (context) {
-                  final myPage = kNavItems.firstWhere((item) => item.label == '마이페이지');
-                  final selected = myPage.tabIndex == selectedIndex;
-                  return navText(myPage.label, selected: selected, onTap: () => onSelected(myPage.tabIndex));
-                }),
+                SizedBox(width: navGap * 0.6),
+                navText(myPage.label, selected: myPage.tabIndex == selectedIndex, onTap: () => onSelected(myPage.tabIndex)),
               ],
             ),
           ),
@@ -346,87 +211,3 @@ class _DesktopHeader extends StatelessWidget {
     );
   }
 }
-
-/// 상단 탭 메뉴 — 타이틀/응원바로 아래, 배너 바로 위에 고정된다.
-/// 모바일 상단 탭 — 홈/자격증/공지사항/FAQ만 아이콘 탭으로 보여주고, 마이페이지·회원가입·
-/// 로그인은 오른쪽 삼선 메뉴(onMenuTap)를 눌러야 나오는 목록으로 옮겼다.
-class _TopNavBar extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-  final VoidCallback onMenuTap;
-  final bool dark;
-  const _TopNavBar({
-    required this.selectedIndex,
-    required this.onSelected,
-    required this.onMenuTap,
-    required this.dark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = dark ? OttColors.bg : AppColors.bgBase;
-    final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
-    final accent = dark ? OttColors.accentStart : AppColors.primary;
-    final muted = dark ? OttColors.textMuted : AppColors.textMuted;
-    final tabItems = kNavItems.where((item) => item.label != '마이페이지').toList();
-
-    return Container(
-      height: _kTopNavHeight,
-      decoration: BoxDecoration(
-        color: bg,
-        border: Border(bottom: BorderSide(color: border)),
-      ),
-      child: Row(
-        children: [
-          ...tabItems.map((item) {
-            final selected = item.tabIndex == selectedIndex;
-            final color = selected ? accent : muted;
-            return Expanded(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => onSelected(item.tabIndex),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(selected ? item.selectedIcon : item.icon, size: 17, color: color),
-                      const SizedBox(height: 1),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                          color: color,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Container(
-                        height: 2.5,
-                        width: 28,
-                        decoration: BoxDecoration(
-                          color: selected ? accent : Colors.transparent,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-          SizedBox(
-            width: 52,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onMenuTap,
-                child: Icon(Icons.menu_rounded, size: 22, color: muted),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
