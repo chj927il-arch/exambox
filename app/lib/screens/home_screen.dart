@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
             child: RollingBanner(
               activeDotColor: OttColors.accentStart,
               inactiveDotColor: OttColors.border,
-              aspectRatio: 3.6,
+              aspectRatio: 5.2,
               banners: const [
                 BannerItem(
                   title: '배너 1',

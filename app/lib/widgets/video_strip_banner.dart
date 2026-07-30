@@ -55,8 +55,11 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
         aspectRatio: widget.aspectRatio,
         child: ColoredBox(
           color: Colors.black,
-          child: _ready
-              ? FittedBox(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (_ready)
+                FittedBox(
                   fit: BoxFit.cover,
                   clipBehavior: Clip.hardEdge,
                   child: SizedBox(
@@ -64,8 +67,26 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
                     height: _controller.value.size.height,
                     child: VideoPlayer(_controller),
                   ),
-                )
-              : const SizedBox.expand(),
+                ),
+              IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.32),
+                        Colors.black.withValues(alpha: 0.0),
+                        Colors.black.withValues(alpha: 0.0),
+                        Colors.black.withValues(alpha: 0.32),
+                      ],
+                      stops: const [0.0, 0.25, 0.75, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
