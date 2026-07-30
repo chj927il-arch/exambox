@@ -60,7 +60,7 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
             children: [
               if (_ready)
                 FittedBox(
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   clipBehavior: Clip.hardEdge,
                   child: SizedBox(
                     width: _controller.value.size.width,
