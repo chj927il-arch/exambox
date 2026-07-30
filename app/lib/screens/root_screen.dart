@@ -3,14 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../widgets/app_background.dart';
-import '../widgets/marquee_text.dart';
 import 'faq_screen.dart';
 import 'home_screen.dart';
 import 'license_screen.dart';
 import 'mypage_screen.dart';
 import 'notice_screen.dart';
 
-const double _kEncourageBarHeight = 25;
 const double _kTopNavHeight = 46;
 const int _kTabCount = 5;
 
@@ -127,16 +125,9 @@ class _RootScreenState extends State<RootScreen> {
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
-                      child: Column(
-                        children: [
-                          if (isHome) const _EncourageBar(),
-                          Expanded(
-                            child: IndexedStack(
-                              index: _tabIndex,
-                              children: List.generate(_kTabCount, _buildTabNavigator),
-                            ),
-                          ),
-                        ],
+                      child: IndexedStack(
+                        index: _tabIndex,
+                        children: List.generate(_kTabCount, _buildTabNavigator),
                       ),
                     ),
                   ),
@@ -153,20 +144,16 @@ class _RootScreenState extends State<RootScreen> {
   Widget _buildMobile(BuildContext context) {
     const titleBarHeight = 84.0;
     final isHome = _tabIndex == 0;
-    final showEncourage = isHome;
     final showTitle = isHome;
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(
-          (showEncourage ? _kEncourageBarHeight : 0) + (showTitle ? titleBarHeight : 0),
-        ),
+        preferredSize: Size.fromHeight(showTitle ? titleBarHeight : 0),
         child: SafeArea(
           bottom: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (showEncourage) const _EncourageBar(),
               if (showTitle)
                 AppBar(
                   toolbarHeight: titleBarHeight,
@@ -235,8 +222,9 @@ class _RootScreenState extends State<RootScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar:
-          _tabIndex == 0 && _homeAtRoot ? _BottomStudyBar(onTap: _goToLicenseTab) : null,
+      bottomNavigationBar: _tabIndex == 0 && _homeAtRoot
+          ? _BottomStudyBar(key: const Key('bottomStudyBar'), onTap: _goToLicenseTab)
+          : null,
     );
   }
 }
@@ -277,7 +265,8 @@ class _DesktopHeader extends StatelessWidget {
                   style: GoogleFonts.blackHanSans(fontSize: 22, color: textPrimary, letterSpacing: 0.5),
                 ),
                 const SizedBox(width: 44),
-                ..._navItems.map((item) {
+                // 마이페이지는 왼쪽 탭이 아니라 오른쪽 회원가입/로그인 옆으로 이동.
+                ..._navItems.where((item) => item.label != '마이페이지').map((item) {
                   final selected = item.tabIndex == selectedIndex;
                   return Padding(
                     padding: const EdgeInsets.only(right: 32),
@@ -290,6 +279,42 @@ class _DesktopHeader extends StatelessWidget {
                           fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                           color: selected ? accent : textSecondary,
                         ),
+                      ),
+                    ),
+                  );
+                }),
+                const Spacer(),
+                InkWell(
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
+                  ),
+                  child: Text(
+                    '회원가입',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textSecondary),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                InkWell(
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
+                  ),
+                  child: Text(
+                    '로그인',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textSecondary),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Builder(builder: (context) {
+                  final myPage = _navItems.firstWhere((item) => item.label == '마이페이지');
+                  final selected = myPage.tabIndex == selectedIndex;
+                  return InkWell(
+                    onTap: () => onSelected(myPage.tabIndex),
+                    child: Text(
+                      myPage.label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                        color: selected ? accent : textSecondary,
                       ),
                     ),
                   );
@@ -366,37 +391,11 @@ class _TopNavBar extends StatelessWidget {
   }
 }
 
-/// 상단 타이틀 위에 표시되는 얇은 응원 문구 바 — 증권 시세바처럼 계속 흘러간다.
-/// 브랜드 네이비 배경 + 흰색 텍스트. 화면 폭 끝까지 채우되, 높이는 얇게 줄였다.
-class _EncourageBar extends StatelessWidget {
-  const _EncourageBar();
-
-  @override
-  Widget build(BuildContext context) {
-    // 데스크톱(넓은 화면)에서는 바가 상대적으로 너무 얇아 보여 높이/글자 크기를 함께 키운다.
-    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    final height = isDesktop ? 34.0 : _kEncourageBarHeight;
-    final fontSize = isDesktop ? 17.0 : 14.0;
-
-    return Container(
-      width: double.infinity,
-      height: height,
-      color: AppColors.primary,
-      child: MarqueeText(
-        text: '스터디박스를 켜는 순간 합격이 가까워집니다.',
-        style: GoogleFonts.blackHanSans(color: Colors.white, fontSize: fontSize, letterSpacing: -0.1),
-        height: height,
-        gap: 24,
-      ),
-    );
-  }
-}
-
 /// 하단 바 — 버튼 없이, 바 전체가 "지금 학습하러가기" 한 줄짜리 탭 영역.
 /// 파랑·보라 그라데이션 배경 위에 은은하게 깜빡이는(pulse) 효과를 줘서 눈에 띄게 한다.
 class _BottomStudyBar extends StatefulWidget {
   final VoidCallback onTap;
-  const _BottomStudyBar({required this.onTap});
+  const _BottomStudyBar({super.key, required this.onTap});
 
   @override
   State<_BottomStudyBar> createState() => _BottomStudyBarState();
@@ -458,7 +457,7 @@ class _BottomStudyBarState extends State<_BottomStudyBar> with SingleTickerProvi
                 const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 23),
                 const SizedBox(width: 8),
                 Text(
-                  '지금 학습하러가기',
+                  '지금 학습 시작하기',
                   style: GoogleFonts.blackHanSans(
                     fontSize: 24,
                     color: Colors.white,

@@ -4,6 +4,7 @@ import '../data/lecture_data.dart';
 import '../models/exam_subject.dart';
 import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
+import '../widgets/encourage_bar.dart';
 import '../widgets/hscroll_list.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
@@ -24,8 +25,10 @@ class HomeScreen extends StatelessWidget {
     return ColoredBox(
       color: OttColors.bg,
       child: ListView(
-        padding: const EdgeInsets.only(bottom: 28),
+        padding: const EdgeInsets.only(top: 14, bottom: 28),
         children: [
+          const EncourageBar(),
+          const SizedBox(height: 14),
           const _HomeRollingBanner(),
           const SizedBox(height: 22),
           const _HeroBanner(),
@@ -138,8 +141,15 @@ class _HeroBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '가맹거래사 1차 시험\n가장 스마트하게, 가장 콤팩트하게 준비하세요',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, height: 1.3),
+            '가맹거래사 1차 시험',
+            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: Colors.white),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            '가장 스마트하게, 가장 콤팩트하게 준비하세요',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.2),
           ),
           const SizedBox(height: 22),
           GestureDetector(
