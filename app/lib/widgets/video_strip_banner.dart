@@ -158,7 +158,8 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
           ),
         Positioned(
           right: ctaPad,
-          bottom: isDesktop ? 28 : 16,
+          // PC: 영상 속 반짝이는 별 아이콘 높이에 맞춰 버튼을 위로 올림.
+          bottom: isDesktop ? 92 : 16,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
