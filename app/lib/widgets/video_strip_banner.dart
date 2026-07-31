@@ -20,7 +20,7 @@ class VideoStripBanner extends StatefulWidget {
   const VideoStripBanner({
     super.key,
     this.videoAsset = 'assets/videos/studybox_intro.mp4',
-    this.aspectRatio = 3.6,
+    this.aspectRatio = 16 / 9,
     this.onCtaTap,
     required this.navSelectedIndex,
     required this.onNavSelected,
@@ -209,7 +209,7 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ClipRect(
       child: AspectRatio(
-        aspectRatio: isDesktop ? widget.aspectRatio : 16 / 9,
+        aspectRatio: widget.aspectRatio,
         child: ColoredBox(color: Colors.black, child: _videoBox(isDesktop)),
       ),
     );
