@@ -87,7 +87,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // 홈 화면 영상 히어로의 "지금 학습 시작하기" CTA → 가맹거래사 CertificateMenuScreen으로
+    // 홈 화면 "지금 학습 시작하기" 배너 → 가맹거래사 CertificateMenuScreen으로
     // 바로 이동한다(자격증 탭은 상단 메뉴에서 숨겨져 더 이상 경유하지 않음).
     await tester.tap(find.text('지금 학습 시작하기'));
     await tester.pump(const Duration(milliseconds: 300));

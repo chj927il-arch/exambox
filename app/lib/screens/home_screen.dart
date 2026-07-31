@@ -8,7 +8,6 @@ import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
-import '../widgets/video_strip_banner.dart';
 import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
 import 'lecture_grid_screen.dart';
@@ -17,28 +16,25 @@ import 'review_screen.dart';
 import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
 
-/// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 히어로 배너 + 가로 포스터행)로 개편.
+/// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
 class HomeScreen extends StatelessWidget {
-  final int navSelectedIndex;
-  final ValueChanged<int> onNavSelected;
-  const HomeScreen({super.key, required this.navSelectedIndex, required this.onNavSelected});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 영상이 화면 맨 위(y=0)에서 시작해 투명 헤더가 그 위에 떠 있는 형태라
-    // 영상을 맨 먼저 배치하고 위쪽 여백도 없앤다. (모바일도 동일하게 영상 히어로를 사용)
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
       child: ListView(
-        padding: const EdgeInsets.only(top: 0, bottom: 28),
+        padding: const EdgeInsets.only(top: 22, bottom: 28),
         children: [
-          VideoStripBanner(
-            navSelectedIndex: navSelectedIndex,
-            onNavSelected: onNavSelected,
-            onCtaTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _StartStudyBanner(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
+                ),
               ),
             ),
           ),
@@ -110,6 +106,55 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 10),
           const _ReviewCarousel(),
         ],
+      ),
+    );
+  }
+}
+
+/// 영상 히어로를 대체하는 심플한 학습 시작 배너 — 가맹거래사 학습 화면으로 바로 이동.
+class _StartStudyBanner extends StatelessWidget {
+  final VoidCallback onTap;
+  const _StartStudyBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+              colors: [OttColors.accentStart, OttColors.accentStart.withValues(alpha: 0.7)],
+            ),
+          ),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'STUDY BOX',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 1),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      '지금 학습 시작하기',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 26),
+            ],
+          ),
+        ),
       ),
     );
   }

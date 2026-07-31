@@ -22,27 +22,12 @@ class RootScreen extends StatefulWidget {
 
 class _RootScreenState extends State<RootScreen> {
   int _tabIndex = 0;
-  bool _homeHeaderSolid = false;
-  static const double _solidThreshold = 220;
-
-  bool _onHomeScrollNotification(ScrollNotification notification) {
-    if (_tabIndex != 0) return false;
-    // 홈 화면 안에는 가로로 계속 흘러가는 배너/마퀴 위젯(수강후기 롤링 스트립, 상단 프로모션
-    // 롤링배너 등)이 여러 개 있고, 이들도 스크롤 알림을 발생시켜 이 리스너까지 올라온다.
-    // 세로 스크롤이 아닌 알림(가로 스크롤)은 페이지 스크롤과 무관하니 무시해야 한다.
-    if (notification.metrics.axis != Axis.vertical) return false;
-    final solid = notification.metrics.pixels > _solidThreshold;
-    if (solid != _homeHeaderSolid) {
-      setState(() => _homeHeaderSolid = solid);
-    }
-    return false;
-  }
 
   final List<GlobalKey<NavigatorState>> _navKeys =
       List.generate(_kTabCount, (_) => GlobalKey<NavigatorState>());
 
   List<Widget> get _tabScreens => [
-        HomeScreen(navSelectedIndex: _tabIndex, onNavSelected: _onDestinationSelected),
+        const HomeScreen(),
         const LicenseScreen(),
         const NoticeScreen(),
         const FaqScreen(),
@@ -64,15 +49,12 @@ class _RootScreenState extends State<RootScreen> {
     }
   }
 
-  /// PC/모바일 공통 레이아웃 — 홈 탭에서는 영상이 화면 맨 위(가장자리까지)를 채우고,
-  /// 그 위에 헤더가 투명하게 떠 있다가(쿠팡플레이 스타일) 영상을 지나 스크롤하면
-  /// 불투명 배경으로 전환된다. PC/모바일 차이는 전부 폭 제한(maxWidth)과 헤더 내부
-  /// 폰트/패딩 크기뿐 — 구조 자체는 완전히 동일하다.
+  /// PC/모바일 공통 레이아웃 — 상단에 항상 고정 헤더를 두고 그 아래에 탭 콘텐츠를 채운다.
+  /// PC/모바일 차이는 전부 폭 제한(maxWidth)과 헤더 내부 폰트/패딩 크기뿐.
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     final isHome = _tabIndex == 0;
-    final overlay = isHome && !_homeHeaderSolid;
     final maxWidth = isDesktop ? 1200.0 : double.infinity;
 
     return Scaffold(
@@ -83,43 +65,39 @@ class _RootScreenState extends State<RootScreen> {
             fit: StackFit.expand,
             children: [
               Positioned.fill(
-                top: isHome ? 0 : _kHeaderHeight,
+                top: _kHeaderHeight,
                 child: ColoredBox(
                   color: isHome ? OttColors.bg : AppColors.bgBase,
                   child: Center(
                     child: ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: maxWidth),
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: _onHomeScrollNotification,
-                        child: isHome
-                            ? IndexedStack(
+                      child: isHome
+                          ? IndexedStack(
+                              index: _tabIndex,
+                              children: List.generate(_kTabCount, _buildTabNavigator),
+                            )
+                          : AppBackground(
+                              child: IndexedStack(
                                 index: _tabIndex,
                                 children: List.generate(_kTabCount, _buildTabNavigator),
-                              )
-                            : AppBackground(
-                                child: IndexedStack(
-                                  index: _tabIndex,
-                                  children: List.generate(_kTabCount, _buildTabNavigator),
-                                ),
                               ),
-                      ),
+                            ),
                     ),
                   ),
                 ),
               ),
-              if (!overlay)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  height: _kHeaderHeight,
-                  child: _SiteHeader(
-                    selectedIndex: _tabIndex,
-                    onSelected: _onDestinationSelected,
-                    dark: isHome,
-                    isDesktop: isDesktop,
-                  ),
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: _kHeaderHeight,
+                child: _SiteHeader(
+                  selectedIndex: _tabIndex,
+                  onSelected: _onDestinationSelected,
+                  dark: isHome,
+                  isDesktop: isDesktop,
                 ),
+              ),
             ],
           ),
         ),
