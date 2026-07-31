@@ -111,7 +111,7 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
             top: 26,
             right: titlePad,
             child: Text(
-              'STUDY BOX - 나만의 화면 속, 합격 상자가 열린다',
+              'STUDY BOX - 네모난 화면 속, 합격 상자가 열린다',
               maxLines: 1,
               style: GoogleFonts.blackHanSans(
                 fontSize: 22,
@@ -135,7 +135,7 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'STUDY BOX - 나만의 화면 속, 합격 상자가 열린다',
+                  'STUDY BOX - 네모난 화면 속, 합격 상자가 열린다',
                   maxLines: 2,
                   style: GoogleFonts.blackHanSans(
                     fontSize: 15,
@@ -181,7 +181,7 @@ class _VideoStripBannerState extends State<VideoStripBanner> {
                       style: GoogleFonts.notoSansKr(
                         color: const Color(0xFF1B1240),
                         fontWeight: FontWeight.w800,
-                        fontSize: isDesktop ? 16 : 13,
+                        fontSize: isDesktop ? 18 : 13,
                       ),
                     ),
                   ],

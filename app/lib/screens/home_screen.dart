@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
 import '../models/exam_subject.dart';
+import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
@@ -25,11 +27,15 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // 영상이 화면 맨 위(y=0)에서 시작해 투명 헤더가 그 위에 떠 있는 형태라
     // 영상을 맨 먼저 배치하고 위쪽 여백도 없앤다. (모바일도 동일하게 영상 히어로를 사용)
+    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
       child: ListView(
         padding: const EdgeInsets.only(top: 0, bottom: 28),
         children: [
+          // PC: 영상 위쪽에 STUDY BOX 타이틀 + 좌우 2단 롤링배너를 얹은 헤더 스트립.
+          // 모바일: 일단 타이틀만 동일한 자리에 배치(롤링배너는 폭이 좁아 추후 검토).
+          if (isDesktop) const _TopPromoStrip() else const _MobileTopTitle(),
           VideoStripBanner(
             navSelectedIndex: navSelectedIndex,
             onNavSelected: onNavSelected,
@@ -84,6 +90,91 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 10),
           const _ReviewCarousel(),
         ],
+      ),
+    );
+  }
+}
+
+const double _kSideBannerWidth = 260;
+const double _kSideBannerBoxHeight = 130;
+
+/// 좌측(스터디박스 활용방법)·우측(무료베타서비스) 배너 이미지 — 각각 한 개씩만 표시(중복 없음).
+const String _kLeftBannerImage = 'assets/images/side_banner_studybox_guide.png';
+const String _kRightBannerImage = 'assets/images/side_banner_free_beta.png';
+
+class _SideBannerImageBox extends StatelessWidget {
+  final String asset;
+  const _SideBannerImageBox({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    // 배너 영역(260x130)에 맞춰 원본 이미지를 devicePixelRatio 반영 크기로 미리 디코드해서
+    // 흐릿하게 늘어나 보이지 않고 선명하게 그려지도록 한다(포스터 카드와 동일한 기법).
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (_kSideBannerWidth * dpr).round();
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+      child: Image(
+        image: ResizeImage(AssetImage(asset), width: cacheWidth),
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
+      ),
+    );
+  }
+}
+
+/// PC 전용 상단 프로모션 스트립 — STUDY BOX 메인 타이틀을 중앙에 두고,
+/// 좌측엔 위아래로 슬라이드 전환되는 2단 롤링배너, 우측엔 좌우로 슬라이드 전환되는 2단 롤링배너를 배치한다.
+class _TopPromoStrip extends StatelessWidget {
+  const _TopPromoStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: _kSideBannerWidth,
+            height: _kSideBannerBoxHeight,
+            child: const _SideBannerImageBox(asset: _kLeftBannerImage),
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                'STUDY BOX',
+                style: GoogleFonts.blackHanSans(fontSize: 48, color: Colors.white, letterSpacing: 1.4),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: _kSideBannerWidth,
+            height: _kSideBannerBoxHeight,
+            child: const _SideBannerImageBox(asset: _kRightBannerImage),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 모바일 전용 상단 타이틀 — PC의 _TopPromoStrip과 동일한 자리에 STUDY BOX 타이틀만 우선 배치.
+/// 롤링배너는 모바일 화면 폭이 좁아 아직 넣지 않음(추후 검토).
+class _MobileTopTitle extends StatelessWidget {
+  const _MobileTopTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+      child: Center(
+        child: Text(
+          'STUDY BOX',
+          style: GoogleFonts.blackHanSans(fontSize: 28, color: Colors.white, letterSpacing: 1),
+        ),
       ),
     );
   }

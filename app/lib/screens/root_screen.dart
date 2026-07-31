@@ -23,10 +23,14 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   int _tabIndex = 0;
   bool _homeHeaderSolid = false;
+  // PC는 영상 위에 STUDY BOX 타이틀 + 롤링배너 스트립(_TopPromoStrip)이 추가로 있어
+  // 히어로 영역이 모바일보다 훨씬 길다 — 그 차이를 반영하지 않으면 헤더가 너무 일찍
+  // 불투명해져서 영상 안 타이틀/메뉴와 겹쳐 보인다. build()에서 갱신된다.
+  double _solidThreshold = 220;
 
   bool _onHomeScrollNotification(ScrollNotification notification) {
     if (_tabIndex != 0) return false;
-    final solid = notification.metrics.pixels > 220;
+    final solid = notification.metrics.pixels > _solidThreshold;
     if (solid != _homeHeaderSolid) {
       setState(() => _homeHeaderSolid = solid);
     }
@@ -69,6 +73,8 @@ class _RootScreenState extends State<RootScreen> {
     final isHome = _tabIndex == 0;
     final overlay = isHome && !_homeHeaderSolid;
     final maxWidth = isDesktop ? 1200.0 : double.infinity;
+    // PC 히어로(프로모션 스트립+영상)를 완전히 지나야 헤더가 불투명해지도록 임계값을 갱신.
+    _solidThreshold = isDesktop ? 460 : 280;
 
     return Scaffold(
       body: ColoredBox(

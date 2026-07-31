@@ -64,6 +64,8 @@ flutter:
     - assets/images/rolling_banner_chapter.png
     - assets/images/top_banner_studybox.png
     - assets/images/top_banner_beta.png
+    - assets/images/side_banner_studybox_guide.png
+    - assets/images/side_banner_free_beta.png
     - assets/images/rolling_banner_update.png
     - assets/images/daily_ox_banner.png
     - assets/images/motivation_strip.png
