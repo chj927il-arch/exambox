@@ -8,6 +8,7 @@ import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
 import '../widgets/marquee_row.dart';
+import '../widgets/rolling_banner.dart';
 import '../widgets/video_strip_banner.dart';
 import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
@@ -45,6 +46,29 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 22),
+          // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
+          if (isDesktop)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: _ParallelPromoBanners(),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: const RollingBanner(
+                    banners: [
+                      BannerItem(imageAsset: 'assets/images/rolling_banner_update.png'),
+                      BannerItem(imageAsset: 'assets/images/rolling_banner_chapter.png'),
+                      BannerItem(imageAsset: 'assets/images/rolling_banner_premium.png'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -95,6 +119,48 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+/// PC 전용 — 영상 바로 아래 프로모션 배너 3개를 롤링 대신 나란히 병렬 배치.
+/// (모바일은 폭이 좁아 계속 롤링 캐러셀을 사용한다.)
+const List<String> _kParallelBannerAssets = [
+  'assets/images/rolling_banner_update.png',
+  'assets/images/rolling_banner_chapter.png',
+  'assets/images/rolling_banner_premium.png',
+];
+
+class _ParallelPromoBanners extends StatelessWidget {
+  const _ParallelPromoBanners();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < _kParallelBannerAssets.length; i++) ...[
+          if (i > 0) const SizedBox(width: 16),
+          Expanded(child: _ParallelBannerCard(asset: _kParallelBannerAssets[i])),
+        ],
+      ],
+    );
+  }
+}
+
+class _ParallelBannerCard extends StatelessWidget {
+  final String asset;
+  const _ParallelBannerCard({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      // 배너 원본 이미지가 대략 3:1 비율이라 셋 다 동일하게 맞춘다.
+      aspectRatio: 3,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Image.asset(asset, fit: BoxFit.cover),
+      ),
+    );
+  }
+}
+
 const double _kSideBannerWidth = 260;
 const double _kSideBannerBoxHeight = 130;
 
@@ -125,6 +191,10 @@ class _SideBannerImageBox extends StatelessWidget {
   }
 }
 
+/// 좌우 배너를 임시로 숨김 처리(요청). 자리(폭)는 유지해 타이틀이 안 밀리게 하고,
+/// 다시 켤 땐 이 값만 true로 바꾸면 됨.
+const bool _kShowSideBanners = false;
+
 /// PC 전용 상단 프로모션 스트립 — STUDY BOX 메인 타이틀을 중앙에 두고,
 /// 좌측엔 위아래로 슬라이드 전환되는 2단 롤링배너, 우측엔 좌우로 슬라이드 전환되는 2단 롤링배너를 배치한다.
 class _TopPromoStrip extends StatelessWidget {
@@ -140,7 +210,7 @@ class _TopPromoStrip extends StatelessWidget {
           SizedBox(
             width: _kSideBannerWidth,
             height: _kSideBannerBoxHeight,
-            child: const _SideBannerImageBox(asset: _kLeftBannerImage),
+            child: _kShowSideBanners ? const _SideBannerImageBox(asset: _kLeftBannerImage) : null,
           ),
           Expanded(
             child: Center(
@@ -153,7 +223,7 @@ class _TopPromoStrip extends StatelessWidget {
           SizedBox(
             width: _kSideBannerWidth,
             height: _kSideBannerBoxHeight,
-            child: const _SideBannerImageBox(asset: _kRightBannerImage),
+            child: _kShowSideBanners ? const _SideBannerImageBox(asset: _kRightBannerImage) : null,
           ),
         ],
       ),

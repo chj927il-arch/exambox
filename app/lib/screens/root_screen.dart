@@ -30,6 +30,10 @@ class _RootScreenState extends State<RootScreen> {
 
   bool _onHomeScrollNotification(ScrollNotification notification) {
     if (_tabIndex != 0) return false;
+    // 홈 화면 안에는 가로로 계속 흘러가는 배너/마퀴 위젯(수강후기 롤링 스트립, 상단 프로모션
+    // 롤링배너 등)이 여러 개 있고, 이들도 스크롤 알림을 발생시켜 이 리스너까지 올라온다.
+    // 세로 스크롤이 아닌 알림(가로 스크롤)은 페이지 스크롤과 무관하니 무시해야 한다.
+    if (notification.metrics.axis != Axis.vertical) return false;
     final solid = notification.metrics.pixels > _solidThreshold;
     if (solid != _homeHeaderSolid) {
       setState(() => _homeHeaderSolid = solid);

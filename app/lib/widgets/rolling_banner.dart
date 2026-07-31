@@ -113,7 +113,9 @@ class _BannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (item.imageAsset != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        // 이미지 자체에 남아있는 둥근 모서리(라운드 카드 그래픽) 바깥쪽 흰 픽셀이 우리
+        // 카드 모서리 클리핑보다 더 크게 남아있을 수 있어, 확실히 가리도록 넉넉하게 잡는다.
+        borderRadius: BorderRadius.circular(28),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
