@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/feature_flags.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
 import '../models/exam_subject.dart';
@@ -31,6 +32,8 @@ class HomeScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: _StartStudyBanner(
+              title: '지금 학습 시작하기',
+              subtitle: '가맹거래사',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
@@ -38,6 +41,22 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          if (kKoreanHistoryEnabled) ...[
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _StartStudyBanner(
+                title: '한국사능력검정 학습하기',
+                subtitle: '한국사능력검정',
+                color: AppColors.accentPurple,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 22),
           // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
           if (isDesktop)
@@ -111,10 +130,18 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// 영상 히어로를 대체하는 심플한 학습 시작 배너 — 가맹거래사 학습 화면으로 바로 이동.
+/// 영상 히어로를 대체하는 심플한 학습 시작 배너 — 해당 자격증 학습 화면으로 바로 이동.
 class _StartStudyBanner extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Color color;
   final VoidCallback onTap;
-  const _StartStudyBanner({required this.onTap});
+  const _StartStudyBanner({
+    required this.title,
+    required this.subtitle,
+    this.color = OttColors.accentStart,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -129,24 +156,24 @@ class _StartStudyBanner extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: LinearGradient(
-              colors: [OttColors.accentStart, OttColors.accentStart.withValues(alpha: 0.7)],
+              colors: [color, color.withValues(alpha: 0.7)],
             ),
           ),
           child: Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'STUDY BOX',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 1),
+                      subtitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 1),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      '지금 학습 시작하기',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                      title,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
                     ),
                   ],
                 ),
