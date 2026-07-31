@@ -25,6 +25,6 @@ const List<ExamSubject> examSubjects = [
   ExamSubject(
     id: 'business_admin',
     name: '경영학',
-    categories: ['재무관리', '마케팅', '조직행동', '생산관리'],
+    categories: ['회계', '재무관리', '마케팅', '조직행동·인사관리', '생산관리', '경영정보시스템'],
   ),
 ];

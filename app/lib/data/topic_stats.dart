@@ -86,11 +86,16 @@ const List<TopicStat> civilLawTopicStats = [
   TopicStat(topic: '민법의 법원(法源)', questionCount: 12, totalQuestions: 440),
 ];
 
+/// 경영학 — 2019·2021~2026년(7개년, 회당 40문항) 표본 분석 결과.
+/// 2016~2018년은 PDF 텍스트 추출 시 폰트 인코딩 문제로 문항을 정확히 읽어낼 수 없어 제외했고,
+/// 2020년은 스캔 이미지 PDF라 텍스트 추출 자체가 불가해 제외했다. 분류 가능했던 228문항 기준.
 const List<TopicStat> businessAdminTopicStats = [
-  TopicStat(topic: '재무관리', questionCount: 0, totalQuestions: 0),
-  TopicStat(topic: '마케팅', questionCount: 0, totalQuestions: 0),
-  TopicStat(topic: '조직행동', questionCount: 0, totalQuestions: 0),
-  TopicStat(topic: '생산관리', questionCount: 0, totalQuestions: 0),
+  TopicStat(topic: '회계', questionCount: 49, totalQuestions: 228),
+  TopicStat(topic: '마케팅', questionCount: 45, totalQuestions: 228),
+  TopicStat(topic: '조직행동·인사관리', questionCount: 40, totalQuestions: 228),
+  TopicStat(topic: '재무관리', questionCount: 34, totalQuestions: 228),
+  TopicStat(topic: '생산관리', questionCount: 33, totalQuestions: 228),
+  TopicStat(topic: '경영정보시스템', questionCount: 27, totalQuestions: 228),
 ];
 
 /// 한국사능력검정시험(심화) — 시대별 6구간 출제 비중.
@@ -120,7 +125,7 @@ const List<TopicStat> koreanHistoryBasicTopicStats = [
 const Map<String, bool> subjectStatsIsAnalyzed = {
   'economic_law': true,
   'civil_law': true,
-  'business_admin': false,
+  'business_admin': true,
   'korean_history': true,
   'korean_history_basic': true,
 };
