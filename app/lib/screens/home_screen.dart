@@ -41,22 +41,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          if (kKoreanHistoryEnabled) ...[
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _StartStudyBanner(
-                title: '한국사능력검정 학습하기',
-                subtitle: '한국사능력검정',
-                color: AppColors.accentPurple,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
-                  ),
-                ),
-              ),
-            ),
-          ],
           const SizedBox(height: 22),
           // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
           if (isDesktop)
@@ -100,6 +84,15 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           const _LectureGrid(),
+          if (kKoreanHistoryEnabled) ...[
+            const SizedBox(height: 22),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: _RowHeader(title: '한능검 특강'),
+            ),
+            const SizedBox(height: 10),
+            const _KoreanHistoryLectureGrid(),
+          ],
           const SizedBox(height: 22),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
@@ -134,14 +127,8 @@ class HomeScreen extends StatelessWidget {
 class _StartStudyBanner extends StatelessWidget {
   final String title;
   final String subtitle;
-  final Color color;
   final VoidCallback onTap;
-  const _StartStudyBanner({
-    required this.title,
-    required this.subtitle,
-    this.color = OttColors.accentStart,
-    required this.onTap,
-  });
+  const _StartStudyBanner({required this.title, required this.subtitle, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +143,7 @@ class _StartStudyBanner extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: LinearGradient(
-              colors: [color, color.withValues(alpha: 0.7)],
+              colors: [OttColors.accentStart, OttColors.accentStart.withValues(alpha: 0.7)],
             ),
           ),
           child: Row(
@@ -312,17 +299,53 @@ class _RowHeader extends StatelessWidget {
   }
 }
 
-/// 과목(경제법·민법·경영학) 포스터 카드 — 표지 이미지 + 하단 정보 패널(다크 카드).
+/// 과목(경제법·민법·경영학[·한국사능력검정]) 포스터 카드 — 표지 이미지 + 하단 정보 패널(다크 카드).
+/// 한국사능력검정은 가맹거래사 시험과목이 아닌 별도 자격증이라 examSubjects에는 넣지 않고,
+/// 이 행 끝에만 조건부로 덧붙여 CertificateMenuScreen(korean_history)로 바로 연결한다.
 class _SubjectPosterRow extends StatelessWidget {
   const _SubjectPosterRow();
 
   @override
   Widget build(BuildContext context) {
+    final itemCount = examSubjects.length + (kKoreanHistoryEnabled ? 1 : 0);
     return HScrollList(
       height: kLecturePosterHeight,
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: examSubjects.length,
-      itemBuilder: (context, index) => SubjectPosterCard(subject: examSubjects[index]),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        if (index < examSubjects.length) {
+          return SubjectPosterCard(subject: examSubjects[index]);
+        }
+        return const _KoreanHistorySubjectCard();
+      },
+    );
+  }
+}
+
+class _KoreanHistorySubjectCard extends StatelessWidget {
+  const _KoreanHistorySubjectCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+        ),
+      ),
+      child: Container(
+        width: kLecturePosterWidth,
+        height: kLecturePosterHeight,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: OttColors.border),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+          ],
+        ),
+        child: const TintedPoster(imageAsset: 'assets/images/subject_cover_korean_history.png'),
+      ),
     );
   }
 }
@@ -426,6 +449,37 @@ class _LectureGrid extends StatelessWidget {
       itemCount: civilLawLectures.length,
       itemBuilder: (context, index) {
         final item = civilLawLectures[index];
+        return LectureCoverCard(
+          imageAsset: item.imageAsset,
+          onTap: (context) => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => LectureIntroScreen(
+                title: item.title,
+                keyPoints: item.keyPoints,
+                subjectId: item.subjectId,
+                subjectName: item.subjectName,
+                category: item.category,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 한능검 특강 — 민법 특강과 동일한 포스터형 카드. 데이터는 lecture_data.dart의 koreanHistoryLectures.
+class _KoreanHistoryLectureGrid extends StatelessWidget {
+  const _KoreanHistoryLectureGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return HScrollList(
+      height: kLecturePosterHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: koreanHistoryLectures.length,
+      itemBuilder: (context, index) {
+        final item = koreanHistoryLectures[index];
         return LectureCoverCard(
           imageAsset: item.imageAsset,
           onTap: (context) => Navigator.of(context).push(

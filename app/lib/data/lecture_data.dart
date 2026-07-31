@@ -97,3 +97,32 @@ const List<LectureItem> civilLawLectures = [
     category: '동시이행항변권',
   ),
 ];
+
+/// 한능검 특강 카드 데이터 — 시대별 그리드(고려/조선/근현대사). 이미지는 예전에 만들어둔 것을 재사용.
+/// TODO: keyPoints는 우선 자리만 채워둔 상태 — 나중에 시대별 핵심 개념으로 교체.
+const List<LectureItem> koreanHistoryLectures = [
+  LectureItem(
+    imageAsset: 'assets/images/lecture_cover_goryeo_history.png',
+    title: '고려',
+    keyPoints: ['추후 업데이트 예정'],
+    subjectId: 'korean_history',
+    subjectName: '한국사능력검정시험(심화)',
+    category: '고려',
+  ),
+  LectureItem(
+    imageAsset: 'assets/images/lecture_cover_joseon_history.png',
+    title: '조선',
+    keyPoints: ['추후 업데이트 예정'],
+    subjectId: 'korean_history',
+    subjectName: '한국사능력검정시험(심화)',
+    category: '조선전기',
+  ),
+  LectureItem(
+    imageAsset: 'assets/images/lecture_cover_modern_history.jpg',
+    title: '근현대사',
+    keyPoints: ['추후 업데이트 예정'],
+    subjectId: 'korean_history',
+    subjectName: '한국사능력검정시험(심화)',
+    category: '일제강점기와 현대',
+  ),
+];
