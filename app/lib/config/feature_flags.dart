@@ -4,7 +4,7 @@ library;
 
 /// 한국사능력검정시험 관련 화면(자격증 메뉴, 홈 배너/특강, 데일리 OX 필터) 노출 여부.
 /// 2026-07-30: 가맹거래사 1차 시험 앱으로 개편하며 비활성화. 다시 노출하려면 true로 변경.
-const bool kKoreanHistoryEnabled = true;
+const bool kKoreanHistoryEnabled = false;
 
 /// 가맹거래사 외 나머지 자격증(공인노무사·변리사·정보처리기사·SQLD·NCS 등) 노출 여부.
 /// 2026-07-30: 초반엔 가맹거래사 전문 앱으로 집중하기 위해 비활성화.
