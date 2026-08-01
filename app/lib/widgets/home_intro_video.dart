@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 
 import '../theme/app_theme.dart';
@@ -86,20 +87,65 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
         aspectRatio: displayRatio,
         child: ColoredBox(
           color: OttColors.surface,
-          // 웹에서 video_player는 실제 <video> DOM 엘리먼트로 그려져 그 위/아래로
-          // 스크롤하려는 터치·휠 이벤트를 영상이 가로채 스크롤이 멈칫거리는 문제가
-          // 있었다. 영상 레이어는 포인터 이벤트를 무시하게 해서 스크롤이 항상
-          // 부모 ListView로 전달되도록 한다.
-          child: IgnorePointer(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              clipBehavior: Clip.hardEdge,
-              child: SizedBox(
-                width: controller.value.size.width,
-                height: controller.value.size.height,
-                child: VideoPlayer(controller),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // 웹에서 video_player는 실제 <video> DOM 엘리먼트로 그려져 그 위/아래로
+              // 스크롤하려는 터치·휠 이벤트를 영상이 가로채 스크롤이 멈칫거리는 문제가
+              // 있었다. 영상 레이어는 포인터 이벤트를 무시하게 해서 스크롤이 항상
+              // 부모 ListView로 전달되도록 한다.
+              IgnorePointer(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: controller.value.size.width,
+                    height: controller.value.size.height,
+                    child: VideoPlayer(controller),
+                  ),
+                ),
               ),
-            ),
+              if (!_isDesktop) ...[
+                IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black.withValues(alpha: 0.55), Colors.black.withValues(alpha: 0.0)],
+                        stops: const [0.0, 0.6],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 14,
+                  child: IgnorePointer(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '매일의 공부를 함께 달립니다',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '당신의 수험 생활, 가장 든든한 페이스메이커',
+                          style: GoogleFonts.blackHanSans(fontSize: 17, color: Colors.white, height: 1.2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
