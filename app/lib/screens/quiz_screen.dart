@@ -27,7 +27,10 @@ class QuizScreen extends StatefulWidget {
   /// 지정하면 해당 챕터(유형)의 문제만 필터링해서 보여준다.
   final String? category;
 
-  const QuizScreen({super.key, required this.subjectId, required this.subjectName, this.category});
+  /// 지정하면 같은 category 안에서도 이 하위 유형(subTopic)의 문제만 필터링한다.
+  final String? subTopic;
+
+  const QuizScreen({super.key, required this.subjectId, required this.subjectName, this.category, this.subTopic});
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -50,7 +53,10 @@ class _QuizScreenState extends State<QuizScreen> {
   void initState() {
     super.initState();
     _questions = sampleQuestions
-        .where((q) => q.subjectId == widget.subjectId && (widget.category == null || q.category == widget.category))
+        .where((q) =>
+            q.subjectId == widget.subjectId &&
+            (widget.category == null || q.category == widget.category) &&
+            (widget.subTopic == null || q.subTopic == widget.subTopic))
         .toList();
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});

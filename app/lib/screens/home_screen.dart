@@ -84,6 +84,20 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           const _LectureGrid(),
+          const SizedBox(height: 22),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(title: '경영학 특강'),
+          ),
+          const SizedBox(height: 10),
+          const _IconLectureGrid(lectures: businessAdminLectures),
+          const SizedBox(height: 22),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(title: '경제법 특강'),
+          ),
+          const SizedBox(height: 10),
+          const _IconLectureGrid(lectures: economicLawLectures),
           if (kKoreanHistoryEnabled) ...[
             const SizedBox(height: 22),
             const Padding(
@@ -463,7 +477,7 @@ class _LectureGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = civilLawLectures[index];
         return LectureCoverCard(
-          imageAsset: item.imageAsset,
+          imageAsset: item.imageAsset!,
           onTap: (context) => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => LectureIntroScreen(
@@ -494,7 +508,7 @@ class _KoreanHistoryLectureGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = koreanHistoryLectures[index];
         return LectureCoverCard(
-          imageAsset: item.imageAsset,
+          imageAsset: item.imageAsset!,
           onTap: (context) => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => LectureIntroScreen(
@@ -533,6 +547,94 @@ class LectureCoverCard extends StatelessWidget {
           ],
         ),
         child: TintedPoster(imageAsset: imageAsset),
+      ),
+    );
+  }
+}
+
+/// 표지 이미지가 없는 특강(경영학·경제법) 그리드 — 아이콘형 카드로 대체 표시.
+class _IconLectureGrid extends StatelessWidget {
+  final List<LectureItem> lectures;
+  const _IconLectureGrid({required this.lectures});
+
+  @override
+  Widget build(BuildContext context) {
+    return HScrollList(
+      height: kLecturePosterHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: lectures.length,
+      itemBuilder: (context, index) {
+        final item = lectures[index];
+        return _IconLectureCard(
+          item: item,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => LectureIntroScreen(
+                title: item.title,
+                keyPoints: item.keyPoints,
+                subjectId: item.subjectId,
+                subjectName: item.subjectName,
+                category: item.category,
+                subTopic: item.subTopic,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _IconLectureCard extends StatelessWidget {
+  final LectureItem item;
+  final VoidCallback onTap;
+  const _IconLectureCard({required this.item, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = subjectStyleOf(item.styleKey ?? item.subjectId);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: kLecturePosterWidth,
+        height: kLecturePosterHeight,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: OttColors.border),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [style.color, style.color.withValues(alpha: 0.7)],
+                ),
+              ),
+            ),
+            Positioned(left: 10, top: 12, child: Icon(style.icon, color: Colors.white, size: 26)),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                child: Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.25),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

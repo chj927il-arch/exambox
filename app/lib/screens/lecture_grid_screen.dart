@@ -25,7 +25,7 @@ class LectureGridScreen extends StatelessWidget {
           children: civilLawLectures
               .map(
                 (item) => LectureCoverCard(
-                  imageAsset: item.imageAsset,
+                  imageAsset: item.imageAsset!,
                   onTap: (context) => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => LectureIntroScreen(

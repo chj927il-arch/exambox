@@ -1,19 +1,30 @@
 /// 민법 특강 카드 데이터 — 홈 화면 가로 스크롤 그리드와 "더보기" 전체 그리드 화면이 공유한다.
 class LectureItem {
-  final String imageAsset;
+  /// 표지 이미지가 아직 없는 특강(예: 경영학·경제법 특강)은 null — 이 경우 [styleKey]로
+  /// subjectStyleOf에서 아이콘·색상을 가져와 아이콘형 카드로 대체 표시한다.
+  final String? imageAsset;
   final String title;
   final List<String> keyPoints;
   final String subjectId;
   final String subjectName;
   final String category;
 
+  /// 같은 category 안에서 더 세부적으로 필터링할 하위 유형(subTopic). 지정하지 않으면
+  /// 해당 category 전체 문제를 보여준다.
+  final String? subTopic;
+
+  /// imageAsset이 없을 때 subjectStyleOf(styleKey)로 아이콘·색상을 조회하기 위한 키.
+  final String? styleKey;
+
   const LectureItem({
-    required this.imageAsset,
+    this.imageAsset,
     required this.title,
     required this.keyPoints,
     required this.subjectId,
     required this.subjectName,
     required this.category,
+    this.subTopic,
+    this.styleKey,
   });
 }
 
@@ -124,5 +135,177 @@ const List<LectureItem> koreanHistoryLectures = [
     subjectId: 'korean_history',
     subjectName: '한국사능력검정시험(심화)',
     category: '일제강점기와 현대',
+  ),
+];
+
+/// 경영학 특강 — 표지 이미지가 아직 없어 아이콘형 카드로 표시(styleKey로 아이콘·색상 지정).
+/// 기출 분석상 비중이 높은 회계·마케팅 위주로 6개 선정.
+const List<LectureItem> businessAdminLectures = [
+  LectureItem(
+    title: '재무제표의 이해',
+    styleKey: 'ba_financial_statements',
+    keyPoints: [
+      '재무상태표는 특정 시점의 자산·부채·자본을, 포괄손익계산서는 일정 기간의 수익·비용을 나타낸다',
+      '전체 재무제표는 재무상태표·포괄손익계산서·자본변동표·현금흐름표·주석 5가지로 구성된다',
+      '회계정보의 질적 특성은 근본적 특성(목적적합성·표현충실성)과 보강적 특성(비교가능성·검증가능성·적시성·이해가능성)으로 나뉜다',
+      '재무상태표는 유동성배열법에 따라 현금화가 빠른 자산부터 먼저 배열한다',
+    ],
+    subjectId: 'business_admin',
+    subjectName: '경영학',
+    category: '회계',
+    subTopic: '재무제표의 이해',
+  ),
+  LectureItem(
+    title: '재고자산과 매출원가',
+    styleKey: 'ba_inventory',
+    keyPoints: [
+      '매출원가 = 기초재고액 + 당기매입액 − 기말재고액',
+      '물가상승 시 매출총이익 크기는 후입선출법 < 이동평균법 < 선입선출법 순으로 나타난다',
+      '저가법은 취득원가와 순실현가능가치 중 낮은 금액으로 재고자산을 평가하는 방법이다',
+      '계속기록법과 실지재고조사법을 병행하면 재고자산감모손실을 파악할 수 있다',
+    ],
+    subjectId: 'business_admin',
+    subjectName: '경영학',
+    category: '회계',
+    subTopic: '재고자산 평가와 매출원가',
+  ),
+  LectureItem(
+    title: '시장세분화·표적시장·포지셔닝',
+    styleKey: 'ba_stp',
+    keyPoints: [
+      'STP는 시장세분화(Segmentation) → 표적시장 선정(Targeting) → 포지셔닝(Positioning) 순으로 진행된다',
+      '효과적인 시장세분화는 세분시장 내부는 동질적, 세분시장 간에는 이질적이어야 한다',
+      '표적시장 선정전략에는 비차별적·차별적·집중적 마케팅이 있다',
+      '포지셔닝은 소비자 지각·경쟁 환경 변화에 따라 재포지셔닝될 수 있다',
+    ],
+    subjectId: 'business_admin',
+    subjectName: '경영학',
+    category: '마케팅',
+    subTopic: '시장세분화·표적시장·포지셔닝',
+  ),
+  LectureItem(
+    title: '가격관리',
+    styleKey: 'ba_pricing',
+    keyPoints: [
+      '신제품 가격전략에는 초기고가전략(스키밍)과 시장침투가격전략이 있다',
+      '심리적 가격전략(단수가격·명성가격·준거가격)과 원가중심 가격결정(원가가산법)을 구분해야 한다',
+      '가격차별은 세분시장이 분리되어 있고 재판매가 어려울 때 효과적으로 작동한다',
+      '유보가격은 소비자가 지불할 용의가 있는 최고 가격을 의미한다',
+    ],
+    subjectId: 'business_admin',
+    subjectName: '경영학',
+    category: '마케팅',
+    subTopic: '가격관리',
+  ),
+  LectureItem(
+    title: '유통경로와 촉진전략',
+    styleKey: 'ba_channel',
+    keyPoints: [
+      '유통경로 커버리지는 집중적·선택적·전속적 유통으로 구분되며, 프랜차이즈는 전속적 유통·계약형 VMS의 대표 사례이다',
+      '수직적 마케팅시스템(VMS)은 기업형·계약형·관리형으로 나뉜다',
+      '푸시전략(유통업자 대상)과 풀전략(최종소비자 대상)은 함께 병행되는 경우가 많다',
+      '판매촉진은 단기 매출에, 광고는 장기 브랜드 구축에 효과적이다',
+    ],
+    subjectId: 'business_admin',
+    subjectName: '경영학',
+    category: '마케팅',
+    subTopic: '유통경로와 촉진전략',
+  ),
+  LectureItem(
+    title: '유형자산과 감가상각',
+    styleKey: 'ba_ppe',
+    keyPoints: [
+      '유형자산 취득원가에는 설치비·시운전비 등이 포함되나, 취득 후 수선유지비(수익적 지출)는 제외된다',
+      '정액법은 매기 동일한 금액을, 정률법은 초기에 크고 점차 감소하는 금액을 감가상각비로 인식한다',
+      '자본적 지출을 수익적 지출로 잘못 처리하면 당기순이익이 과소계상된다',
+      '내용연수가 비한정인 무형자산은 상각하지 않고 손상 여부만 검토한다',
+    ],
+    subjectId: 'business_admin',
+    subjectName: '경영학',
+    category: '회계',
+    subTopic: '유형자산과 감가상각',
+  ),
+];
+
+/// 경제법 특강 — 표지 이미지가 아직 없어 아이콘형 카드로 표시(styleKey로 아이콘·색상 지정).
+/// 11개년 기출 비중 상위 + 가맹거래사 실무 연관성을 함께 고려해 6개 선정.
+const List<LectureItem> economicLawLectures = [
+  LectureItem(
+    title: '시장지배적지위 남용',
+    styleKey: 'el_dominant',
+    keyPoints: [
+      '11개년 기출 440문항 중 41문항으로 단일 챕터 최다 비중',
+      '공정거래법 제5조는 남용행위를 가격 남용·출고조절·사업활동 방해·시장진입 방해·경쟁사업자 배제 등으로 유형화한다',
+      '통상적인 정상 영업활동은 그 자체로 부당성이 인정되지 않아 남용행위에서 제외된다',
+      '시장지배적사업자 추정 요건(시장점유율 등)도 함께 정리해두어야 한다',
+    ],
+    subjectId: 'economic_law',
+    subjectName: '경제법',
+    category: '시장지배적지위 남용',
+  ),
+  LectureItem(
+    title: '자진신고자 감면(리니언시)',
+    styleKey: 'el_leniency',
+    keyPoints: [
+      '담합에 가담한 사업자가 자진신고·조사협조를 하면 과징금·시정조치를 감면해주는 제도이다',
+      '1순위 자진신고자는 과징금 전액 면제, 2순위는 일부 감경이 원칙이다',
+      '자진신고 감면 제외 사유(반복 담합 등)와 감면 신청 순서·요건을 함께 정리해야 한다',
+      '조사 착수 전/후 자진신고 여부에 따라 감면율이 달라질 수 있다',
+    ],
+    subjectId: 'economic_law',
+    subjectName: '경제법',
+    category: '자진신고자 감면',
+  ),
+  LectureItem(
+    title: '거래상지위남용',
+    styleKey: 'el_superior',
+    keyPoints: [
+      '불공정거래행위의 한 유형으로, 가맹본부-가맹점 관계처럼 거래상 지위 차이가 있는 관계에서 실무적으로 자주 문제된다',
+      '구입강제·이익제공 강요·경영간섭·불이익제공 등이 대표적인 행위 유형이다',
+      '시장지배적지위 남용과 달리 시장지배력이 없어도 성립할 수 있다는 점이 핵심 구별점이다',
+      '거래상 지위의 판단은 상대방에 대한 거래의존도 등을 종합적으로 고려한다',
+    ],
+    subjectId: 'economic_law',
+    subjectName: '경제법',
+    category: '거래상지위남용',
+  ),
+  LectureItem(
+    title: '과징금',
+    styleKey: 'el_penalty',
+    keyPoints: [
+      '공정거래법 위반행위에 대해 부과하는 대표적인 행정제재 수단이다',
+      '위반행위 유형별로 과징금 산정 기준(관련매출액 × 부과기준율)이 다르게 적용된다',
+      '가중·감경 사유(자진시정, 조사협조, 반복 위반 등)를 함께 학습해야 한다',
+      '과징금 부과와 별개로 시정조치·고발이 병과될 수 있다',
+    ],
+    subjectId: 'economic_law',
+    subjectName: '경제법',
+    category: '과징금',
+  ),
+  LectureItem(
+    title: '불공정약관조항 무효사유',
+    styleKey: 'el_clause',
+    keyPoints: [
+      '약관법상 신의성실 원칙에 반하여 공정을 잃은 약관조항은 무효이다',
+      '면책조항·손해배상 예정조항·계약 해제·해지 조항 등 유형별 무효사유를 구분해서 학습해야 한다',
+      '일반조항(제6조)과 개별 무효사유(제7조~제14조)의 관계를 함께 정리해야 한다',
+      '약관법 관련 챕터 중 출제 비중이 가장 높은 주제이다',
+    ],
+    subjectId: 'economic_law',
+    subjectName: '경제법',
+    category: '불공정약관조항 무효사유',
+  ),
+  LectureItem(
+    title: '재판매가격유지행위',
+    styleKey: 'el_rpm',
+    keyPoints: [
+      '사업자가 거래상대방에게 자신이 정한 가격대로만 재판매하도록 강제하는 행위이다',
+      '원칙적으로 금지되나, 저작물 등 일부 예외적으로 허용되는 경우가 있다',
+      '최고가격 유지행위와 최저가격 유지행위는 위법성 판단이 다르게 취급된다',
+      '가맹사업 거래에서 가맹본부의 가격 통제와 관련해 실무적으로도 자주 논의되는 주제이다',
+    ],
+    subjectId: 'economic_law',
+    subjectName: '경제법',
+    category: '재판매가격유지행위',
   ),
 ];

@@ -11,6 +11,7 @@ class LectureIntroScreen extends StatelessWidget {
   final String subjectId;
   final String subjectName;
   final String category;
+  final String? subTopic;
 
   const LectureIntroScreen({
     super.key,
@@ -19,6 +20,7 @@ class LectureIntroScreen extends StatelessWidget {
     required this.subjectId,
     required this.subjectName,
     required this.category,
+    this.subTopic,
   });
 
   @override
@@ -85,7 +87,7 @@ class LectureIntroScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => QuizScreen(subjectId: subjectId, subjectName: subjectName, category: category),
+                      builder: (_) => QuizScreen(subjectId: subjectId, subjectName: subjectName, category: category, subTopic: subTopic),
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
