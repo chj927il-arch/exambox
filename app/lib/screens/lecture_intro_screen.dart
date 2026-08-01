@@ -210,7 +210,7 @@ class _HighlightedNote extends StatelessWidget {
       fontSize: 20,
       height: 1.45,
       color: _NotebookColors.penBlue,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w700,
     );
     final highlightTextStyle = GoogleFonts.gaegu(
       fontSize: 20,
