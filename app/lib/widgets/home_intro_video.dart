@@ -8,17 +8,19 @@ import '../theme/ott_theme.dart';
 
 /// 모바일 폭에서 배너를 살짝 더 높게 보여주기 위해 원본 비율에 곱하는 배수(1보다 작을수록 더 높아짐).
 /// 값이 작을수록 영상 좌우가 더 크롭된다 — 과하게 낮추면 중요한 장면이 잘릴 수 있어 소폭만 적용.
-const double _kMobileHeightBoost = 0.94;
+const double _kMobileHeightBoost = 0.9;
 
 /// 홈 화면 상단에 보여주는 인트로 영상 — 소리 없이 무한 자동반복 재생된다.
-/// 데스크톱은 원본 비율 그대로, 모바일은 배너를 살짝 더 높게 보여주기 위해
-/// 영상을 확대해 좌우를 아주 조금만 크롭한다(BoxFit.cover).
+/// 데스크톱과 모바일이 서로 다른 영상 파일을 쓰며, 폭 판정은 최초 빌드 시점에
+/// 한 번만 고정한다(리사이즈 중 폭이 브레이크포인트를 넘나들어도 영상을 다시 로드하지 않음).
 class HomeIntroVideo extends StatefulWidget {
   final String videoAsset;
+  final String mobileVideoAsset;
 
   const HomeIntroVideo({
     super.key,
     this.videoAsset = 'assets/videos/home_intro.mp4',
+    this.mobileVideoAsset = 'assets/videos/home_intro_mobile.mp4',
   });
 
   @override
@@ -28,15 +30,19 @@ class HomeIntroVideo extends StatefulWidget {
 class _HomeIntroVideoState extends State<HomeIntroVideo> {
   VideoPlayerController? _controller;
   bool _ready = false;
+  bool _isDesktop = true;
 
   @override
-  void initState() {
-    super.initState();
-    _initVideo();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_controller == null) {
+      _isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+      _initVideo(_isDesktop ? widget.videoAsset : widget.mobileVideoAsset);
+    }
   }
 
-  void _initVideo() {
-    final controller = VideoPlayerController.asset(widget.videoAsset);
+  void _initVideo(String asset) {
+    final controller = VideoPlayerController.asset(asset);
     _controller = controller;
     controller
         .initialize()
@@ -71,9 +77,8 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
         ),
       );
     }
-    final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     final nativeRatio = controller.value.aspectRatio;
-    final displayRatio = isDesktop ? nativeRatio : nativeRatio * _kMobileHeightBoost;
+    final displayRatio = _isDesktop ? nativeRatio : nativeRatio * _kMobileHeightBoost;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
