@@ -44,37 +44,33 @@ class LectureIntroScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 16),
-                  GlassCard(
-                    child: Column(
-                      children: List.generate(keyPoints.length, (i) {
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: i == keyPoints.length - 1 ? 0 : 14),
+                  Column(
+                    children: List.generate(keyPoints.length, (i) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: i == keyPoints.length - 1 ? 0 : 12),
+                        child: GlassCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: 22,
-                                height: 22,
+                                width: 24,
+                                height: 24,
                                 alignment: Alignment.center,
                                 margin: const EdgeInsets.only(top: 1),
                                 decoration: const BoxDecoration(color: AppColors.accentGold, shape: BoxShape.circle),
                                 child: Text(
                                   '${i + 1}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
+                                  style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w800),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  keyPoints[i],
-                                  style: const TextStyle(fontSize: 14, height: 1.5, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
-                                ),
-                              ),
+                              const SizedBox(width: 12),
+                              Expanded(child: _HighlightedText(keyPoints[i])),
                             ],
                           ),
-                        );
-                      }),
-                    ),
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -103,5 +99,40 @@ class LectureIntroScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// keyPoints 문자열 안의 `**강조**` 구간을 골드 볼드체로 렌더링한다.
+/// (예: '민법 **제103조** — ...' → "제103조"만 강조 표시)
+class _HighlightedText extends StatelessWidget {
+  final String text;
+  const _HighlightedText(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    const baseStyle = TextStyle(fontSize: 14.5, height: 1.6, color: AppColors.textPrimary, fontWeight: FontWeight.w500);
+    const highlightStyle = TextStyle(
+      fontSize: 14.5,
+      height: 1.6,
+      color: AppColors.primaryDark,
+      fontWeight: FontWeight.w800,
+      backgroundColor: Color(0xFFFBE8C6),
+    );
+
+    final spans = <TextSpan>[];
+    final pattern = RegExp(r'\*\*(.+?)\*\*');
+    var cursor = 0;
+    for (final match in pattern.allMatches(text)) {
+      if (match.start > cursor) {
+        spans.add(TextSpan(text: text.substring(cursor, match.start), style: baseStyle));
+      }
+      spans.add(TextSpan(text: match.group(1), style: highlightStyle));
+      cursor = match.end;
+    }
+    if (cursor < text.length) {
+      spans.add(TextSpan(text: text.substring(cursor), style: baseStyle));
+    }
+
+    return RichText(text: TextSpan(children: spans));
   }
 }
