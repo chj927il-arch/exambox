@@ -552,7 +552,7 @@ class LectureCoverCard extends StatelessWidget {
   }
 }
 
-/// 표지 이미지가 없는 특강(경영학·경제법) 그리드 — 아이콘형 카드로 대체 표시.
+/// 경영학·경제법 특강 그리드 — imageAsset이 있으면 포스터형 카드, 없으면 아이콘형 카드로 표시.
 class _IconLectureGrid extends StatelessWidget {
   final List<LectureItem> lectures;
   const _IconLectureGrid({required this.lectures});
@@ -565,21 +565,22 @@ class _IconLectureGrid extends StatelessWidget {
       itemCount: lectures.length,
       itemBuilder: (context, index) {
         final item = lectures[index];
-        return _IconLectureCard(
-          item: item,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => LectureIntroScreen(
-                title: item.title,
-                keyPoints: item.keyPoints,
-                subjectId: item.subjectId,
-                subjectName: item.subjectName,
-                category: item.category,
-                subTopic: item.subTopic,
+        final onTap = (BuildContext context) => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => LectureIntroScreen(
+                  title: item.title,
+                  keyPoints: item.keyPoints,
+                  subjectId: item.subjectId,
+                  subjectName: item.subjectName,
+                  category: item.category,
+                  subTopic: item.subTopic,
+                ),
               ),
-            ),
-          ),
-        );
+            );
+        if (item.imageAsset != null) {
+          return LectureCoverCard(imageAsset: item.imageAsset!, onTap: onTap);
+        }
+        return _IconLectureCard(item: item, onTap: () => onTap(context));
       },
     );
   }
