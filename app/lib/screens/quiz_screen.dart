@@ -226,7 +226,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       solved: _solvedInSession,
                       elapsedLabel: _elapsedLabel,
                       color: style.color,
-                      onClose: _finish,
+                      onClose: () => Navigator.of(context).maybePop(),
                     ),
                     Expanded(
                       child: Stack(
@@ -453,7 +453,7 @@ class _DuoQuestionBlock extends StatelessWidget {
         Text(
           question.stem,
           style: const TextStyle(
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.w800,
             height: 1.45,
             color: AppColors.textPrimary,
@@ -547,7 +547,7 @@ class _OptionTile extends StatelessWidget {
                   Expanded(
                     child: Text(
                       text,
-                      style: const TextStyle(fontSize: 17, height: 1.35, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                      style: const TextStyle(fontSize: 18.5, height: 1.35, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                     ),
                   ),
                   if (trailing != null) ...[const SizedBox(width: 8), trailing],
@@ -647,7 +647,7 @@ class _DuoFeedbackSheet extends StatelessWidget {
                     HighlightedText(
                       text: question.summaryExplanation,
                       phrases: question.highlightPhrases,
-                      style: const TextStyle(fontSize: 15, height: 1.6, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                      style: const TextStyle(fontSize: 17, height: 1.6, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
                     ),
                     if (question.keyPoints.isNotEmpty) ...[
                       const SizedBox(height: 14),

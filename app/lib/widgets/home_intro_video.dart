@@ -23,11 +23,36 @@ class HomeIntroVideo extends StatefulWidget {
 class _HomeIntroVideoState extends State<HomeIntroVideo> {
   VideoPlayerController? _controller;
   bool _ready = false;
+  ScrollPosition? _scrollPosition;
 
   @override
   void initState() {
     super.initState();
     _initVideo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 스크롤 중에는 영상 디코딩·재생을 잠시 멈춰 메인 스레드 부담을 줄인다 —
+    // 영상이 계속 프레임을 그리는 동안 스크롤 제스처가 버벅이는 걸 완화하기 위함.
+    final newPosition = Scrollable.maybeOf(context)?.position;
+    if (newPosition != _scrollPosition) {
+      _scrollPosition?.isScrollingNotifier.removeListener(_handleScrollingChange);
+      _scrollPosition = newPosition;
+      _scrollPosition?.isScrollingNotifier.addListener(_handleScrollingChange);
+    }
+  }
+
+  void _handleScrollingChange() {
+    final controller = _controller;
+    final position = _scrollPosition;
+    if (controller == null || position == null || !controller.value.isInitialized) return;
+    if (position.isScrollingNotifier.value) {
+      controller.pause();
+    } else {
+      controller.play();
+    }
   }
 
   void _initVideo() {
@@ -50,6 +75,7 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
 
   @override
   void dispose() {
+    _scrollPosition?.isScrollingNotifier.removeListener(_handleScrollingChange);
     _controller?.dispose();
     super.dispose();
   }
@@ -70,16 +96,18 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
       borderRadius: BorderRadius.circular(18),
       child: AspectRatio(
         aspectRatio: controller.value.aspectRatio,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            IgnorePointer(child: VideoPlayer(controller)),
-            // 웹에서 video_player는 실제 <video> DOM 엘리먼트로 그려져, IgnorePointer만으로는
-            // 그 위에서 스크롤(휠·터치드래그)하려는 이벤트가 여전히 영상에 먹혀 스크롤이
-            // 멈칫거리는 경우가 있었다. 그래서 이 영역 전체를 덮는 투명 레이어를 하나 더 두고,
-            // 여기서 받은 휠/드래그 이벤트를 부모 Scrollable로 직접 전달해 확실하게 스크롤되도록 한다.
-            Positioned.fill(child: _ScrollForwarder()),
-          ],
+        child: RepaintBoundary(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              IgnorePointer(child: VideoPlayer(controller)),
+              // 웹에서 video_player는 실제 <video> DOM 엘리먼트로 그려져, IgnorePointer만으로는
+              // 그 위에서 스크롤(휠·터치드래그)하려는 이벤트가 여전히 영상에 먹혀 스크롤이
+              // 멈칫거리는 경우가 있었다. 그래서 이 영역 전체를 덮는 투명 레이어를 하나 더 두고,
+              // 여기서 받은 휠/드래그 이벤트를 부모 Scrollable로 직접 전달해 확실하게 스크롤되도록 한다.
+              Positioned.fill(child: _ScrollForwarder()),
+            ],
+          ),
         ),
       ),
     );
