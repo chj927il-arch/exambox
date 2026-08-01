@@ -27,103 +27,135 @@ class HomeScreen extends StatelessWidget {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
-      child: ListView(
-        padding: const EdgeInsets.only(top: 22, bottom: 28),
+      child: Column(
         children: [
+          const SizedBox(height: 22),
+          // 영상은 스크롤 목록 밖의 고정 영역에 둔다 — 플랫폼 뷰(<video>)가 스크롤 목록
+          // 안에 있으면 스크롤할 때마다 웹 엔진이 그 위치·클립을 매 프레임 다시 계산해야
+          // 해서 스크롤 전체가 버벅이는 Flutter Web의 알려진 문제가 있다.
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: HomeIntroVideo(),
           ),
-          const SizedBox(height: 22),
-          // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
-          if (isDesktop)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: _ParallelPromoBanners(),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: const RollingBanner(
-                    banners: [
-                      BannerItem(imageAsset: 'assets/images/rolling_banner_update.png'),
-                      BannerItem(imageAsset: 'assets/images/rolling_banner_chapter.png'),
-                      BannerItem(imageAsset: 'assets/images/rolling_banner_premium.png'),
-                    ],
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(top: 22, bottom: 28),
+              children: [
+                // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
+                if (isDesktop)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: _ParallelPromoBanners(),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        child: const RollingBanner(
+                          banners: [
+                            BannerItem(
+                              imageAsset:
+                                  'assets/images/rolling_banner_update.png',
+                            ),
+                            BannerItem(
+                              imageAsset:
+                                  'assets/images/rolling_banner_chapter.png',
+                            ),
+                            BannerItem(
+                              imageAsset:
+                                  'assets/images/rolling_banner_premium.png',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 22),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(
+                    title: '과목별 학습',
+                    onMore: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SubjectGridScreen(),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                const _SubjectPosterRow(),
+                const SizedBox(height: 22),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(
+                    title: '민법 특강',
+                    onMore: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const LectureGridScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const _LectureGrid(),
+                const SizedBox(height: 22),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(title: '경영학 특강'),
+                ),
+                const SizedBox(height: 10),
+                const _IconLectureGrid(lectures: businessAdminLectures),
+                const SizedBox(height: 22),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(title: '경제법 특강'),
+                ),
+                const SizedBox(height: 10),
+                const _IconLectureGrid(lectures: economicLawLectures),
+                if (kKoreanHistoryEnabled) ...[
+                  const SizedBox(height: 22),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: _RowHeader(title: '한능검 특강'),
+                  ),
+                  const SizedBox(height: 10),
+                  const _KoreanHistoryLectureGrid(),
+                ],
+                const SizedBox(height: 22),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(title: '오늘의 OX 퀴즈'),
+                ),
+                const SizedBox(height: 10),
+                HScrollList(
+                  height: kLecturePosterHeight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: 1,
+                  itemBuilder: (context, index) => _DailyOxMainCard(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const DailyOxListScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(
+                    title: '수강후기',
+                    onMore: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ReviewScreen()),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const _ReviewCarousel(),
+              ],
             ),
-          const SizedBox(height: 22),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _RowHeader(
-              title: '과목별 학습',
-              onMore: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SubjectGridScreen())),
-            ),
           ),
-          const SizedBox(height: 10),
-          const _SubjectPosterRow(),
-          const SizedBox(height: 22),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _RowHeader(
-              title: '민법 특강',
-              onMore: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LectureGridScreen())),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const _LectureGrid(),
-          const SizedBox(height: 22),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: _RowHeader(title: '경영학 특강'),
-          ),
-          const SizedBox(height: 10),
-          const _IconLectureGrid(lectures: businessAdminLectures),
-          const SizedBox(height: 22),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: _RowHeader(title: '경제법 특강'),
-          ),
-          const SizedBox(height: 10),
-          const _IconLectureGrid(lectures: economicLawLectures),
-          if (kKoreanHistoryEnabled) ...[
-            const SizedBox(height: 22),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: _RowHeader(title: '한능검 특강'),
-            ),
-            const SizedBox(height: 10),
-            const _KoreanHistoryLectureGrid(),
-          ],
-          const SizedBox(height: 22),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: _RowHeader(title: '오늘의 OX 퀴즈'),
-          ),
-          const SizedBox(height: 10),
-          HScrollList(
-            height: kLecturePosterHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: 1,
-            itemBuilder: (context, index) => _DailyOxMainCard(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DailyOxListScreen())),
-            ),
-          ),
-          const SizedBox(height: 22),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _RowHeader(
-              title: '수강후기',
-              onMore: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReviewScreen())),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const _ReviewCarousel(),
         ],
       ),
     );
@@ -148,7 +180,9 @@ class _ParallelPromoBanners extends StatelessWidget {
       children: [
         for (var i = 0; i < _kParallelBannerAssets.length; i++) ...[
           if (i > 0) const SizedBox(width: 16),
-          Expanded(child: _ParallelBannerCard(asset: _kParallelBannerAssets[i])),
+          Expanded(
+            child: _ParallelBannerCard(asset: _kParallelBannerAssets[i]),
+          ),
         ],
       ],
     );
@@ -174,7 +208,10 @@ class _ParallelBannerCard extends StatelessWidget {
           builder: (context, constraints) {
             final cacheWidth = (constraints.maxWidth * dpr).round();
             return Image(
-              image: ResizeImage(AssetImage(asset), width: cacheWidth > 0 ? cacheWidth : null),
+              image: ResizeImage(
+                AssetImage(asset),
+                width: cacheWidth > 0 ? cacheWidth : null,
+              ),
               fit: BoxFit.cover,
               filterQuality: FilterQuality.high,
             );
@@ -212,14 +249,19 @@ class TintedPoster extends StatelessWidget {
           filterQuality: FilterQuality.high,
         ),
         // 밝은 홍보 배너 톤을 다크 테마에 맞게 살짝만 톤다운(원본이 안 보일 정도로 어둡게 하지 않음).
-        Positioned.fill(child: ColoredBox(color: Colors.black.withValues(alpha: 0.18))),
+        Positioned.fill(
+          child: ColoredBox(color: Colors.black.withValues(alpha: 0.18)),
+        ),
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black.withValues(alpha: 0.0), Colors.black.withValues(alpha: 0.45)],
+                colors: [
+                  Colors.black.withValues(alpha: 0.0),
+                  Colors.black.withValues(alpha: 0.45),
+                ],
                 stops: const [0.6, 1.0],
               ),
             ),
@@ -245,7 +287,12 @@ class _RowHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.2),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
         if (onMore != null)
@@ -257,8 +304,19 @@ class _RowHeader extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('더보기', style: TextStyle(fontSize: 12.5, color: OttColors.textSecondary, fontWeight: FontWeight.w700)),
-                  Icon(Icons.chevron_right_rounded, size: 16, color: OttColors.textSecondary),
+                  Text(
+                    '더보기',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: OttColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: OttColors.textSecondary,
+                  ),
                 ],
               ),
             ),
@@ -299,7 +357,10 @@ class _KoreanHistorySubjectCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => const CertificateMenuScreen(certId: 'korean_history', certName: '한국사능력검정'),
+          builder: (_) => const CertificateMenuScreen(
+            certId: 'korean_history',
+            certName: '한국사능력검정',
+          ),
         ),
       ),
       child: Container(
@@ -310,10 +371,16 @@ class _KoreanHistorySubjectCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        child: const TintedPoster(imageAsset: 'assets/images/subject_cover_korean_history.png'),
+        child: const TintedPoster(
+          imageAsset: 'assets/images/subject_cover_korean_history.png',
+        ),
       ),
     );
   }
@@ -348,14 +415,22 @@ class SubjectPosterCard extends StatelessWidget {
         children: [
           Text(
             subject.name,
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             subject.categories.join(' · '),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: OttColors.textSecondary, fontSize: 10.5, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: OttColors.textSecondary,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -363,7 +438,12 @@ class SubjectPosterCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => SubjectInfoScreen(subjectId: subject.id, subjectName: subject.name)),
+        MaterialPageRoute(
+          builder: (_) => SubjectInfoScreen(
+            subjectId: subject.id,
+            subjectName: subject.name,
+          ),
+        ),
       ),
       child: Container(
         width: kLecturePosterWidth,
@@ -373,7 +453,11 @@ class SubjectPosterCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
         // 표지 이미지가 있으면 민법 특강 포스터처럼 이미지 안에 제목이 포함돼 있어 별도 오버레이 없이 그대로 보여준다.
@@ -388,7 +472,10 @@ class SubjectPosterCard extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [style.color, style.color.withValues(alpha: 0.7)],
+                        colors: [
+                          style.color,
+                          style.color.withValues(alpha: 0.7),
+                        ],
                       ),
                     ),
                   ),
@@ -471,7 +558,11 @@ class _KoreanHistoryLectureGrid extends StatelessWidget {
 class LectureCoverCard extends StatelessWidget {
   final String imageAsset;
   final void Function(BuildContext context) onTap;
-  const LectureCoverCard({super.key, required this.imageAsset, required this.onTap});
+  const LectureCoverCard({
+    super.key,
+    required this.imageAsset,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -485,7 +576,11 @@ class LectureCoverCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
         child: TintedPoster(imageAsset: imageAsset),
@@ -508,17 +603,17 @@ class _IconLectureGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = lectures[index];
         final onTap = (BuildContext context) => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => LectureIntroScreen(
-                  title: item.title,
-                  keyPoints: item.keyPoints,
-                  subjectId: item.subjectId,
-                  subjectName: item.subjectName,
-                  category: item.category,
-                  subTopic: item.subTopic,
-                ),
-              ),
-            );
+          MaterialPageRoute(
+            builder: (_) => LectureIntroScreen(
+              title: item.title,
+              keyPoints: item.keyPoints,
+              subjectId: item.subjectId,
+              subjectName: item.subjectName,
+              category: item.category,
+              subTopic: item.subTopic,
+            ),
+          ),
+        );
         if (item.imageAsset != null) {
           return LectureCoverCard(imageAsset: item.imageAsset!, onTap: onTap);
         }
@@ -546,7 +641,11 @@ class _IconLectureCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
         child: Stack(
@@ -561,7 +660,11 @@ class _IconLectureCard extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(left: 10, top: 12, child: Icon(style.icon, color: Colors.white, size: 26)),
+            Positioned(
+              left: 10,
+              top: 12,
+              child: Icon(style.icon, color: Colors.white, size: 26),
+            ),
             Positioned(
               left: 0,
               right: 0,
@@ -572,7 +675,12 @@ class _IconLectureCard extends StatelessWidget {
                   item.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.25),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                  ),
                 ),
               ),
             ),
@@ -601,10 +709,16 @@ class _DailyOxMainCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        child: const TintedPoster(imageAsset: 'assets/images/daily_ox_cover.png'),
+        child: const TintedPoster(
+          imageAsset: 'assets/images/daily_ox_cover.png',
+        ),
       ),
     );
   }
@@ -641,7 +755,9 @@ class _ReviewMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReviewScreen())),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const ReviewScreen())),
       child: Container(
         width: 220,
         padding: const EdgeInsets.all(14),
@@ -657,7 +773,9 @@ class _ReviewMiniCard extends StatelessWidget {
               children: List.generate(
                 5,
                 (i) => Icon(
-                  i < review.rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                  i < review.rating
+                      ? Icons.star_rounded
+                      : Icons.star_outline_rounded,
                   size: 14,
                   color: OttColors.accentGold,
                 ),
@@ -668,7 +786,12 @@ class _ReviewMiniCard extends StatelessWidget {
               review.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white, height: 1.3),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1.3,
+              ),
             ),
             const SizedBox(height: 6),
             Expanded(
@@ -676,12 +799,21 @@ class _ReviewMiniCard extends StatelessWidget {
                 review.body,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 11.5, color: OttColors.textSecondary, fontWeight: FontWeight.w500, height: 1.35),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: OttColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                  height: 1.35,
+                ),
               ),
             ),
             Text(
               review.date,
-              style: const TextStyle(fontSize: 10.5, color: OttColors.textMuted, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 10.5,
+                color: OttColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -689,4 +821,3 @@ class _ReviewMiniCard extends StatelessWidget {
     );
   }
 }
-

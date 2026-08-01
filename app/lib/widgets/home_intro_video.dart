@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -8,6 +7,9 @@ import '../theme/ott_theme.dart';
 
 /// 홈 화면 상단에 보여주는 인트로 영상 — 소리 없이 무한 자동반복 재생된다.
 /// 데스크톱·모바일 모두 같은 영상을 원본 비율 그대로 사용하며, 잘라내지(crop) 않는다.
+/// 스크롤 목록 밖의 고정 영역에 배치해서 쓴다 — 플랫폼 뷰(<video>)가 스크롤 목록
+/// 안에 있으면 스크롤할 때마다 웹 엔진이 그 위치·클립을 매 프레임 다시 계산해야 해서
+/// 스크롤 전체가 버벅이는 Flutter Web의 알려진 문제가 있다.
 class HomeIntroVideo extends StatefulWidget {
   final String videoAsset;
 
@@ -23,36 +25,11 @@ class HomeIntroVideo extends StatefulWidget {
 class _HomeIntroVideoState extends State<HomeIntroVideo> {
   VideoPlayerController? _controller;
   bool _ready = false;
-  ScrollPosition? _scrollPosition;
 
   @override
   void initState() {
     super.initState();
     _initVideo();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 스크롤 중에는 영상 디코딩·재생을 잠시 멈춰 메인 스레드 부담을 줄인다 —
-    // 영상이 계속 프레임을 그리는 동안 스크롤 제스처가 버벅이는 걸 완화하기 위함.
-    final newPosition = Scrollable.maybeOf(context)?.position;
-    if (newPosition != _scrollPosition) {
-      _scrollPosition?.isScrollingNotifier.removeListener(_handleScrollingChange);
-      _scrollPosition = newPosition;
-      _scrollPosition?.isScrollingNotifier.addListener(_handleScrollingChange);
-    }
-  }
-
-  void _handleScrollingChange() {
-    final controller = _controller;
-    final position = _scrollPosition;
-    if (controller == null || position == null || !controller.value.isInitialized) return;
-    if (position.isScrollingNotifier.value) {
-      controller.pause();
-    } else {
-      controller.play();
-    }
   }
 
   void _initVideo() {
@@ -75,7 +52,6 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
 
   @override
   void dispose() {
-    _scrollPosition?.isScrollingNotifier.removeListener(_handleScrollingChange);
     _controller?.dispose();
     super.dispose();
   }
@@ -96,49 +72,7 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
       borderRadius: BorderRadius.circular(18),
       child: AspectRatio(
         aspectRatio: controller.value.aspectRatio,
-        child: RepaintBoundary(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              IgnorePointer(child: VideoPlayer(controller)),
-              // 웹에서 video_player는 실제 <video> DOM 엘리먼트로 그려져, IgnorePointer만으로는
-              // 그 위에서 스크롤(휠·터치드래그)하려는 이벤트가 여전히 영상에 먹혀 스크롤이
-              // 멈칫거리는 경우가 있었다. 그래서 이 영역 전체를 덮는 투명 레이어를 하나 더 두고,
-              // 여기서 받은 휠/드래그 이벤트를 부모 Scrollable로 직접 전달해 확실하게 스크롤되도록 한다.
-              Positioned.fill(child: _ScrollForwarder()),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 영상 영역에서 발생한 마우스 휠·터치 드래그를 가장 가까운 조상 Scrollable로
-/// 그대로 전달하는 투명 레이어. 영상 자체는 클릭/드래그 대상이 아니므로 여기서
-/// 모든 포인터 이벤트를 가로채 스크롤 동작으로만 변환해도 안전하다.
-class _ScrollForwarder extends StatelessWidget {
-  const _ScrollForwarder();
-
-  void _scrollBy(BuildContext context, double delta) {
-    final position = Scrollable.maybeOf(context)?.position;
-    if (position == null) return;
-    final target = (position.pixels + delta).clamp(position.minScrollExtent, position.maxScrollExtent);
-    position.jumpTo(target);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Listener(
-      behavior: HitTestBehavior.opaque,
-      onPointerSignal: (event) {
-        if (event is PointerScrollEvent) {
-          _scrollBy(context, event.scrollDelta.dy);
-        }
-      },
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onVerticalDragUpdate: (details) => _scrollBy(context, -details.delta.dy),
+        child: IgnorePointer(child: VideoPlayer(controller)),
       ),
     );
   }
