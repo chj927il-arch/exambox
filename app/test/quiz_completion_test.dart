@@ -83,9 +83,7 @@ void main() {
   testWidgets('끝내기를 누르면 학습하기 탭의 과목 메뉴로 돌아간다', (tester) async {
     useTallViewport(tester);
     await tester.pumpWidget(const GamyeongExamApp());
-    // 스플래시 통과
-    await tester.pump(const Duration(milliseconds: 1100));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
 
     // 홈 화면 "지금 학습 시작하기" 배너 → 가맹거래사 CertificateMenuScreen으로
     // 바로 이동한다(자격증 탭은 상단 메뉴에서 숨겨져 더 이상 경유하지 않음).

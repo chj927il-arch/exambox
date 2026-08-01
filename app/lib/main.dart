@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/splash_screen.dart';
+import 'screens/root_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -22,7 +22,7 @@ class GamyeongExamApp extends StatelessWidget {
     return MaterialApp(
       title: '스터디박스',
       theme: AppTheme.light(),
-      home: const SplashScreen(),
+      home: const RootScreen(),
       // 폰/태블릿 폭에서는 앱처럼 보이도록 폭을 제한한다. 데스크톱(900 이상)에서는
       // RootScreen이 사이드 내비게이션 + 중앙 정렬 콘텐츠로 자체 레이아웃을 담당하므로
       // 여기서 폭을 제한하지 않고 그대로 통과시킨다.
