@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
+import '../widgets/home_intro_video.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
 import 'certificate_menu_screen.dart';
@@ -29,17 +30,9 @@ class HomeScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.only(top: 22, bottom: 28),
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _StartStudyBanner(
-              title: '지금 학습 시작하기',
-              subtitle: '가맹거래사',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
-                ),
-              ),
-            ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: HomeIntroVideo(),
           ),
           const SizedBox(height: 22),
           // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
@@ -132,57 +125,6 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 10),
           const _ReviewCarousel(),
         ],
-      ),
-    );
-  }
-}
-
-/// 영상 히어로를 대체하는 심플한 학습 시작 배너 — 해당 자격증 학습 화면으로 바로 이동.
-class _StartStudyBanner extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _StartStudyBanner({required this.title, required this.subtitle, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: LinearGradient(
-              colors: [OttColors.accentStart, OttColors.accentStart.withValues(alpha: 0.7)],
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 1),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      title,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 26),
-            ],
-          ),
-        ),
       ),
     );
   }

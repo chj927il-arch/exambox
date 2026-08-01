@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamyeong_exam/data/sample_questions.dart';
 import 'package:gamyeong_exam/data/user_progress.dart';
-import 'package:gamyeong_exam/main.dart';
 import 'package:gamyeong_exam/screens/certificate_menu_screen.dart';
 import 'package:gamyeong_exam/screens/quiz_screen.dart';
 import 'package:gamyeong_exam/screens/study_screen.dart';
@@ -82,13 +81,20 @@ void main() {
 
   testWidgets('끝내기를 누르면 학습하기 탭의 과목 메뉴로 돌아간다', (tester) async {
     useTallViewport(tester);
-    await tester.pumpWidget(const GamyeongExamApp());
+    // 홈 화면의 "지금 학습 시작하기" 배너는 인트로 영상으로 교체되며 임시로 제거된 상태라
+    // (자격증 탭 진입 지점은 추후 다시 배치 예정), CertificateMenuScreen부터 직접 렌더링해
+    // 그 이후 플로우(학습하기 → 과목 → 챕터 → 문제풀이 → 끝내기)를 검증한다.
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: Navigator(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const CertificateMenuScreen(certId: 'franchise_broker', certName: '가맹거래사'),
+          ),
+        ),
+      ),
+    );
     await tester.pump();
-
-    // 홈 화면 "지금 학습 시작하기" 배너 → 가맹거래사 CertificateMenuScreen으로
-    // 바로 이동한다(자격증 탭은 상단 메뉴에서 숨겨져 더 이상 경유하지 않음).
-    await tester.tap(find.text('지금 학습 시작하기'));
-    await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(CertificateMenuScreen), findsOneWidget);
 
     await tester.tap(find.descendant(of: find.byType(CertificateMenuScreen), matching: find.text('학습하기')));
