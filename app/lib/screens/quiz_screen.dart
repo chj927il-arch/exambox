@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../data/sample_questions.dart';
 import '../data/user_progress.dart';
@@ -206,28 +207,8 @@ class _QuizScreenState extends State<QuizScreen> {
     final isCorrect = _selectedIndex == question.correctIndex;
 
     return Scaffold(
-      extendBodyBehindAppBar: false,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
-        child: AppBar(
-          title: Text(widget.category ?? widget.subjectName),
-          centerTitle: false,
-          backgroundColor: style.color,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shadowColor: style.color.withValues(alpha: 0.4),
-          titleTextStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(child: _TimerChip(elapsedLabel: _elapsedLabel)),
-            ),
-          ],
-        ),
-      ),
       body: AppBackground(
         child: SafeArea(
-          top: false,
           child: _sessionComplete
               ? _CompletionView(
                   color: style.color,
@@ -238,55 +219,68 @@ class _QuizScreenState extends State<QuizScreen> {
                   onFinish: _finish,
                 )
               : Column(
-            children: [
-              _ProgressHeader(
-                current: _current,
-                total: _questions.length,
-                solved: _solvedInSession,
-                color: style.color,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _QuestionCard(
-                        question: question,
-                        color: style.color,
-                        subTopicPosition: _subTopicPosition,
-                        subTopicTotal: _subTopicTotal,
-                      ),
-                      const SizedBox(height: 20),
-                      ...List.generate(question.choices.length, (i) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _OptionTile(
-                            label: _optionLabels[i],
-                            text: question.choices[i],
-                            state: _optionState(i, question.correctIndex),
-                            onTap: () => _select(i),
+                  children: [
+                    _DuoTopBar(
+                      current: _current,
+                      total: _questions.length,
+                      solved: _solvedInSession,
+                      elapsedLabel: _elapsedLabel,
+                      color: style.color,
+                      onClose: _finish,
+                    ),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _DuoQuestionBlock(
+                                  question: question,
+                                  color: style.color,
+                                  subTopicPosition: _subTopicPosition,
+                                  subTopicTotal: _subTopicTotal,
+                                ),
+                                const SizedBox(height: 22),
+                                ...List.generate(question.choices.length, (i) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _OptionTile(
+                                      label: _optionLabels[i],
+                                      text: question.choices[i],
+                                      state: _optionState(i, question.correctIndex),
+                                      onTap: () => _select(i),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
-                        );
-                      }),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 220),
-                        child: _answered
-                            ? _FeedbackPanel(
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              ignoring: !_answered,
+                              child: AnimatedSlide(
                                 key: ValueKey(_current),
-                                isCorrect: isCorrect,
-                                question: question,
-                                color: style.color,
-                                onNext: _next,
-                              )
-                            : const SizedBox.shrink(),
+                                duration: const Duration(milliseconds: 260),
+                                curve: Curves.easeOutCubic,
+                                offset: _answered ? Offset.zero : const Offset(0, 1),
+                                child: _answered
+                                    ? _DuoFeedbackSheet(
+                                        isCorrect: isCorrect,
+                                        question: question,
+                                        color: style.color,
+                                        onNext: _next,
+                                      )
+                                    : const SizedBox.shrink(),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -299,6 +293,413 @@ class _QuizScreenState extends State<QuizScreen> {
     if (index == correctIndex) return _OptionState.correct;
     if (index == _selectedIndex) return _OptionState.wrong;
     return _OptionState.disabled;
+  }
+}
+
+/// 상단 바 — 닫기 버튼 + 두꺼운 진행바(듀오링고 스타일) + 타이머.
+class _DuoTopBar extends StatelessWidget {
+  final int current;
+  final int total;
+  final int solved;
+  final String elapsedLabel;
+  final Color color;
+  final VoidCallback onClose;
+
+  const _DuoTopBar({
+    required this.current,
+    required this.total,
+    required this.solved,
+    required this.elapsedLabel,
+    required this.color,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 16, 12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                onPressed: onClose,
+                icon: const Icon(Icons.close_rounded),
+                color: AppColors.textMuted,
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.trackBg,
+                  shape: const CircleBorder(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: (current + 1) / total,
+                    minHeight: 14,
+                    backgroundColor: AppColors.trackBg,
+                    valueColor: AlwaysStoppedAnimation(color),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: AppColors.trackBg,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.timer_rounded, size: 16, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      elapsedLabel,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textSecondary,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const SizedBox(width: 44),
+              Text(
+                '${current + 1} / $total',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+              ),
+              const Spacer(),
+              Text(
+                '이번 회차 $solved문제 풀이 중',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 문제 텍스트 블록 — 카드 테두리 없이 배지 + 큼직한 문제 텍스트를 배경 위에 바로 배치한다.
+class _DuoQuestionBlock extends StatelessWidget {
+  final Question question;
+  final Color color;
+  final int subTopicPosition;
+  final int subTopicTotal;
+
+  const _DuoQuestionBlock({
+    required this.question,
+    required this.color,
+    this.subTopicPosition = 0,
+    this.subTopicTotal = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
+              child: Text(
+                question.category,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
+              ),
+            ),
+            if (question.sourceYear != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '${question.sourceYear}년 기출',
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+                ),
+              ),
+            if (question.subTopic != null && subTopicTotal > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: color.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  '${question.subTopic} 집중 $subTopicPosition/$subTopicTotal',
+                  style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Text(
+          question.stem,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            height: 1.45,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+enum _OptionState { idle, selected, correct, wrong, disabled }
+
+/// 보기 버튼 — 아래쪽 테두리를 두껍게 줘서 눌리는 입체감(듀오링고 스타일 3D 버튼)을 흉내낸다.
+class _OptionTile extends StatelessWidget {
+  final String label;
+  final String text;
+  final _OptionState state;
+  final VoidCallback onTap;
+
+  const _OptionTile({required this.label, required this.text, required this.state, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    Color borderColor = const Color(0xFFE1E1E8);
+    Color fillColor = Colors.white;
+    Color badgeBg = AppColors.trackBg;
+    Color badgeFg = AppColors.textSecondary;
+    Widget? trailing;
+    double opacity = 1;
+
+    switch (state) {
+      case _OptionState.selected:
+        borderColor = AppColors.primary;
+        fillColor = AppColors.primary.withValues(alpha: 0.06);
+        badgeBg = AppColors.primary;
+        badgeFg = Colors.white;
+        break;
+      case _OptionState.correct:
+        borderColor = AppColors.correct;
+        fillColor = AppColors.correct.withValues(alpha: 0.12);
+        badgeBg = AppColors.correct;
+        badgeFg = Colors.white;
+        trailing = const Icon(Icons.check_circle_rounded, color: AppColors.correct, size: 24);
+        break;
+      case _OptionState.wrong:
+        borderColor = AppColors.wrong;
+        fillColor = AppColors.wrong.withValues(alpha: 0.12);
+        badgeBg = AppColors.wrong;
+        badgeFg = Colors.white;
+        trailing = const Icon(Icons.cancel_rounded, color: AppColors.wrong, size: 24);
+        break;
+      case _OptionState.disabled:
+        opacity = 0.5;
+        break;
+      case _OptionState.idle:
+        break;
+    }
+
+    return Opacity(
+      opacity: opacity,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        decoration: BoxDecoration(
+          color: fillColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border(
+            left: BorderSide(color: borderColor, width: 2),
+            top: BorderSide(color: borderColor, width: 2),
+            right: BorderSide(color: borderColor, width: 2),
+            bottom: BorderSide(color: borderColor, width: 4),
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(10)),
+                    child: Text(label, style: TextStyle(color: badgeFg, fontWeight: FontWeight.w800, fontSize: 15)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: const TextStyle(fontSize: 17, height: 1.35, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    ),
+                  ),
+                  if (trailing != null) ...[const SizedBox(width: 8), trailing],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 정답 확인 후 화면 하단에서 올라오는 고정 패널(듀오링고 스타일 바텀시트).
+/// 해설이 길어도 안의 스크롤 영역만 늘어나고, "다음 유사문제" 버튼은 항상 하단에 고정된다.
+class _DuoFeedbackSheet extends StatelessWidget {
+  final bool isCorrect;
+  final Question question;
+  final Color color;
+  final VoidCallback onNext;
+
+  const _DuoFeedbackSheet({
+    required this.isCorrect,
+    required this.question,
+    required this.color,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
+    final panelBg = isCorrect ? const Color(0xFFE3F8E9) : const Color(0xFFFFE9E7);
+    final panelHeight = math.min(360.0, MediaQuery.sizeOf(context).height * 0.5);
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: panelHeight,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: panelBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: resultColor.withValues(alpha: 0.5), width: 2)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 24, offset: const Offset(0, -6)),
+          ],
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(color: resultColor, shape: BoxShape.circle),
+                          child: Icon(
+                            isCorrect ? Icons.check_rounded : Icons.close_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            isCorrect ? '정답이에요!' : '아쉬워요, 오답이에요',
+                            style: TextStyle(color: resultColor, fontWeight: FontWeight.w900, fontSize: 19),
+                          ),
+                        ),
+                        ListenableBuilder(
+                          listenable: UserProgress.instance,
+                          builder: (context, _) {
+                            final compiled = UserProgress.instance.isCompiled(question.id);
+                            return IconButton(
+                              onPressed: () => UserProgress.instance.toggleCompiled(question.id),
+                              icon: Icon(
+                                compiled ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                                color: compiled ? AppColors.primary : AppColors.textMuted,
+                              ),
+                              tooltip: '단권화 노트에 저장',
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      '해설',
+                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
+                    ),
+                    const SizedBox(height: 6),
+                    HighlightedText(
+                      text: question.summaryExplanation,
+                      phrases: question.highlightPhrases,
+                      style: const TextStyle(fontSize: 15, height: 1.6, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                    ),
+                    if (question.keyPoints.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        '핵심 개념',
+                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: question.keyPoints
+                            .map((k) => Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(color: resultColor.withValues(alpha: 0.35)),
+                                  ),
+                                  child: Text(
+                                    k,
+                                    style: TextStyle(color: resultColor, fontWeight: FontWeight.w700, fontSize: 13),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resultColor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  onPressed: onNext,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text('다음 유사문제', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -426,412 +827,6 @@ class _CompletionStat extends StatelessWidget {
           Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
           const SizedBox(height: 2),
           Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-}
-
-/// AppBar 우측의 경과 시간 표시 — 흰 배경 위에 큼직하게 보이도록 눈에 띄게 키운 칩.
-class _TimerChip extends StatelessWidget {
-  final String elapsedLabel;
-  const _TimerChip({required this.elapsedLabel});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 3)),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.timer_rounded, size: 19, color: AppColors.primary),
-          const SizedBox(width: 6),
-          Text(
-            elapsedLabel,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              color: AppColors.primary,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 상단 진행 상태 바 — 이번 회차 진행률 + 푼 문제 수. 과목 색상이 은은하게 배어드는
-/// 배경으로 AppBar와 자연스럽게 이어지는 느낌을 준다.
-class _ProgressHeader extends StatelessWidget {
-  final int current;
-  final int total;
-  final int solved;
-  final Color color;
-
-  const _ProgressHeader({required this.current, required this.total, required this.solved, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
-        border: Border(bottom: BorderSide(color: color.withValues(alpha: 0.14))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                value: (current + 1) / total,
-                minHeight: 8,
-                backgroundColor: Colors.white,
-                valueColor: AlwaysStoppedAnimation(color),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '${current + 1} / $total',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(999),
-              boxShadow: [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 3))],
-            ),
-            child: Text(
-              '이번 회차 $solved문제',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuestionCard extends StatelessWidget {
-  final Question question;
-  final Color color;
-  final int subTopicPosition;
-  final int subTopicTotal;
-
-  const _QuestionCard({
-    required this.question,
-    required this.color,
-    this.subTopicPosition = 0,
-    this.subTopicTotal = 0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.glassBorder),
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.10), blurRadius: 24, offset: const Offset(0, 10)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [color.withValues(alpha: 0.14), color.withValues(alpha: 0.05)],
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
-                  child: Text(
-                    question.category,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
-                  ),
-                ),
-                if (question.sourceYear != null)
-                  Text(
-                    '${question.sourceYear}년 기출',
-                    style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
-                  ),
-                if (question.subTopic != null && subTopicTotal > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: color.withValues(alpha: 0.3)),
-                    ),
-                    child: Text(
-                      '${question.subTopic} 집중 $subTopicPosition/$subTopicTotal',
-                      style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              question.stem,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                height: 1.5,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-enum _OptionState { idle, selected, correct, wrong, disabled }
-
-class _OptionTile extends StatelessWidget {
-  final String label;
-  final String text;
-  final _OptionState state;
-  final VoidCallback onTap;
-
-  const _OptionTile({required this.label, required this.text, required this.state, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    Color borderColor = AppColors.glassBorder;
-    Color fillColor = Colors.white;
-    Color badgeBg = AppColors.trackBg;
-    Color badgeFg = AppColors.textSecondary;
-    Widget? trailing;
-    double opacity = 1;
-
-    switch (state) {
-      case _OptionState.selected:
-        borderColor = AppColors.primary;
-        fillColor = AppColors.primary.withValues(alpha: 0.06);
-        badgeBg = AppColors.primary;
-        badgeFg = Colors.white;
-        break;
-      case _OptionState.correct:
-        borderColor = AppColors.correct;
-        fillColor = AppColors.correct.withValues(alpha: 0.10);
-        badgeBg = AppColors.correct;
-        badgeFg = Colors.white;
-        trailing = const Icon(Icons.check_circle_rounded, color: AppColors.correct, size: 22);
-        break;
-      case _OptionState.wrong:
-        borderColor = AppColors.wrong;
-        fillColor = AppColors.wrong.withValues(alpha: 0.10);
-        badgeBg = AppColors.wrong;
-        badgeFg = Colors.white;
-        trailing = const Icon(Icons.cancel_rounded, color: AppColors.wrong, size: 22);
-        break;
-      case _OptionState.disabled:
-        opacity = 0.5;
-        break;
-      case _OptionState.idle:
-        break;
-    }
-
-    return Opacity(
-      opacity: opacity,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        decoration: BoxDecoration(
-          color: fillColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor, width: state == _OptionState.idle ? 1 : 1.6),
-          boxShadow: state == _OptionState.idle
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))]
-              : [BoxShadow(color: borderColor.withValues(alpha: 0.18), blurRadius: 12, offset: const Offset(0, 4))],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(10)),
-                    child: Text(label, style: TextStyle(color: badgeFg, fontWeight: FontWeight.w800, fontSize: 15)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      text,
-                      style: const TextStyle(fontSize: 17, height: 1.35, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                    ),
-                  ),
-                  if (trailing != null) ...[const SizedBox(width: 8), trailing],
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedbackPanel extends StatelessWidget {
-  final bool isCorrect;
-  final Question question;
-  final Color color;
-  final VoidCallback onNext;
-
-  const _FeedbackPanel({
-    super.key,
-    required this.isCorrect,
-    required this.question,
-    required this.color,
-    required this.onNext,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: resultColor.withValues(alpha: 0.3)),
-              boxShadow: [
-                BoxShadow(color: resultColor.withValues(alpha: 0.10), blurRadius: 18, offset: const Offset(0, 8)),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(color: resultColor.withValues(alpha: 0.14), shape: BoxShape.circle),
-                      child: Icon(
-                        isCorrect ? Icons.check_rounded : Icons.close_rounded,
-                        color: resultColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        isCorrect ? '정답입니다' : '아쉬워요, 오답입니다',
-                        style: TextStyle(color: resultColor, fontWeight: FontWeight.w800, fontSize: 17),
-                      ),
-                    ),
-                    ListenableBuilder(
-                      listenable: UserProgress.instance,
-                      builder: (context, _) {
-                        final compiled = UserProgress.instance.isCompiled(question.id);
-                        return IconButton(
-                          onPressed: () => UserProgress.instance.toggleCompiled(question.id),
-                          icon: Icon(
-                            compiled ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                            color: compiled ? AppColors.primary : AppColors.textMuted,
-                          ),
-                          tooltip: '단권화 노트에 저장',
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  '해설',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 0.4),
-                ),
-                const SizedBox(height: 6),
-                HighlightedText(
-                  text: question.summaryExplanation,
-                  phrases: question.highlightPhrases,
-                  style: const TextStyle(fontSize: 15.5, height: 1.65, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                ),
-                if (question.keyPoints.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    '핵심 개념',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 0.4),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: question.keyPoints
-                        .map((k) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: color.withValues(alpha: 0.22)),
-                              ),
-                              child: Text(
-                                k,
-                                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13),
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: onNext,
-              icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text('다음 유사문제'),
-            ),
-          ),
         ],
       ),
     );

@@ -37,7 +37,9 @@ void main() {
   Future<void> answerCurrentQuestion(WidgetTester tester) async {
     final question = sampleQuestions.firstWhere((q) => q.subjectId == subjectId && q.category == category);
     await tester.tap(find.text(question.choices.first));
-    await tester.pump();
+    // 정답 확인 후 하단에서 올라오는 피드백 시트가 슬라이드 인 애니메이션을 완전히
+    // 끝낼 때까지 기다린다 — 애니메이션 도중에는 화면 밖에 위치해 탭이 안 먹는다.
+    await tester.pumpAndSettle();
     await tester.tap(find.text('다음 유사문제'));
     await tester.pump();
   }
@@ -120,7 +122,7 @@ void main() {
     expect(find.text('끝내기'), findsOneWidget);
 
     await tester.tap(find.text('끝내기'));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
     expect(find.byType(StudyScreen), findsOneWidget);
     expect(find.byType(QuizScreen), findsNothing);
