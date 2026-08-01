@@ -1,7 +1,7 @@
 /// 민법 특강 카드 데이터 — 홈 화면 가로 스크롤 그리드와 "더보기" 전체 그리드 화면이 공유한다.
 class LectureItem {
-  /// 표지 이미지가 아직 없는 특강(예: 경영학·경제법 특강)은 null — 이 경우 [styleKey]로
-  /// subjectStyleOf에서 아이콘·색상을 가져와 아이콘형 카드로 대체 표시한다.
+  /// 표지 이미지가 아직 없는 특강(예: 경영학 '유형자산과 감가상각', 경제법 특강)은 null —
+  /// 이 경우 [styleKey]로 subjectStyleOf에서 아이콘·색상을 가져와 아이콘형 카드로 대체 표시한다.
   final String? imageAsset;
   final String title;
   final List<String> keyPoints;
@@ -144,10 +144,11 @@ const List<LectureItem> koreanHistoryLectures = [
   ),
 ];
 
-/// 경영학 특강 — 표지 이미지가 아직 없어 아이콘형 카드로 표시(styleKey로 아이콘·색상 지정).
-/// 기출 분석상 비중이 높은 회계·마케팅 위주로 6개 선정.
+/// 경영학 특강 — 기출 분석상 비중이 높은 회계·마케팅 위주로 6개 선정.
+/// '유형자산과 감가상각'만 아직 표지 이미지가 없어 아이콘형 카드로 표시된다.
 const List<LectureItem> businessAdminLectures = [
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_ba_financial_statements.png',
     title: '재무제표의 이해',
     styleKey: 'ba_financial_statements',
     keyPoints: [
@@ -162,6 +163,7 @@ const List<LectureItem> businessAdminLectures = [
     subTopic: '재무제표의 이해',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_ba_inventory.png',
     title: '재고자산과 매출원가',
     styleKey: 'ba_inventory',
     keyPoints: [
@@ -176,6 +178,7 @@ const List<LectureItem> businessAdminLectures = [
     subTopic: '재고자산 평가와 매출원가',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_ba_stp.png',
     title: '시장세분화·표적시장·포지셔닝',
     styleKey: 'ba_stp',
     keyPoints: [
@@ -190,6 +193,7 @@ const List<LectureItem> businessAdminLectures = [
     subTopic: '시장세분화·표적시장·포지셔닝',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_ba_pricing.png',
     title: '가격관리',
     styleKey: 'ba_pricing',
     keyPoints: [
@@ -204,6 +208,7 @@ const List<LectureItem> businessAdminLectures = [
     subTopic: '가격관리',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_ba_channel.png',
     title: '유통경로와 촉진전략',
     styleKey: 'ba_channel',
     keyPoints: [

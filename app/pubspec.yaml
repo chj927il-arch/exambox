@@ -82,6 +82,11 @@ flutter:
     - assets/images/lecture_cover_joseon_history.png
     - assets/images/lecture_cover_modern_history.jpg
     - assets/images/daily_ox_cover.png
+    - assets/images/lecture_cover_ba_financial_statements.png
+    - assets/images/lecture_cover_ba_inventory.png
+    - assets/images/lecture_cover_ba_stp.png
+    - assets/images/lecture_cover_ba_pricing.png
+    - assets/images/lecture_cover_ba_channel.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
