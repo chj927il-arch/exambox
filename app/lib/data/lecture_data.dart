@@ -102,7 +102,13 @@ const List<LectureItem> civilLawLectures = [
   LectureItem(
     imageAsset: 'assets/images/lecture_cover_concurrent_performance.png',
     title: '동시이행항변권',
-    keyPoints: ['추후 업데이트 예정'],
+    keyPoints: [
+      '동시이행의 항변권(제536조) — 쌍무계약에서 대가관계 있는 채무 사이에 인정되는 연기적 항변권',
+      '불안의 항변권(제536조 제2항) — 선이행의무자라도 상대방의 이행이 곤란할 현저한 사유가 있으면 이행 거절 가능',
+      '효과 — 항변권이 있으면 이행지체책임이 발생하지 않고, 소송에서는 상환급부판결이 내려짐',
+      '상계 제한 — 항변권이 붙은 채권을 자동채권으로 하는 상계는 원칙적으로 허용되지 않음',
+      '준용 사례 — 계약해제로 인한 원상회복의무(제549조)에도 동시이행의 항변권 규정이 준용됨',
+    ],
     subjectId: 'civil_law',
     subjectName: '민법',
     category: '동시이행항변권',
