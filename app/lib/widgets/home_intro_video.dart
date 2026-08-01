@@ -77,13 +77,13 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
       borderRadius: BorderRadius.circular(18),
       child: AspectRatio(
         aspectRatio: displayRatio,
-        child: FittedBox(
-          fit: BoxFit.cover,
-          clipBehavior: Clip.hardEdge,
-          child: SizedBox(
-            width: controller.value.size.width,
-            height: controller.value.size.height,
-            child: VideoPlayer(controller),
+        child: ColoredBox(
+          color: OttColors.surface,
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: nativeRatio,
+              child: VideoPlayer(controller),
+            ),
           ),
         ),
       ),
