@@ -61,7 +61,6 @@ flutter:
 
   assets:
     - assets/videos/home_intro.mp4
-    - assets/videos/home_intro_mobile.mp4
     - assets/images/rolling_banner_chapter.png
     - assets/images/top_banner_studybox.png
     - assets/images/top_banner_beta.png
