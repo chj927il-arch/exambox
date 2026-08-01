@@ -112,6 +112,10 @@ class _BannerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (item.imageAsset != null) {
+      // CanvasKit(웹)이 큰 원본 이미지를 카드 실제 표시 크기보다 훨씬 크게 그리면서
+      // 스케일링을 잘못 잡아 흐릿하게 보이는 문제가 있어(TintedPoster와 동일한 원인),
+      // LayoutBuilder로 실제 렌더 폭을 구해 devicePixelRatio 반영한 디코드 크기를 지정한다.
+      final dpr = MediaQuery.devicePixelRatioOf(context);
       return ClipRRect(
         // 이미지 자체에 남아있는 둥근 모서리(라운드 카드 그래픽) 바깥쪽 흰 픽셀이 우리
         // 카드 모서리 클리핑보다 더 크게 남아있을 수 있어, 확실히 가리도록 넉넉하게 잡는다.
@@ -120,7 +124,18 @@ class _BannerCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: item.onTap,
-            child: Image.asset(item.imageAsset!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final cacheWidth = (constraints.maxWidth * dpr).round();
+                return Image(
+                  image: ResizeImage(AssetImage(item.imageAsset!), width: cacheWidth > 0 ? cacheWidth : null),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  filterQuality: FilterQuality.high,
+                );
+              },
+            ),
           ),
         ),
       );

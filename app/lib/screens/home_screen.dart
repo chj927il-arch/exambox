@@ -205,12 +205,25 @@ class _ParallelBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // CanvasKit(웹)이 큰 원본 이미지를 카드 실제 표시 크기보다 훨씬 크게 그리면서
+    // 스케일링을 잘못 잡아 흐릿하게 보이는 문제가 있어(TintedPoster와 동일한 원인),
+    // LayoutBuilder로 실제 렌더 폭을 구해 devicePixelRatio 반영한 디코드 크기를 지정한다.
+    final dpr = MediaQuery.devicePixelRatioOf(context);
     return AspectRatio(
       // 배너 원본 이미지가 대략 3:1 비율이라 셋 다 동일하게 맞춘다.
       aspectRatio: 3,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
-        child: Image.asset(asset, fit: BoxFit.cover),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final cacheWidth = (constraints.maxWidth * dpr).round();
+            return Image(
+              image: ResizeImage(AssetImage(asset), width: cacheWidth > 0 ? cacheWidth : null),
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
+            );
+          },
+        ),
       ),
     );
   }
