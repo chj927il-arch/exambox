@@ -6,14 +6,13 @@ import 'package:video_player/video_player.dart';
 import '../theme/ott_theme.dart';
 
 /// 홈 화면 상단에 보여주는 인트로 영상 — 소리 없이 무한 자동반복 재생된다.
+/// 원본 파일의 실제 가로세로 비율을 그대로 사용하며, 잘라내지(crop) 않는다.
 class HomeIntroVideo extends StatefulWidget {
   final String videoAsset;
-  final double aspectRatio;
 
   const HomeIntroVideo({
     super.key,
     this.videoAsset = 'assets/videos/home_intro.mp4',
-    this.aspectRatio = 16 / 9,
   });
 
   @override
@@ -57,24 +56,20 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    if (!_ready || controller == null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: ColoredBox(color: OttColors.surface),
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: ColoredBox(
-          color: OttColors.surface,
-          child: _ready && controller != null
-              ? FittedBox(
-                  fit: BoxFit.cover,
-                  clipBehavior: Clip.hardEdge,
-                  child: SizedBox(
-                    width: controller.value.size.width,
-                    height: controller.value.size.height,
-                    child: VideoPlayer(controller),
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ),
+        aspectRatio: controller.value.aspectRatio,
+        child: VideoPlayer(controller),
       ),
     );
   }
