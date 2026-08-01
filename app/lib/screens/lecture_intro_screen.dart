@@ -49,22 +49,22 @@ class LectureIntroScreen extends StatelessWidget {
                       Text(
                         '- 핵심 개념 정리 -',
                         style: GoogleFonts.gaegu(
-                          fontSize: 15,
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
                           color: _NotebookColors.penBlue.withValues(alpha: 0.75),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
                       ...List.generate(keyPoints.length, (i) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
+                          padding: const EdgeInsets.only(bottom: 16),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 '${i + 1}. ',
                                 style: GoogleFonts.gaegu(
-                                  fontSize: 17,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w700,
                                   color: _NotebookColors.penRed,
                                 ),
@@ -119,7 +119,7 @@ class _NotebookColors {
 
 /// 줄노트 배경 — 가로 줄과 왼쪽 여백선(빨간 세로선)을 그린다.
 class _NotebookLinePainter extends CustomPainter {
-  static const double lineGap = 30;
+  static const double lineGap = 34;
   static const double marginX = 26;
 
   @override
@@ -145,25 +145,35 @@ class _NotebookHeading extends StatelessWidget {
   final String text;
   const _NotebookHeading({required this.text});
 
+  static final TextStyle _style = GoogleFonts.gaegu(
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    color: _NotebookColors.penBlue,
+  );
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          text,
-          style: GoogleFonts.gaegu(
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            color: _NotebookColors.penBlue,
-          ),
-        ),
-        const SizedBox(height: 2),
-        CustomPaint(
-          size: const Size(double.infinity, 8),
-          painter: _SquigglePainter(),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: _style),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout(maxWidth: constraints.maxWidth);
+        final underlineWidth = painter.width;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(text, style: _style),
+            const SizedBox(height: 2),
+            CustomPaint(
+              size: Size(underlineWidth, 8),
+              painter: _SquigglePainter(),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -197,13 +207,13 @@ class _HighlightedNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseStyle = GoogleFonts.gaegu(
-      fontSize: 17.5,
+      fontSize: 20,
       height: 1.45,
       color: _NotebookColors.penBlue,
       fontWeight: FontWeight.w500,
     );
     final highlightTextStyle = GoogleFonts.gaegu(
-      fontSize: 17.5,
+      fontSize: 20,
       height: 1.1,
       color: _NotebookColors.penBlue,
       fontWeight: FontWeight.w700,
