@@ -7,10 +7,12 @@ import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 
 /// 모바일 폭에서 배너를 살짝 더 높게 보여주기 위해 원본 비율에 곱하는 배수(1보다 작을수록 더 높아짐).
-const double _kMobileHeightBoost = 0.88;
+/// 값이 작을수록 영상 좌우가 더 크롭된다 — 과하게 낮추면 중요한 장면이 잘릴 수 있어 소폭만 적용.
+const double _kMobileHeightBoost = 0.94;
 
 /// 홈 화면 상단에 보여주는 인트로 영상 — 소리 없이 무한 자동반복 재생된다.
-/// 원본 파일의 실제 가로세로 비율을 그대로 사용하며, 잘라내지(crop) 않는다.
+/// 데스크톱은 원본 비율 그대로, 모바일은 배너를 살짝 더 높게 보여주기 위해
+/// 영상을 확대해 좌우를 아주 조금만 크롭한다(BoxFit.cover).
 class HomeIntroVideo extends StatefulWidget {
   final String videoAsset;
 
@@ -79,10 +81,19 @@ class _HomeIntroVideoState extends State<HomeIntroVideo> {
         aspectRatio: displayRatio,
         child: ColoredBox(
           color: OttColors.surface,
-          child: Center(
-            child: AspectRatio(
-              aspectRatio: nativeRatio,
-              child: VideoPlayer(controller),
+          // 웹에서 video_player는 실제 <video> DOM 엘리먼트로 그려져 그 위/아래로
+          // 스크롤하려는 터치·휠 이벤트를 영상이 가로채 스크롤이 멈칫거리는 문제가
+          // 있었다. 영상 레이어는 포인터 이벤트를 무시하게 해서 스크롤이 항상
+          // 부모 ListView로 전달되도록 한다.
+          child: IgnorePointer(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              clipBehavior: Clip.hardEdge,
+              child: SizedBox(
+                width: controller.value.size.width,
+                height: controller.value.size.height,
+                child: VideoPlayer(controller),
+              ),
             ),
           ),
         ),

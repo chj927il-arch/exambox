@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const GamyeongExamApp());
     await tester.pump();
 
-    // 상단 고정 헤더 로고에 STUDY BOX 타이틀이 표시된다.
-    expect(find.textContaining('STUDY BOX'), findsOneWidget);
+    // 상단 고정 헤더 로고에 ExamBox 타이틀이 표시된다.
+    expect(find.textContaining('ExamBox'), findsOneWidget);
   });
 }

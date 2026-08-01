@@ -163,7 +163,7 @@ class _SiteHeader extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'STUDY BOX',
+                  'ExamBox',
                   style: GoogleFonts.blackHanSans(fontSize: logoSize, color: textPrimary, letterSpacing: 0.5),
                 ),
                 SizedBox(width: navGap),

@@ -206,37 +206,28 @@ class _QuizScreenState extends State<QuizScreen> {
     final isCorrect = _selectedIndex == question.correctIndex;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.category ?? widget.subjectName),
-        centerTitle: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppColors.trackBg,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 4),
-                    Text(
-                      _elapsedLabel,
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
+      extendBodyBehindAppBar: false,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: AppBar(
+          title: Text(widget.category ?? widget.subjectName),
+          centerTitle: false,
+          backgroundColor: style.color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: style.color.withValues(alpha: 0.4),
+          titleTextStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(child: _TimerChip(elapsedLabel: _elapsedLabel)),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       body: AppBackground(
         child: SafeArea(
+          top: false,
           child: _sessionComplete
               ? _CompletionView(
                   color: style.color,
@@ -441,7 +432,44 @@ class _CompletionStat extends StatelessWidget {
   }
 }
 
-/// 상단 진행 상태 바 — 이번 회차 진행률 + 푼 문제 수
+/// AppBar 우측의 경과 시간 표시 — 흰 배경 위에 큼직하게 보이도록 눈에 띄게 키운 칩.
+class _TimerChip extends StatelessWidget {
+  final String elapsedLabel;
+  const _TimerChip({required this.elapsedLabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.timer_rounded, size: 19, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Text(
+            elapsedLabel,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: AppColors.primary,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 상단 진행 상태 바 — 이번 회차 진행률 + 푼 문제 수. 과목 색상이 은은하게 배어드는
+/// 배경으로 AppBar와 자연스럽게 이어지는 느낌을 준다.
 class _ProgressHeader extends StatelessWidget {
   final int current;
   final int total;
@@ -453,9 +481,10 @@ class _ProgressHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.glassBorder)),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        border: Border(bottom: BorderSide(color: color.withValues(alpha: 0.14))),
       ),
       child: Row(
         children: [
@@ -464,8 +493,8 @@ class _ProgressHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
                 value: (current + 1) / total,
-                minHeight: 7,
-                backgroundColor: AppColors.trackBg,
+                minHeight: 8,
+                backgroundColor: Colors.white,
                 valueColor: AlwaysStoppedAnimation(color),
               ),
             ),
@@ -479,12 +508,13 @@ class _ProgressHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
+              color: color,
               borderRadius: BorderRadius.circular(999),
+              boxShadow: [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 3))],
             ),
             child: Text(
               '이번 회차 $solved문제',
-              style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 12.5),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
             ),
           ),
         ],
@@ -511,10 +541,10 @@ class _QuestionCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.glassBorder),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 8)),
+          BoxShadow(color: color.withValues(alpha: 0.10), blurRadius: 24, offset: const Offset(0, 10)),
         ],
       ),
       child: Column(
@@ -524,8 +554,12 @@ class _QuestionCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [color.withValues(alpha: 0.14), color.withValues(alpha: 0.05)],
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Wrap(
               spacing: 8,
@@ -634,6 +668,9 @@ class _OptionTile extends StatelessWidget {
           color: fillColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor, width: state == _OptionState.idle ? 1 : 1.6),
+          boxShadow: state == _OptionState.idle
+              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))]
+              : [BoxShadow(color: borderColor.withValues(alpha: 0.18), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Material(
           color: Colors.transparent,

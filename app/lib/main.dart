@@ -20,7 +20,7 @@ class GamyeongExamApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '스터디박스',
+      title: 'ExamBox',
       theme: AppTheme.light(),
       home: const RootScreen(),
       // 폰/태블릿 폭에서는 앱처럼 보이도록 폭을 제한한다. 데스크톱(900 이상)에서는
