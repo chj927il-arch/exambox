@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
-import '../widgets/glass_card.dart';
 import 'quiz_screen.dart';
 
-/// STUDY BOX 특강 카드 진입 시 보여주는 개념 설명 화면 — 핵심을 개조식 목록으로 요약하고,
+/// STUDY BOX 특강 카드 진입 시 보여주는 개념 설명 화면 — 실제 노트에 손글씨로 필기한 것
+/// 같은 스타일(줄노트 배경 + 손글씨 폰트 + 형광펜 하이라이트)로 핵심 개념을 보여준다.
 /// "문제풀이" 버튼을 누르면 해당 category로 필터링된 QuizScreen으로 이동한다.
 class LectureIntroScreen extends StatelessWidget {
   final String title;
@@ -26,56 +27,60 @@ class LectureIntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title), centerTitle: false),
+      backgroundColor: _NotebookColors.paper,
+      appBar: AppBar(
+        title: Text(title),
+        centerTitle: false,
+        backgroundColor: _NotebookColors.paper,
+      ),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '핵심 개념',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 16),
-                  Column(
-                    children: List.generate(keyPoints.length, (i) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: i == keyPoints.length - 1 ? 0 : 12),
-                        child: GlassCard(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Container(
+                decoration: const BoxDecoration(color: _NotebookColors.paper),
+                child: CustomPaint(
+                  painter: _NotebookLinePainter(),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(36, 20, 20, 28),
+                    children: [
+                      _NotebookHeading(text: title),
+                      const SizedBox(height: 4),
+                      Text(
+                        '- 핵심 개념 정리 -',
+                        style: GoogleFonts.gaegu(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _NotebookColors.penBlue.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      ...List.generate(keyPoints.length, (i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                alignment: Alignment.center,
-                                margin: const EdgeInsets.only(top: 1),
-                                decoration: const BoxDecoration(color: AppColors.accentGold, shape: BoxShape.circle),
-                                child: Text(
-                                  '${i + 1}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w800),
+                              Text(
+                                '${i + 1}. ',
+                                style: GoogleFonts.gaegu(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: _NotebookColors.penRed,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(child: _HighlightedText(keyPoints[i])),
+                              Expanded(child: _HighlightedNote(keyPoints[i])),
                             ],
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-            Padding(
+            Container(
+              color: _NotebookColors.paper,
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               child: SizedBox(
                 width: double.infinity,
@@ -102,31 +107,129 @@ class LectureIntroScreen extends StatelessWidget {
   }
 }
 
-/// keyPoints 문자열 안의 `**강조**` 구간을 골드 볼드체로 렌더링한다.
-/// (예: '민법 **제103조** — ...' → "제103조"만 강조 표시)
-class _HighlightedText extends StatelessWidget {
+class _NotebookColors {
+  _NotebookColors._();
+  static const paper = Color(0xFFFFFDF5);
+  static const ruleLine = Color(0xFFCFE0F0);
+  static const marginLine = Color(0xFFE9AFAF);
+  static const penBlue = Color(0xFF1F3B73);
+  static const penRed = Color(0xFFC0392B);
+  static const marker = Color(0xFFFFF07A);
+}
+
+/// 줄노트 배경 — 가로 줄과 왼쪽 여백선(빨간 세로선)을 그린다.
+class _NotebookLinePainter extends CustomPainter {
+  static const double lineGap = 30;
+  static const double marginX = 26;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = _NotebookColors.ruleLine
+      ..strokeWidth = 1;
+    for (double y = 56; y < size.height; y += lineGap) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
+    }
+    final marginPaint = Paint()
+      ..color = _NotebookColors.marginLine
+      ..strokeWidth = 1.4;
+    canvas.drawLine(Offset(marginX, 0), Offset(marginX, size.height), marginPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _NotebookLinePainter oldDelegate) => false;
+}
+
+/// 손글씨 폰트의 큰 제목 — 밑에 손으로 그은 듯한 밑줄을 함께 그린다.
+class _NotebookHeading extends StatelessWidget {
   final String text;
-  const _HighlightedText(this.text);
+  const _NotebookHeading({required this.text});
 
   @override
   Widget build(BuildContext context) {
-    const baseStyle = TextStyle(fontSize: 14.5, height: 1.6, color: AppColors.textPrimary, fontWeight: FontWeight.w500);
-    const highlightStyle = TextStyle(
-      fontSize: 14.5,
-      height: 1.6,
-      color: AppColors.primaryDark,
-      fontWeight: FontWeight.w800,
-      backgroundColor: Color(0xFFFBE8C6),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          text,
+          style: GoogleFonts.gaegu(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: _NotebookColors.penBlue,
+          ),
+        ),
+        const SizedBox(height: 2),
+        CustomPaint(
+          size: const Size(double.infinity, 8),
+          painter: _SquigglePainter(),
+        ),
+      ],
+    );
+  }
+}
+
+class _SquigglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = _NotebookColors.penRed.withValues(alpha: 0.8)
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final path = Path()..moveTo(0, 4);
+    const step = 10.0;
+    for (double x = 0; x < size.width; x += step) {
+      path.quadraticBezierTo(x + step / 2, x % (step * 2) == 0 ? 0 : 8, x + step, 4);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SquigglePainter oldDelegate) => false;
+}
+
+/// keyPoints 문자열 안의 `**강조**` 구간을 형광펜(마커)으로 칠한 것처럼 렌더링한다.
+/// (예: '민법 **제103조** — ...' → "제103조"만 노란 마커 강조 표시)
+class _HighlightedNote extends StatelessWidget {
+  final String text;
+  const _HighlightedNote(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    final baseStyle = GoogleFonts.gaegu(
+      fontSize: 17.5,
+      height: 1.45,
+      color: _NotebookColors.penBlue,
+      fontWeight: FontWeight.w500,
+    );
+    final highlightTextStyle = GoogleFonts.gaegu(
+      fontSize: 17.5,
+      height: 1.1,
+      color: _NotebookColors.penBlue,
+      fontWeight: FontWeight.w700,
     );
 
-    final spans = <TextSpan>[];
     final pattern = RegExp(r'\*\*(.+?)\*\*');
+    final spans = <InlineSpan>[];
     var cursor = 0;
     for (final match in pattern.allMatches(text)) {
       if (match.start > cursor) {
         spans.add(TextSpan(text: text.substring(cursor, match.start), style: baseStyle));
       }
-      spans.add(TextSpan(text: match.group(1), style: highlightStyle));
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Transform.rotate(
+          angle: -0.015,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+            decoration: BoxDecoration(
+              color: _NotebookColors.marker.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Text(match.group(1)!, style: highlightTextStyle),
+          ),
+        ),
+      ));
       cursor = match.end;
     }
     if (cursor < text.length) {
