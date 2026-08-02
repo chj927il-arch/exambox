@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 import '../data/sample_questions.dart';
 import '../models/question.dart';
 import '../theme/app_theme.dart';
+import '../widgets/highlighted_text.dart';
 
 const _optionLabels = ['A', 'B', 'C', 'D', 'E'];
 const _kTimeAttackSubjects = ['economic_law', 'civil_law', 'business_admin'];
 const _kSubjectNames = {'economic_law': '경제법', 'civil_law': '민법', 'business_admin': '경영학'};
 const _kTimeAttackDuration = Duration(seconds: 60);
-const _kAdvanceDelay = Duration(milliseconds: 450);
 
 /// 타임어택 — 제한시간 1분 동안 경제법·민법·경영학 문제가 뒤섞여 계속 나오고,
-/// 그 안에서 최대한 많이 맞히는 킬링타임용 미니게임. 정답 여부만 짧게 보여주고
-/// 바로 다음 문제로 넘어가는 빠른 템포가 핵심이라 상세 해설은 보여주지 않는다.
+/// 그 안에서 최대한 많이 맞히는 킬링타임용 미니게임. 정답을 고르면 짧은 해설이
+/// 바로 나오고, "다음 문제"를 눌러야 넘어간다(해설 읽는 시간도 60초 안에 포함되므로
+/// 속도와 정확도를 함께 신경 써야 한다).
 class TimeAttackScreen extends StatefulWidget {
   const TimeAttackScreen({super.key});
 
@@ -30,7 +31,6 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
   int _correct = 0;
   Duration _remaining = _kTimeAttackDuration;
   Timer? _tickTimer;
-  Timer? _advanceTimer;
   final _random = Random();
 
   @override
@@ -53,7 +53,6 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
   @override
   void dispose() {
     _tickTimer?.cancel();
-    _advanceTimer?.cancel();
     super.dispose();
   }
 
@@ -61,7 +60,6 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
 
   void _finish() {
     _tickTimer?.cancel();
-    _advanceTimer?.cancel();
     setState(() => _showResult = true);
   }
 
@@ -73,12 +71,13 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
       _solved++;
       if (correct) _correct++;
     });
-    _advanceTimer = Timer(_kAdvanceDelay, () {
-      if (!mounted || _showResult) return;
-      setState(() {
-        _current = _pickQuestion();
-        _selectedIndex = null;
-      });
+  }
+
+  void _nextQuestion() {
+    if (_showResult) return;
+    setState(() {
+      _current = _pickQuestion();
+      _selectedIndex = null;
     });
   }
 
@@ -286,12 +285,73 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
                         ),
                       );
                     }),
+                    if (_selectedIndex != null) ...[
+                      const SizedBox(height: 6),
+                      _ExplanationPanel(
+                        question: _current,
+                        isCorrect: _selectedIndex == _current.correctIndex,
+                        accent: accent,
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(backgroundColor: accent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                          onPressed: _nextQuestion,
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                          label: const Text('다음 문제', style: TextStyle(fontWeight: FontWeight.w800)),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ExplanationPanel extends StatelessWidget {
+  final Question question;
+  final bool isCorrect;
+  final Color accent;
+
+  const _ExplanationPanel({required this.question, required this.isCorrect, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: resultColor.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: resultColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded, color: resultColor, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                isCorrect ? '정답이에요!' : '아쉬워요, 오답이에요',
+                style: TextStyle(color: resultColor, fontWeight: FontWeight.w800, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          HighlightedText(
+            text: question.summaryExplanation,
+            phrases: question.highlightPhrases,
+            style: const TextStyle(fontSize: 13.5, height: 1.5, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+          ),
+        ],
       ),
     );
   }
