@@ -33,9 +33,28 @@ class HomeScreen extends StatelessWidget {
           // 영상은 스크롤 목록 밖의 고정 영역에 둔다 — 플랫폼 뷰(<video>)가 스크롤 목록
           // 안에 있으면 스크롤할 때마다 웹 엔진이 그 위치·클립을 매 프레임 다시 계산해야
           // 해서 스크롤 전체가 버벅이는 Flutter Web의 알려진 문제가 있다.
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: HomeIntroVideo(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Stack(
+              children: [
+                const HomeIntroVideo(),
+                // 영상 속에 그려진 "시작하기" 버튼 위치에 맞춰 투명한 탭 영역을 얹는다.
+                // 눌리면 "과목별 학습" 그리드(경제법·민법·경영학)로 바로 이동한다.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 64,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SubjectGridScreen())),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: ListView(

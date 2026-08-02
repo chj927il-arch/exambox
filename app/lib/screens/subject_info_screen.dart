@@ -3,6 +3,8 @@ import '../data/topic_stats.dart';
 import '../theme/app_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/glass_card.dart';
+import 'mock_exam_screen.dart';
+import 'quiz_screen.dart';
 
 const Map<String, String> _subjectDescriptions = {
   'economic_law': '독점규제 및 공정거래에 관한 법률(공정거래법)과 약관의 규제에 관한 법률(약관법)을 중심으로, '
@@ -80,7 +82,41 @@ class SubjectInfoScreen extends StatelessWidget {
               Text(subjectName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: style.color,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 2,
+              ),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => QuizScreen(subjectId: subjectId, subjectName: subjectName)),
+              ),
+              icon: const Icon(Icons.edit_note_rounded),
+              label: const Text('문제풀이 시작', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: style.color,
+                side: BorderSide(color: style.color, width: 1.4),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => MockExamScreen(subjectId: subjectId, subjectName: subjectName)),
+              ),
+              icon: const Icon(Icons.timer_outlined),
+              label: const Text('실전모의고사 응시 (40문항)', style: TextStyle(fontWeight: FontWeight.w800)),
+            ),
+          ),
+          const SizedBox(height: 20),
           const _SectionTitle('과목 소개'),
           const SizedBox(height: 8),
           GlassCard(

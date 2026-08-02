@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../widgets/app_background.dart';
@@ -125,11 +124,9 @@ class _SiteHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = dark ? OttColors.bg : AppColors.bgBase;
     final border = dark ? OttColors.border : AppColors.glassBorder.withValues(alpha: 0.8);
-    final textPrimary = dark ? OttColors.textPrimary : AppColors.textPrimary;
     final textSecondary = dark ? OttColors.textSecondary : AppColors.textSecondary;
     final accent = dark ? OttColors.accentStart : AppColors.primary;
 
-    final logoSize = isDesktop ? 22.0 : 18.0;
     final navGap = isDesktop ? 32.0 : 16.0;
     final navFontSize = isDesktop ? 14.0 : 12.5;
     final hPad = isDesktop ? 24.0 : 16.0;
@@ -162,11 +159,6 @@ class _SiteHeader extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: hPad),
             child: Row(
               children: [
-                Text(
-                  'ExamBox',
-                  style: GoogleFonts.blackHanSans(fontSize: logoSize, color: textPrimary, letterSpacing: 0.5),
-                ),
-                SizedBox(width: navGap),
                 navText(home.label, selected: home.tabIndex == selectedIndex, onTap: () => onSelected(home.tabIndex)),
                 const Spacer(),
                 navText(

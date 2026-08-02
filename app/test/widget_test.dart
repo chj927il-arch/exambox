@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const GamyeongExamApp());
     await tester.pump();
 
-    // 상단 고정 헤더 로고에 ExamBox 타이틀이 표시된다.
-    expect(find.textContaining('ExamBox'), findsOneWidget);
+    // 상단 고정 헤더 왼쪽에 '홈' 내비게이션이 표시된다.
+    expect(find.text('홈'), findsOneWidget);
   });
 }
