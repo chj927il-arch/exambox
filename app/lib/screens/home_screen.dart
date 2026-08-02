@@ -9,6 +9,7 @@ import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
 import '../widgets/home_intro_video.dart';
+import '../widgets/like_badge.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
 import 'certificate_menu_screen.dart';
@@ -526,31 +527,35 @@ class SubjectPosterCard extends StatelessWidget {
         ),
         // 표지 이미지가 있으면 민법 특강 포스터처럼 이미지 안에 제목이 포함돼 있어 별도 오버레이 없이 그대로 보여준다.
         // 아직 이미지가 없는 과목(경영학)만 색상 배경 위에 아이콘+과목명 오버레이로 자리를 채운다.
-        child: coverImage != null
-            ? TintedPoster(imageAsset: coverImage)
-            : Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          style.color,
-                          style.color.withValues(alpha: 0.7),
-                        ],
-                      ),
-                    ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (coverImage != null)
+              TintedPoster(imageAsset: coverImage)
+            else ...[
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [style.color, style.color.withValues(alpha: 0.7)],
                   ),
-                  Positioned(
-                    left: 10,
-                    top: 12,
-                    child: Icon(style.icon, color: Colors.white, size: 26),
-                  ),
-                  Positioned(left: 0, right: 0, bottom: 0, child: titleOverlay),
-                ],
+                ),
               ),
+              Positioned(
+                left: 10,
+                top: 12,
+                child: Icon(style.icon, color: Colors.white, size: 26),
+              ),
+              Positioned(left: 0, right: 0, bottom: 0, child: titleOverlay),
+            ],
+            Positioned(
+              top: 8,
+              right: 8,
+              child: LikeBadge(likeId: 'subject_${subject.id}'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -571,6 +576,7 @@ class _LectureGrid extends StatelessWidget {
         final item = civilLawLectures[index];
         return LectureCoverCard(
           imageAsset: item.imageAsset!,
+          likeId: '${item.subjectId}_${item.category}',
           onTap: (context) => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => LectureIntroScreen(
@@ -602,6 +608,7 @@ class _KoreanHistoryLectureGrid extends StatelessWidget {
         final item = koreanHistoryLectures[index];
         return LectureCoverCard(
           imageAsset: item.imageAsset!,
+          likeId: '${item.subjectId}_${item.category}',
           onTap: (context) => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => LectureIntroScreen(
@@ -622,10 +629,12 @@ class _KoreanHistoryLectureGrid extends StatelessWidget {
 class LectureCoverCard extends StatelessWidget {
   final String imageAsset;
   final void Function(BuildContext context) onTap;
+  final String likeId;
   const LectureCoverCard({
     super.key,
     required this.imageAsset,
     required this.onTap,
+    required this.likeId,
   });
 
   @override
@@ -647,7 +656,13 @@ class LectureCoverCard extends StatelessWidget {
             ),
           ],
         ),
-        child: TintedPoster(imageAsset: imageAsset),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            TintedPoster(imageAsset: imageAsset),
+            Positioned(top: 8, right: 8, child: LikeBadge(likeId: likeId)),
+          ],
+        ),
       ),
     );
   }
@@ -713,6 +728,11 @@ class _MockExamSeasonCard extends StatelessWidget {
               left: 10,
               top: 12,
               child: Icon(style.icon, color: Colors.white, size: 26),
+            ),
+            const Positioned(
+              top: 8,
+              right: 8,
+              child: LikeBadge(likeId: 'mock_exam_season1'),
             ),
             Positioned(
               left: 10,
@@ -805,6 +825,11 @@ class _TimeAttackCard extends StatelessWidget {
               top: 12,
               child: Icon(style.icon, color: Colors.white, size: 26),
             ),
+            const Positioned(
+              top: 8,
+              right: 8,
+              child: LikeBadge(likeId: 'time_attack'),
+            ),
             Positioned(
               left: 10,
               top: 46,
@@ -877,7 +902,11 @@ class _IconLectureGrid extends StatelessWidget {
           ),
         );
         if (item.imageAsset != null) {
-          return LectureCoverCard(imageAsset: item.imageAsset!, onTap: onTap);
+          return LectureCoverCard(
+            imageAsset: item.imageAsset!,
+            likeId: '${item.subjectId}_${item.category}',
+            onTap: onTap,
+          );
         }
         return _IconLectureCard(item: item, onTap: () => onTap(context));
       },
@@ -926,6 +955,11 @@ class _IconLectureCard extends StatelessWidget {
               left: 10,
               top: 12,
               child: Icon(style.icon, color: Colors.white, size: 26),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: LikeBadge(likeId: '${item.subjectId}_${item.category}'),
             ),
             Positioned(
               left: 0,

@@ -26,6 +26,7 @@ class LectureGridScreen extends StatelessWidget {
               .map(
                 (item) => LectureCoverCard(
                   imageAsset: item.imageAsset!,
+                  likeId: '${item.subjectId}_${item.category}',
                   onTap: (context) => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => LectureIntroScreen(
