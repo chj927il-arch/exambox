@@ -18,6 +18,7 @@ import 'lecture_intro_screen.dart';
 import 'review_screen.dart';
 import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
+import 'time_attack_screen.dart';
 
 /// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
 class HomeScreen extends StatelessWidget {
@@ -28,12 +29,9 @@ class HomeScreen extends StatelessWidget {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
-      child: Column(
+      child: ListView(
+        padding: const EdgeInsets.only(top: 22, bottom: 28),
         children: [
-          const SizedBox(height: 22),
-          // 영상은 스크롤 목록 밖의 고정 영역에 둔다 — 플랫폼 뷰(<video>)가 스크롤 목록
-          // 안에 있으면 스크롤할 때마다 웹 엔진이 그 위치·클립을 매 프레임 다시 계산해야
-          // 해서 스크롤 전체가 버벅이는 Flutter Web의 알려진 문제가 있다.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Stack(
@@ -49,140 +47,140 @@ class HomeScreen extends StatelessWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SubjectGridScreen())),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 22, bottom: 28),
-              children: [
-                // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
-                if (isDesktop)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _ParallelPromoBanners(),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 440),
-                        child: const RollingBanner(
-                          banners: [
-                            BannerItem(
-                              imageAsset:
-                                  'assets/images/rolling_banner_update.png',
-                            ),
-                            BannerItem(
-                              imageAsset:
-                                  'assets/images/rolling_banner_chapter.png',
-                            ),
-                            BannerItem(
-                              imageAsset:
-                                  'assets/images/rolling_banner_premium.png',
-                            ),
-                          ],
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(18),
+                      ),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SubjectGridScreen(),
                         ),
                       ),
                     ),
                   ),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(
-                    title: '과목별 학습',
-                    onMore: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const SubjectGridScreen(),
-                      ),
-                    ),
-                  ),
                 ),
-                const SizedBox(height: 10),
-                const _SubjectPosterRow(),
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '실전모의고사'),
-                ),
-                const SizedBox(height: 10),
-                const _MockExamGrid(),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(
-                    title: '민법 특강',
-                    onMore: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LectureGridScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const _LectureGrid(),
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '경영학 특강'),
-                ),
-                const SizedBox(height: 10),
-                const _IconLectureGrid(lectures: businessAdminLectures),
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '경제법 특강'),
-                ),
-                const SizedBox(height: 10),
-                const _IconLectureGrid(lectures: economicLawLectures),
-                if (kKoreanHistoryEnabled) ...[
-                  const SizedBox(height: 22),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(title: '한능검 특강'),
-                  ),
-                  const SizedBox(height: 10),
-                  const _KoreanHistoryLectureGrid(),
-                ],
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '오늘의 OX 퀴즈'),
-                ),
-                const SizedBox(height: 10),
-                HScrollList(
-                  height: kLecturePosterHeight,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: 1,
-                  itemBuilder: (context, index) => _DailyOxMainCard(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const DailyOxListScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(
-                    title: '수강후기',
-                    onMore: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ReviewScreen()),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const _ReviewCarousel(),
               ],
             ),
           ),
+          const SizedBox(height: 22),
+          // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
+          if (isDesktop)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: _ParallelPromoBanners(),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: const RollingBanner(
+                    banners: [
+                      BannerItem(
+                        imageAsset: 'assets/images/rolling_banner_update.png',
+                      ),
+                      BannerItem(
+                        imageAsset: 'assets/images/rolling_banner_chapter.png',
+                      ),
+                      BannerItem(
+                        imageAsset: 'assets/images/rolling_banner_premium.png',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 22),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(
+              title: '과목별 학습',
+              onMore: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SubjectGridScreen()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const _SubjectPosterRow(),
+          const SizedBox(height: 22),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(title: '실전모의고사'),
+          ),
+          const SizedBox(height: 10),
+          const _MockExamGrid(),
+          const SizedBox(height: 22),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(
+              title: '민법 특강',
+              onMore: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LectureGridScreen()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const _LectureGrid(),
+          const SizedBox(height: 22),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(title: '경영학 특강'),
+          ),
+          const SizedBox(height: 10),
+          const _IconLectureGrid(lectures: businessAdminLectures),
+          const SizedBox(height: 22),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(title: '경제법 특강'),
+          ),
+          const SizedBox(height: 10),
+          const _IconLectureGrid(lectures: economicLawLectures),
+          if (kKoreanHistoryEnabled) ...[
+            const SizedBox(height: 22),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: _RowHeader(title: '한능검 특강'),
+            ),
+            const SizedBox(height: 10),
+            const _KoreanHistoryLectureGrid(),
+          ],
+          const SizedBox(height: 22),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(title: '킬링타임'),
+          ),
+          const SizedBox(height: 10),
+          HScrollList(
+            height: kLecturePosterHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: 2,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return _DailyOxMainCard(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DailyOxListScreen()),
+                  ),
+                );
+              }
+              return _TimeAttackCard(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const TimeAttackScreen()),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 22),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _RowHeader(
+              title: '수강후기',
+              onMore: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ReviewScreen())),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const _ReviewCarousel(),
         ],
       ),
     );
@@ -628,7 +626,9 @@ class _MockExamGrid extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: 1,
       itemBuilder: (context, index) => _MockExamSeasonCard(
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FullMockExamScreen())),
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const FullMockExamScreen())),
       ),
     );
   }
@@ -641,6 +641,94 @@ class _MockExamSeasonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = subjectStyleOf('mock_exam_season1');
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: kLecturePosterWidth,
+        height: kLecturePosterHeight,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: OttColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [style.color, style.color.withValues(alpha: 0.7)],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 10,
+              top: 12,
+              child: Icon(style.icon, color: Colors.white, size: 26),
+            ),
+            Positioned(
+              left: 10,
+              top: 46,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  'SEASON 1',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+            ),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                child: Text(
+                  '실전모의고사 시즌1',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 타임어택 — 제한시간 1분 동안 3과목이 뒤섞인 문제를 최대한 많이 푸는 킬링타임 카드.
+class _TimeAttackCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _TimeAttackCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    const style = SubjectStyle(icon: Icons.bolt_rounded, color: Color(0xFFE0533D));
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -666,11 +754,7 @@ class _MockExamSeasonCard extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              left: 10,
-              top: 12,
-              child: Icon(style.icon, color: Colors.white, size: 26),
-            ),
+            Positioned(left: 10, top: 12, child: Icon(style.icon, color: Colors.white, size: 26)),
             Positioned(
               left: 10,
               top: 46,
@@ -678,7 +762,7 @@ class _MockExamSeasonCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(999)),
                 child: const Text(
-                  'SEASON 1',
+                  '1분 제한',
                   style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.6),
                 ),
               ),
@@ -690,7 +774,7 @@ class _MockExamSeasonCard extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
                 child: Text(
-                  '실전모의고사 시즌1',
+                  '타임어택',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.25),
