@@ -42,188 +42,184 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
-      child: Column(
-        children: [
-          const SizedBox(height: 22),
-          // 영상은 스크롤 목록 밖의 고정 영역에 둔다 — 플랫폼 뷰(<video>)가 스크롤 목록
-          // 안에 있으면 스크롤할 때마다 웹 엔진이 그 위치·클립을 매 프레임 다시 계산해야
-          // 해서 스크롤 전체가 버벅이는 Flutter Web의 알려진 문제가 있다. 실제로 되돌려서
-          // 테스트해봐도 다시 버벅여서, 고정 배치가 유일하게 확인된 해결책으로 재확정.
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Stack(
-              children: [
-                const HomeIntroVideo(),
-                // 영상 속에 그려진 "시작하기" 버튼 위치에 맞춰 투명한 탭 영역을 얹는다.
-                // 눌리면 "과목별 학습" 그리드(경제법·민법·경영학)로 바로 이동한다.
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 64,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(18),
-                      ),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SubjectGridScreen(),
+      // 항상 보이는 드래그 가능한 스크롤바 — 휠/터치 스크롤이 어쩌다 버벅여도
+      // 스크롤바 막대를 직접 끌어서 강제로 이동할 수 있는 대체 수단을 제공한다.
+      // 다크 배경(OttColors.bg)에서도 잘 보이도록 ScrollbarTheme으로 밝은 색을 지정한다.
+      child: ScrollbarTheme(
+        data: ScrollbarThemeData(
+          thumbColor: const WidgetStatePropertyAll(Color(0xFFB8BFCC)),
+        ),
+        child: Scrollbar(
+          controller: _scrollController,
+          thumbVisibility: true,
+          interactive: true,
+          child: ListView(
+            controller: _scrollController,
+            padding: const EdgeInsets.only(top: 22, bottom: 28),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Stack(
+                  children: [
+                    const HomeIntroVideo(),
+                    // 영상 속에 그려진 "시작하기" 버튼 위치에 맞춰 투명한 탭 영역을 얹는다.
+                    // 눌리면 "과목별 학습" 그리드(경제법·민법·경영학)로 바로 이동한다.
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 64,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(18),
+                          ),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SubjectGridScreen(),
+                            ),
+                          ),
                         ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
+              if (isDesktop)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _ParallelPromoBanners(),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 440),
+                      child: const RollingBanner(
+                        banners: [
+                          BannerItem(
+                            imageAsset:
+                                'assets/images/rolling_banner_update.png',
+                          ),
+                          BannerItem(
+                            imageAsset:
+                                'assets/images/rolling_banner_chapter.png',
+                          ),
+                          BannerItem(
+                            imageAsset:
+                                'assets/images/rolling_banner_premium.png',
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            // 항상 보이는 드래그 가능한 스크롤바 — 휠/터치 스크롤이 어쩌다 버벅여도
-            // 스크롤바 막대를 직접 끌어서 강제로 이동할 수 있는 대체 수단을 제공한다.
-            child: Scrollbar(
-              controller: _scrollController,
-              thumbVisibility: true,
-              interactive: true,
-              child: ListView(
-                controller: _scrollController,
-                padding: const EdgeInsets.only(top: 22, bottom: 28),
-                children: [
-                  // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
-                  if (isDesktop)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: _ParallelPromoBanners(),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 440),
-                          child: const RollingBanner(
-                            banners: [
-                              BannerItem(
-                                imageAsset:
-                                    'assets/images/rolling_banner_update.png',
-                              ),
-                              BannerItem(
-                                imageAsset:
-                                    'assets/images/rolling_banner_chapter.png',
-                              ),
-                              BannerItem(
-                                imageAsset:
-                                    'assets/images/rolling_banner_premium.png',
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 22),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(
-                      title: '과목별 학습',
-                      onMore: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SubjectGridScreen(),
-                        ),
-                      ),
+              const SizedBox(height: 22),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '과목별 학습',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SubjectGridScreen(),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const _SubjectPosterRow(),
-                  const SizedBox(height: 22),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(title: '실전모의고사'),
-                  ),
-                  const SizedBox(height: 10),
-                  const _MockExamGrid(),
-                  const SizedBox(height: 22),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(
-                      title: '민법 특강',
-                      onMore: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LectureGridScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const _LectureGrid(),
-                  const SizedBox(height: 22),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(title: '경영학 특강'),
-                  ),
-                  const SizedBox(height: 10),
-                  const _IconLectureGrid(lectures: businessAdminLectures),
-                  const SizedBox(height: 22),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(title: '경제법 특강'),
-                  ),
-                  const SizedBox(height: 10),
-                  const _IconLectureGrid(lectures: economicLawLectures),
-                  if (kKoreanHistoryEnabled) ...[
-                    const SizedBox(height: 22),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: _RowHeader(title: '한능검 특강'),
-                    ),
-                    const SizedBox(height: 10),
-                    const _KoreanHistoryLectureGrid(),
-                  ],
-                  const SizedBox(height: 22),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(title: '킬링타임'),
-                  ),
-                  const SizedBox(height: 10),
-                  HScrollList(
-                    height: kLecturePosterHeight,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: 2,
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return _DailyOxMainCard(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const DailyOxListScreen(),
-                            ),
-                          ),
-                        );
-                      }
-                      return _TimeAttackCard(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const TimeAttackScreen(),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 22),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(
-                      title: '수강후기',
-                      onMore: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ReviewScreen()),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const _ReviewCarousel(),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 10),
+              const _SubjectPosterRow(),
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(title: '실전모의고사'),
+              ),
+              const SizedBox(height: 10),
+              const _MockExamGrid(),
+              const SizedBox(height: 22),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '민법 특강',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LectureGridScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const _LectureGrid(),
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(title: '경영학 특강'),
+              ),
+              const SizedBox(height: 10),
+              const _IconLectureGrid(lectures: businessAdminLectures),
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(title: '경제법 특강'),
+              ),
+              const SizedBox(height: 10),
+              const _IconLectureGrid(lectures: economicLawLectures),
+              if (kKoreanHistoryEnabled) ...[
+                const SizedBox(height: 22),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(title: '한능검 특강'),
+                ),
+                const SizedBox(height: 10),
+                const _KoreanHistoryLectureGrid(),
+              ],
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(title: '킬링타임'),
+              ),
+              const SizedBox(height: 10),
+              HScrollList(
+                height: kLecturePosterHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: 2,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _DailyOxMainCard(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DailyOxListScreen(),
+                        ),
+                      ),
+                    );
+                  }
+                  return _TimeAttackCard(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const TimeAttackScreen(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 22),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '수강후기',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ReviewScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const _ReviewCarousel(),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
