@@ -12,6 +12,7 @@ import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
 import 'certificate_menu_screen.dart';
 import 'daily_ox_list_screen.dart';
+import 'full_mock_exam_screen.dart';
 import 'lecture_grid_screen.dart';
 import 'lecture_intro_screen.dart';
 import 'review_screen.dart';
@@ -105,6 +106,13 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const _SubjectPosterRow(),
+                const SizedBox(height: 22),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _RowHeader(title: '실전모의고사'),
+                ),
+                const SizedBox(height: 10),
+                const _MockExamGrid(),
                 const SizedBox(height: 22),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -603,6 +611,94 @@ class LectureCoverCard extends StatelessWidget {
           ],
         ),
         child: TintedPoster(imageAsset: imageAsset),
+      ),
+    );
+  }
+}
+
+/// 실전모의고사 그리드 — 지금은 시즌1 한 장뿐이라 특강 그리드와 같은 가로 스크롤 행에
+/// 아이콘 카드 한 장만 놓는다(표지 이미지는 추후 추가 예정).
+class _MockExamGrid extends StatelessWidget {
+  const _MockExamGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return HScrollList(
+      height: kLecturePosterHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: 1,
+      itemBuilder: (context, index) => _MockExamSeasonCard(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FullMockExamScreen())),
+      ),
+    );
+  }
+}
+
+class _MockExamSeasonCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _MockExamSeasonCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = subjectStyleOf('mock_exam_season1');
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: kLecturePosterWidth,
+        height: kLecturePosterHeight,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: OttColors.border),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [style.color, style.color.withValues(alpha: 0.7)],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 10,
+              top: 12,
+              child: Icon(style.icon, color: Colors.white, size: 26),
+            ),
+            Positioned(
+              left: 10,
+              top: 46,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(999)),
+                child: const Text(
+                  'SEASON 1',
+                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.6),
+                ),
+              ),
+            ),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                child: Text(
+                  '실전모의고사 시즌1',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.25),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
