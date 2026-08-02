@@ -39,7 +39,10 @@ class _MockExamScreenState extends State<MockExamScreen> {
   @override
   void initState() {
     super.initState();
-    _questions = buildMockExam(widget.subjectId, totalCount: widget.questionCount);
+    _questions = buildMockExam(
+      widget.subjectId,
+      totalCount: widget.questionCount,
+    );
     _answers = List<int?>.filled(_questions.length, null);
     _remaining = widget.timeLimit;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -103,10 +106,20 @@ class _MockExamScreenState extends State<MockExamScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('제출할까요?'),
-        content: Text(unanswered > 0 ? '아직 풀지 않은 문제가 $unanswered개 있어요. 그래도 제출할까요?' : '모든 문제를 다 풀었어요. 제출할까요?'),
+        content: Text(
+          unanswered > 0
+              ? '아직 풀지 않은 문제가 $unanswered개 있어요. 그래도 제출할까요?'
+              : '모든 문제를 다 풀었어요. 제출할까요?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('취소')),
-          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('제출하기')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('제출하기'),
+          ),
         ],
       ),
     );
@@ -125,7 +138,10 @@ class _MockExamScreenState extends State<MockExamScreen> {
         title: const Text('시험을 중단할까요?'),
         content: const Text('지금 나가면 이번 응시 기록은 저장되지 않아요.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('계속 풀기')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('계속 풀기'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.wrong),
             onPressed: () => Navigator.of(context).pop(true),
@@ -163,100 +179,119 @@ class _MockExamScreenState extends State<MockExamScreen> {
     final question = _questions[_current];
     final isLowTime = _remaining.inMinutes < 5;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _confirmExit();
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.bgBase,
-        appBar: AppBar(
-          title: Text('${widget.subjectName} 실전모의고사'),
-          centerTitle: false,
-          leading: IconButton(icon: const Icon(Icons.close_rounded), onPressed: _confirmExit),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isLowTime ? AppColors.wrong.withValues(alpha: 0.12) : AppColors.trackBg,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.timer_rounded, size: 16, color: isLowTime ? AppColors.wrong : AppColors.textSecondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        _remainingLabel,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: isLowTime ? AppColors.wrong : AppColors.textSecondary,
-                        ),
+    return Scaffold(
+      backgroundColor: AppColors.bgBase,
+      appBar: AppBar(
+        title: Text('${widget.subjectName} 실전모의고사'),
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: _confirmExit,
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isLowTime
+                      ? AppColors.wrong.withValues(alpha: 0.12)
+                      : AppColors.trackBg,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_rounded,
+                      size: 16,
+                      color: isLowTime
+                          ? AppColors.wrong
+                          : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _remainingLabel,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: isLowTime
+                            ? AppColors.wrong
+                            : AppColors.textSecondary,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              _AnswerSheetStrip(
-                total: _questions.length,
-                current: _current,
-                answers: _answers,
-                color: style.color,
-                onTap: _goTo,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_current + 1}. ',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: style.color),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _AnswerSheetStrip(
+              total: _questions.length,
+              current: _current,
+              answers: _answers,
+              color: style.color,
+              onTap: _goTo,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_current + 1}. ',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: style.color,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        question.stem,
-                        style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, height: 1.5, color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      question.stem,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        height: 1.5,
+                        color: AppColors.textPrimary,
                       ),
-                      const SizedBox(height: 20),
-                      ...List.generate(question.choices.length, (i) {
-                        final selected = _answers[_current] == i;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _ExamOptionTile(
-                            label: _optionLabels[i],
-                            text: question.choices[i],
-                            selected: selected,
-                            color: style.color,
-                            onTap: () => _select(i),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    ...List.generate(question.choices.length, (i) {
+                      final selected = _answers[_current] == i;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _ExamOptionTile(
+                          label: _optionLabels[i],
+                          text: question.choices[i],
+                          selected: selected,
+                          color: style.color,
+                          onTap: () => _select(i),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               ),
-              _BottomNavBar(
-                isFirst: _current == 0,
-                isLast: _current == _questions.length - 1,
-                color: style.color,
-                onPrev: _prev,
-                onNext: _next,
-                onSubmit: _confirmSubmit,
-              ),
-            ],
-          ),
+            ),
+            _BottomNavBar(
+              isFirst: _current == 0,
+              isLast: _current == _questions.length - 1,
+              color: style.color,
+              onPrev: _prev,
+              onNext: _next,
+              onSubmit: _confirmSubmit,
+            ),
+          ],
         ),
       ),
     );
@@ -283,7 +318,9 @@ class _AnswerSheetStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 56,
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.glassBorder))),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.glassBorder)),
+      ),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -298,16 +335,28 @@ class _AnswerSheetStrip extends StatelessWidget {
               width: 36,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isCurrent ? color : (isAnswered ? color.withValues(alpha: 0.14) : Colors.white),
+                color: isCurrent
+                    ? color
+                    : (isAnswered
+                          ? color.withValues(alpha: 0.14)
+                          : Colors.white),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: isCurrent ? color : (isAnswered ? color.withValues(alpha: 0.4) : AppColors.glassBorder)),
+                border: Border.all(
+                  color: isCurrent
+                      ? color
+                      : (isAnswered
+                            ? color.withValues(alpha: 0.4)
+                            : AppColors.glassBorder),
+                ),
               ),
               child: Text(
                 '${i + 1}',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
-                  color: isCurrent ? Colors.white : (isAnswered ? color : AppColors.textMuted),
+                  color: isCurrent
+                      ? Colors.white
+                      : (isAnswered ? color : AppColors.textMuted),
                 ),
               ),
             ),
@@ -345,7 +394,10 @@ class _ExamOptionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: selected ? color : AppColors.glassBorder, width: selected ? 1.6 : 1),
+            border: Border.all(
+              color: selected ? color : AppColors.glassBorder,
+              width: selected ? 1.6 : 1,
+            ),
           ),
           child: Row(
             children: [
@@ -357,11 +409,26 @@ class _ExamOptionTile extends StatelessWidget {
                   color: selected ? color : AppColors.trackBg,
                   borderRadius: BorderRadius.circular(9),
                 ),
-                child: Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary, fontWeight: FontWeight.w800, fontSize: 14)),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? Colors.white : AppColors.textSecondary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(text, style: const TextStyle(fontSize: 15.5, height: 1.35, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    height: 1.35,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ],
           ),
@@ -392,7 +459,9 @@ class _BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.glassBorder))),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.glassBorder)),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -402,7 +471,9 @@ class _BottomNavBar extends StatelessWidget {
               label: const Text('이전'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
           ),
@@ -417,7 +488,9 @@ class _BottomNavBar extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   )
                 : ElevatedButton.icon(
@@ -427,7 +500,9 @@ class _BottomNavBar extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
           ),
@@ -466,7 +541,11 @@ class _MockExamResultView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
-      appBar: AppBar(title: Text('$subjectName 모의고사 결과'), centerTitle: false, automaticallyImplyLeading: false),
+      appBar: AppBar(
+        title: Text('$subjectName 모의고사 결과'),
+        centerTitle: false,
+        automaticallyImplyLeading: false,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         children: [
@@ -479,28 +558,49 @@ class _MockExamResultView extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
+                    gradient: LinearGradient(
+                      colors: [color, color.withValues(alpha: 0.7)],
+                    ),
                   ),
                   child: Text(
                     '$percent점',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
                 Text(
                   '$correctCount / $total 문제 정답',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '소요 시간 $minutes분 $seconds초',
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 28),
-          const Text('문제별 채점 결과', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+          const Text(
+            '문제별 채점 결과',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 12),
           ...List.generate(total, (i) {
             final q = questions[i];
@@ -521,37 +621,68 @@ class _MockExamResultView extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded, color: resultColor, size: 20),
+                        Icon(
+                          isCorrect
+                              ? Icons.check_circle_rounded
+                              : Icons.cancel_rounded,
+                          color: resultColor,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             '${i + 1}. ${q.category}',
-                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                              color: resultColor,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(q.stem, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.4, color: AppColors.textPrimary)),
+                    Text(
+                      q.stem,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        height: 1.4,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       userAnswer == null
                           ? '내 답: 미응답'
                           : '내 답: ${_optionLabels[userAnswer]}. ${q.choices[userAnswer]}',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: resultColor),
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: resultColor,
+                      ),
                     ),
                     if (!isCorrect) ...[
                       const SizedBox(height: 2),
                       Text(
                         '정답: ${_optionLabels[q.correctIndex]}. ${q.choices[q.correctIndex]}',
-                        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.correct),
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.correct,
+                        ),
                       ),
                     ],
                     const SizedBox(height: 8),
                     HighlightedText(
                       text: q.summaryExplanation,
                       phrases: q.highlightPhrases,
-                      style: const TextStyle(fontSize: 13.5, height: 1.55, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        height: 1.55,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -565,10 +696,15 @@ class _MockExamResultView extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               onPressed: onExit,
-              child: const Text('돌아가기', style: TextStyle(fontWeight: FontWeight.w800)),
+              child: const Text(
+                '돌아가기',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
             ),
           ),
         ],

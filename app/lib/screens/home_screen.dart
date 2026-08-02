@@ -21,8 +21,21 @@ import 'subject_info_screen.dart';
 import 'time_attack_screen.dart';
 
 /// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,140 +79,148 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 22, bottom: 28),
-              children: [
-                // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
-                if (isDesktop)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _ParallelPromoBanners(),
-                  )
-                else
+            // 항상 보이는 드래그 가능한 스크롤바 — 휠/터치 스크롤이 어쩌다 버벅여도
+            // 스크롤바 막대를 직접 끌어서 강제로 이동할 수 있는 대체 수단을 제공한다.
+            child: Scrollbar(
+              controller: _scrollController,
+              thumbVisibility: true,
+              interactive: true,
+              child: ListView(
+                controller: _scrollController,
+                padding: const EdgeInsets.only(top: 22, bottom: 28),
+                children: [
+                  // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
+                  if (isDesktop)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: _ParallelPromoBanners(),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 440),
+                          child: const RollingBanner(
+                            banners: [
+                              BannerItem(
+                                imageAsset:
+                                    'assets/images/rolling_banner_update.png',
+                              ),
+                              BannerItem(
+                                imageAsset:
+                                    'assets/images/rolling_banner_chapter.png',
+                              ),
+                              BannerItem(
+                                imageAsset:
+                                    'assets/images/rolling_banner_premium.png',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 22),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 440),
-                        child: const RollingBanner(
-                          banners: [
-                            BannerItem(
-                              imageAsset:
-                                  'assets/images/rolling_banner_update.png',
-                            ),
-                            BannerItem(
-                              imageAsset:
-                                  'assets/images/rolling_banner_chapter.png',
-                            ),
-                            BannerItem(
-                              imageAsset:
-                                  'assets/images/rolling_banner_premium.png',
-                            ),
-                          ],
+                    child: _RowHeader(
+                      title: '과목별 학습',
+                      onMore: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SubjectGridScreen(),
                         ),
                       ),
                     ),
                   ),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(
-                    title: '과목별 학습',
-                    onMore: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const SubjectGridScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const _SubjectPosterRow(),
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '실전모의고사'),
-                ),
-                const SizedBox(height: 10),
-                const _MockExamGrid(),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(
-                    title: '민법 특강',
-                    onMore: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LectureGridScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const _LectureGrid(),
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '경영학 특강'),
-                ),
-                const SizedBox(height: 10),
-                const _IconLectureGrid(lectures: businessAdminLectures),
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '경제법 특강'),
-                ),
-                const SizedBox(height: 10),
-                const _IconLectureGrid(lectures: economicLawLectures),
-                if (kKoreanHistoryEnabled) ...[
+                  const SizedBox(height: 10),
+                  const _SubjectPosterRow(),
                   const SizedBox(height: 22),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _RowHeader(title: '한능검 특강'),
+                    child: _RowHeader(title: '실전모의고사'),
                   ),
                   const SizedBox(height: 10),
-                  const _KoreanHistoryLectureGrid(),
-                ],
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '킬링타임'),
-                ),
-                const SizedBox(height: 10),
-                HScrollList(
-                  height: kLecturePosterHeight,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: 2,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return _DailyOxMainCard(
+                  const _MockExamGrid(),
+                  const SizedBox(height: 22),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _RowHeader(
+                      title: '민법 특강',
+                      onMore: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LectureGridScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const _LectureGrid(),
+                  const SizedBox(height: 22),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: _RowHeader(title: '경영학 특강'),
+                  ),
+                  const SizedBox(height: 10),
+                  const _IconLectureGrid(lectures: businessAdminLectures),
+                  const SizedBox(height: 22),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: _RowHeader(title: '경제법 특강'),
+                  ),
+                  const SizedBox(height: 10),
+                  const _IconLectureGrid(lectures: economicLawLectures),
+                  if (kKoreanHistoryEnabled) ...[
+                    const SizedBox(height: 22),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: _RowHeader(title: '한능검 특강'),
+                    ),
+                    const SizedBox(height: 10),
+                    const _KoreanHistoryLectureGrid(),
+                  ],
+                  const SizedBox(height: 22),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: _RowHeader(title: '킬링타임'),
+                  ),
+                  const SizedBox(height: 10),
+                  HScrollList(
+                    height: kLecturePosterHeight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: 2,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _DailyOxMainCard(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const DailyOxListScreen(),
+                            ),
+                          ),
+                        );
+                      }
+                      return _TimeAttackCard(
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const DailyOxListScreen(),
+                            builder: (_) => const TimeAttackScreen(),
                           ),
                         ),
                       );
-                    }
-                    return _TimeAttackCard(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const TimeAttackScreen(),
-                        ),
+                    },
+                  ),
+                  const SizedBox(height: 22),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _RowHeader(
+                      title: '수강후기',
+                      onMore: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ReviewScreen()),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 22),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(
-                    title: '수강후기',
-                    onMore: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ReviewScreen()),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                const _ReviewCarousel(),
-              ],
+                  const SizedBox(height: 10),
+                  const _ReviewCarousel(),
+                ],
+              ),
             ),
           ),
         ],
