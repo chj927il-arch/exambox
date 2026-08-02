@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/feature_flags.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
+import '../data/user_reviews.dart';
 import '../models/exam_subject.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
@@ -19,6 +20,7 @@ import 'review_screen.dart';
 import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
 import 'time_attack_screen.dart';
+import 'write_review_screen.dart';
 
 /// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
 class HomeScreen extends StatefulWidget {
@@ -204,6 +206,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
+              ),
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _WriteReviewBanner(),
               ),
               const SizedBox(height: 22),
               Padding(
@@ -985,24 +992,107 @@ class _DailyOxMainCard extends StatelessWidget {
   }
 }
 
+/// 수강후기 작성 유도 배너 — 화면을 꽉 채우지 않고 좌우 20px 여백을 두는
+/// 기존 카드 규칙을 따르며, 가로세로 비율은 약 3.6:1로 다른 배너들과 통일했다.
+class _WriteReviewBanner extends StatelessWidget {
+  const _WriteReviewBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const WriteReviewScreen())),
+      child: AspectRatio(
+        aspectRatio: 3.6,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [OttColors.accentStart, OttColors.accentEnd],
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '당신의 합격 후기가\n다음 합격자를 만듭니다',
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        height: 1.3,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      '1분이면 충분해요 · 후기 남기기',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.edit_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 수강후기 — 카드가 여백 없이 옆으로 흘러가는 롤링 스트립(다크 카드).
 class _ReviewCarousel extends StatelessWidget {
   const _ReviewCarousel();
 
   @override
   Widget build(BuildContext context) {
-    return MarqueeRow(
-      height: 132,
-      pixelsPerSecond: 32,
-      itemBuilder: (context) {
-        final cards = List.generate(5, (i) => reviews[i % reviews.length]);
-        return Row(
-          children: [
-            for (final review in cards) ...[
-              _ReviewMiniCard(review: review),
-              const SizedBox(width: 12),
-            ],
-          ],
+    return ListenableBuilder(
+      listenable: UserReviews.instance,
+      builder: (context, _) {
+        final allReviews = [...UserReviews.instance.submitted, ...reviews];
+        return MarqueeRow(
+          height: 132,
+          pixelsPerSecond: 32,
+          itemBuilder: (context) {
+            final cards = List.generate(
+              5,
+              (i) => allReviews[i % allReviews.length],
+            );
+            return Row(
+              children: [
+                for (final review in cards) ...[
+                  _ReviewMiniCard(review: review),
+                  const SizedBox(width: 12),
+                ],
+              ],
+            );
+          },
         );
       },
     );
