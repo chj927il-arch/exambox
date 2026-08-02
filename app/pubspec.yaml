@@ -89,6 +89,11 @@ flutter:
     - assets/images/lecture_cover_ba_stp.png
     - assets/images/lecture_cover_ba_pricing.png
     - assets/images/lecture_cover_ba_channel.png
+    - assets/images/lecture_cover_el_dominant.png
+    - assets/images/lecture_cover_el_leniency.png
+    - assets/images/lecture_cover_el_superior.png
+    - assets/images/lecture_cover_el_penalty.png
+    - assets/images/lecture_cover_el_clause.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

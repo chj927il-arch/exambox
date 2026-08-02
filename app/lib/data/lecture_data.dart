@@ -328,10 +328,11 @@ const List<LectureItem> businessAdminLectures = [
   ),
 ];
 
-/// 경제법 특강 — 표지 이미지가 아직 없어 아이콘형 카드로 표시(styleKey로 아이콘·색상 지정).
-/// 11개년 기출 비중 상위 + 가맹거래사 실무 연관성을 함께 고려해 6개 선정.
+/// 경제법 특강 — 11개년 기출 비중 상위 + 가맹거래사 실무 연관성을 함께 고려해 6개 선정.
+/// '재판매가격유지행위'만 아직 표지 이미지가 없어 아이콘형 카드로 표시된다.
 const List<LectureItem> economicLawLectures = [
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_el_dominant.png',
     title: '시장지배적지위 남용',
     styleKey: 'el_dominant',
     keyPoints: [
@@ -351,6 +352,7 @@ const List<LectureItem> economicLawLectures = [
     category: '시장지배적지위 남용',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_el_leniency.png',
     title: '자진신고자 감면(리니언시)',
     styleKey: 'el_leniency',
     keyPoints: [
@@ -370,6 +372,7 @@ const List<LectureItem> economicLawLectures = [
     category: '자진신고자 감면',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_el_superior.png',
     title: '거래상지위남용',
     styleKey: 'el_superior',
     keyPoints: [
@@ -389,6 +392,7 @@ const List<LectureItem> economicLawLectures = [
     category: '거래상지위남용',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_el_penalty.png',
     title: '과징금',
     styleKey: 'el_penalty',
     keyPoints: [
@@ -408,6 +412,7 @@ const List<LectureItem> economicLawLectures = [
     category: '과징금',
   ),
   LectureItem(
+    imageAsset: 'assets/images/lecture_cover_el_clause.png',
     title: '불공정약관조항 무효사유',
     styleKey: 'el_clause',
     keyPoints: [
