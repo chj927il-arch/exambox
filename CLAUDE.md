@@ -12,9 +12,9 @@
 추후 앱스토어/플레이스토어 정식 출시, **유료 판매** 예정.
 
 ## 저장소 · 배포
-- **GitHub (비공개)**: https://github.com/chj927il-arch/gamyeong-exam
-- **배포(GitHub Pages, 웹)**: https://chj927il-arch.github.io/gamyeong-exam/ — `master` 브랜치의 `app/**` 변경 시 `.github/workflows/deploy.yml`이 자동으로 `flutter build web` 후 `gh-pages` 브랜치에 배포 (보통 1~2분).
-- 로컬 경로: 회사 PC `C:\gamyeong-exam` (집 PC는 각자 클론 위치, `git pull`로 항상 최신화할 것)
+- **GitHub (비공개)**: https://github.com/chj927il-arch/exambox (2026-08-03 `gamyeong-exam`에서 이름 변경)
+- **배포(GitHub Pages, 웹)**: https://chj927il-arch.github.io/exambox/ — `master` 브랜치의 `app/**` 변경 시 `.github/workflows/deploy.yml`이 자동으로 `flutter build web`(`--base-href /exambox/`) 후 `gh-pages` 브랜치에 배포 (보통 1~2분).
+- 로컬 경로: 회사 PC `C:\gamyeong-exam`(폴더명은 그대로 — 저장소 이름만 바뀜, Flutter 프로젝트명도 `gamyeong_exam` 그대로 유지) — 집 PC는 각자 클론 위치, `git pull`로 항상 최신화할 것
 
 ## 기술 스택
 - **모바일 앱**: Flutter (iOS/Android/웹 단일 코드베이스, org `com.gamyeongexam`, 프로젝트명 `gamyeong_exam`)
@@ -80,11 +80,10 @@ app/lib/
 - [ ] 회원가입/로그인, 인앱결제
 
 ## 여러 PC에서 이어작업하기
-1. `git clone https://github.com/chj927il-arch/gamyeong-exam.git` (이미 클론했다면 `git pull`)
+1. `git clone https://github.com/chj927il-arch/exambox.git` (이미 클론했다면 `git pull`)
 2. 해당 PC에 Flutter SDK 설치 필요 (미설치 시 Claude에게 설치 요청 가능)
 3. **iOS 빌드/테스트는 Windows에서 불가능** (Xcode는 Mac 전용). Android는 SDK 설치 후 가능, 웹은 바로 가능.
-4. API 키, `google-services.json`, `firebase_options.dart` 등 비밀값은 git에 올라가지 않음(.gitignore).
-   PC마다 별도로 옮겨야 함 (현재는 아직 이런 키 자체가 없음).
+4. Firebase 프로젝트는 `studybox-gamyeong-c4176` — `app/lib/firebase_options.dart`(웹 전용 공개 설정값이라 git에 커밋되어 있음)가 이미 저장소에 포함돼 있어 별도 설정 없이 바로 빌드됨. `android/key.properties` 등 진짜 비밀값(아직 없음)만 PC마다 따로 옮기면 됨.
 
 ## 절대 지켜야 할 규칙
 1. **AI 모델은 Google Gemini만 사용.**
