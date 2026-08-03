@@ -66,6 +66,10 @@ class _QuizScreenState extends State<QuizScreen> {
   int _correctInRound = 0;
   bool _sessionComplete = false;
 
+  /// 문제별 채점 결과 — true(정답)/false(오답)/null(아직 안 풂). 문제 목록에서
+  /// 몇 번을 맞혔는지 보여주고, 특정 문제로 바로 이동했을 때도 기록이 유지되게 한다.
+  late final List<bool?> _results;
+
   final DateTime _startedAt = DateTime.now();
   int _committedSeconds = 0;
   Timer? _tickTimer;
@@ -80,6 +84,7 @@ class _QuizScreenState extends State<QuizScreen> {
             (widget.category == null || q.category == widget.category) &&
             (widget.subTopic == null || q.subTopic == widget.subTopic))
         .toList();
+    _results = List<bool?>.filled(_questions.length, null);
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -115,30 +120,72 @@ class _QuizScreenState extends State<QuizScreen> {
     if (_answered) return;
     final question = _questions[_current];
     final correct = index == question.correctIndex;
-    if (correct) {
-      _correctInRound++;
-    } else {
-      UserProgress.instance.markWrong(question.id);
+    // 목록에서 이미 풀었던 문제로 다시 이동해 열어본 경우(리뷰)에는 통계를 중복 반영하지 않는다.
+    final alreadyRecorded = _results[_current] != null;
+    if (!alreadyRecorded) {
+      if (correct) {
+        _correctInRound++;
+      } else {
+        UserProgress.instance.markWrong(question.id);
+      }
+      UserProgress.instance.recordAnswer(
+        subjectId: widget.crossSubjectIds != null ? question.subjectId : widget.subjectId,
+        subjectName: widget.crossSubjectIds != null
+            ? (_kSubjectNamesById[question.subjectId] ?? widget.subjectName)
+            : widget.subjectName,
+        category: question.category,
+        correct: correct,
+      );
     }
-    UserProgress.instance.recordAnswer(
-      subjectId: widget.crossSubjectIds != null ? question.subjectId : widget.subjectId,
-      subjectName: widget.crossSubjectIds != null
-          ? (_kSubjectNamesById[question.subjectId] ?? widget.subjectName)
-          : widget.subjectName,
-      category: question.category,
-      correct: correct,
-    );
     setState(() {
+      _results[_current] = correct;
       _selectedIndex = index;
       _answered = true;
-      _solvedInSession++;
+      if (!alreadyRecorded) _solvedInSession++;
     });
-    if (_solvedInSession % 10 == 0) {
+    if (!alreadyRecorded && _solvedInSession % 10 == 0) {
       final message = _milestoneMessages[(_solvedInSession ~/ 10 - 1) % _milestoneMessages.length];
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _showMilestone(message);
       });
     }
+  }
+
+  /// 문제 목록에서 특정 문제를 탭했을 때 그 문제로 바로 이동한다. 이미 풀었던 문제라면
+  /// 정답을 다시 확인할 수 있게 채점 결과를 그대로 복원해서 보여준다.
+  void _jumpTo(int index) {
+    if (index < 0 || index >= _questions.length) return;
+    final previousResult = _results[index];
+    setState(() {
+      _current = index;
+      _sessionComplete = false;
+      if (previousResult != null) {
+        _answered = true;
+        _selectedIndex = previousResult ? _questions[index].correctIndex : null;
+      } else {
+        _answered = false;
+        _selectedIndex = null;
+      }
+    });
+  }
+
+  void _openQuestionList() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => _QuestionListSheet(
+        questions: _questions,
+        results: _results,
+        current: _current,
+        color: subjectStyleOf(widget.subjectId).color,
+        onSelect: (index) {
+          Navigator.of(context).pop();
+          _jumpTo(index);
+        },
+      ),
+    );
   }
 
   void _showMilestone(String message) {
@@ -250,6 +297,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       elapsedLabel: _elapsedLabel,
                       color: style.color,
                       onClose: () => Navigator.of(context).maybePop(),
+                      onOpenList: _openQuestionList,
                     ),
                     Expanded(
                       child: Stack(
@@ -327,6 +375,7 @@ class _DuoTopBar extends StatelessWidget {
   final String elapsedLabel;
   final Color color;
   final VoidCallback onClose;
+  final VoidCallback onOpenList;
 
   const _DuoTopBar({
     required this.current,
@@ -335,6 +384,7 @@ class _DuoTopBar extends StatelessWidget {
     required this.elapsedLabel,
     required this.color,
     required this.onClose,
+    required this.onOpenList,
   });
 
   @override
@@ -390,6 +440,17 @@ class _DuoTopBar extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: onOpenList,
+                icon: const Icon(Icons.format_list_numbered_rounded),
+                color: AppColors.textMuted,
+                tooltip: '문제 목록',
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.trackBg,
+                  shape: const CircleBorder(),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -408,6 +469,96 @@ class _DuoTopBar extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 전체 문제 목록 바텀시트 — 몇 번에 어떤 유형(카테고리/세부유형)의 문제가 있는지 한눈에
+/// 보여주고, 탭하면 바로 그 문제로 이동한다. 이미 푼 문제는 정답/오답 표시가 함께 보인다.
+class _QuestionListSheet extends StatelessWidget {
+  final List<Question> questions;
+  final List<bool?> results;
+  final int current;
+  final Color color;
+  final ValueChanged<int> onSelect;
+
+  const _QuestionListSheet({
+    required this.questions,
+    required this.results,
+    required this.current,
+    required this.color,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.75,
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.trackBg, borderRadius: BorderRadius.circular(999))),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  const Text('전체 문제 목록', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  const Spacer(),
+                  Text('${questions.length}문제', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                itemCount: questions.length,
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final q = questions[index];
+                  final result = results[index];
+                  final isCurrent = index == current;
+                  final label = q.subTopic ?? q.category;
+                  return ListTile(
+                    onTap: () => onSelect(index),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    tileColor: isCurrent ? color.withValues(alpha: 0.08) : null,
+                    leading: Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isCurrent ? color : AppColors.trackBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: isCurrent ? Colors.white : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    ),
+                    trailing: result == null
+                        ? const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted)
+                        : Icon(
+                            result ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                            color: result ? AppColors.correct : AppColors.wrong,
+                          ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
