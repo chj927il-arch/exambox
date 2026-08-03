@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 좋아요 문서 — 누구나 읽을 수 있고(카운트 표시), 로그인(익명 포함)한 사용자만
+    // likedBy 필드를 수정할 수 있다. 다른 필드를 끼워넣거나 문서 구조를 바꾸는 건 막는다.
+    match /likes/{likeId} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.data.keys().hasOnly(['likedBy']);
+    }
+  }
+}

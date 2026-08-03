@@ -3,7 +3,6 @@
 *.env.local
 google-services.json
 GoogleService-Info.plist
-firebase_options.dart
 android/key.properties
 *.jks
 *.keystore
