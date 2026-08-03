@@ -828,7 +828,6 @@ class _TrapQuizSeasonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = subjectStyleOf('trap_quiz_season1');
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -849,63 +848,11 @@ class _TrapQuizSeasonCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [style.color, style.color.withValues(alpha: 0.7)],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 10,
-              top: 12,
-              child: Icon(style.icon, color: Colors.white, size: 26),
-            ),
+            const TintedPoster(imageAsset: 'assets/images/trap_quiz_cover.png'),
             const Positioned(
               top: 8,
               right: 8,
               child: EngagementBadges(cardId: 'trap_quiz_season1'),
-            ),
-            Positioned(
-              left: 10,
-              top: 46,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'SEASON 1',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-            ),
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                child: Text(
-                  '함정 피하기 시즌1',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
-                  ),
-                ),
-              ),
             ),
           ],
         ),
