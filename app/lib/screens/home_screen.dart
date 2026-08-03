@@ -774,7 +774,7 @@ class _TimeAttackCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const TintedPoster(imageAsset: 'assets/images/time_attack_cover.jpg'),
+            const TintedPoster(imageAsset: 'assets/images/time_attack_cover.png'),
             const Positioned(
               top: 8,
               right: 8,
