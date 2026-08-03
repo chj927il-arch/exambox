@@ -522,6 +522,7 @@ class _QuestionListSheet extends StatelessWidget {
                   final label = q.subTopic ?? q.category;
                   return ListTile(
                     onTap: () => onSelect(index),
+                    isThreeLine: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 4),
                     tileColor: isCurrent ? color.withValues(alpha: 0.08) : null,
                     leading: Container(
@@ -542,10 +543,19 @@ class _QuestionListSheet extends StatelessWidget {
                       ),
                     ),
                     title: Text(
-                      label,
-                      maxLines: 1,
+                      q.stem,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.3),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+                      ),
                     ),
                     trailing: result == null
                         ? const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted)
