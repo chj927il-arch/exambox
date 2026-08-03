@@ -3,7 +3,6 @@ import '../data/topic_stats.dart';
 import '../theme/app_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/glass_card.dart';
-import 'mock_exam_screen.dart';
 import 'quiz_screen.dart';
 
 const Map<String, String> _subjectDescriptions = {
@@ -96,24 +95,7 @@ class SubjectInfoScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => QuizScreen(subjectId: subjectId, subjectName: subjectName)),
               ),
               icon: const Icon(Icons.edit_note_rounded),
-              label: const Text('문제풀이 시작', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: style.color,
-                side: BorderSide(color: style.color, width: 1.4),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => MockExamScreen(subjectId: subjectId, subjectName: subjectName)),
-              ),
-              icon: const Icon(Icons.timer_outlined),
-              label: const Text('실전모의고사 응시 (40문항)', style: TextStyle(fontWeight: FontWeight.w800)),
+              label: const Text('전체 문제풀이 시작', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
             ),
           ),
           const SizedBox(height: 20),
@@ -139,7 +121,16 @@ class SubjectInfoScreen extends StatelessWidget {
               child: Column(
                 children: [
                   for (final stat in chapters) ...[
-                    _TopicBar(stat: stat, showRatio: isAnalyzed, color: style.color),
+                    _TopicBar(
+                      stat: stat,
+                      showRatio: isAnalyzed,
+                      color: style.color,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => QuizScreen(subjectId: subjectId, subjectName: subjectName, category: stat.topic),
+                        ),
+                      ),
+                    ),
                     if (stat != chapters.last) const SizedBox(height: 14),
                   ],
                 ],
@@ -194,7 +185,30 @@ class _TopicBar extends StatelessWidget {
   final TopicStat stat;
   final bool showRatio;
   final Color color;
-  const _TopicBar({required this.stat, required this.showRatio, required this.color});
+  final VoidCallback onTap;
+  const _TopicBar({required this.stat, required this.showRatio, required this.color, required this.onTap});
+
+  Widget _solveButton(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('풀기', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color)),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded, size: 15, color: color),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +217,10 @@ class _TopicBar extends StatelessWidget {
         children: [
           const Icon(Icons.circle, size: 6, color: AppColors.textMuted),
           const SizedBox(width: 8),
-          Text(stat.topic, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          Expanded(
+            child: Text(stat.topic, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          ),
+          _solveButton(context),
         ],
       );
     }
@@ -234,6 +251,8 @@ class _TopicBar extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation(color),
           ),
         ),
+        const SizedBox(height: 8),
+        Align(alignment: Alignment.centerRight, child: _solveButton(context)),
       ],
     );
   }
