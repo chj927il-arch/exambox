@@ -9,8 +9,9 @@ class DailyActivity {
 }
 
 class StudyStats {
-  // 연속 학습일·주간활동 그래프는 날짜별 이력 저장이 필요해 아직 목업 유지.
-  static const int streakDays = 3;
+  // 연속 학습일·주간활동 그래프는 날짜별 이력 저장이 아직 없어(로그인·서버 저장 붙기 전)
+  // 실제 값 대신 초기 상태(0)로 둔다. 로그인 기능 붙을 때 실제 값으로 교체 예정.
+  static const int streakDays = 0;
   static const int todayGoal = 20;
 
   static int get todaySolved => UserProgress.instance.todaySolved;
@@ -20,16 +21,18 @@ class StudyStats {
   static int get totalMinutes => UserProgress.instance.totalStudySeconds ~/ 60;
   static double get totalAccuracy => UserProgress.instance.totalAccuracy;
 
-  /// 최근 7일 학습 시간(분) — 오늘 포함, 과거 → 오늘 순서
-  static const List<DailyActivity> weeklyActivity = [
-    DailyActivity(label: '월', minutes: 18),
-    DailyActivity(label: '화', minutes: 42),
-    DailyActivity(label: '수', minutes: 25),
-    DailyActivity(label: '목', minutes: 0),
-    DailyActivity(label: '금', minutes: 51),
-    DailyActivity(label: '토', minutes: 30),
-    DailyActivity(label: '일', minutes: 34),
-  ];
+  static const List<String> _weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+
+  /// 최근 7일 학습 시간(분) — 과거 → 오늘 순서. 날짜별 이력 저장이 아직 없어
+  /// 오늘 이전 6일은 0으로 초기화하고, 오늘 칸만 실제 todayMinutes로 채운다.
+  static List<DailyActivity> get weeklyActivity {
+    final now = DateTime.now();
+    return List.generate(7, (i) {
+      final daysAgo = 6 - i;
+      final label = _weekdayLabels[(now.weekday - 1 - daysAgo) % 7];
+      return DailyActivity(label: label, minutes: daysAgo == 0 ? todayMinutes : 0);
+    });
+  }
 
   static String get totalHoursLabel {
     final h = totalMinutes ~/ 60;
@@ -38,18 +41,18 @@ class StudyStats {
   }
 }
 
-/// 과목별 학습 진행률(0.0~1.0) 목업
+/// 과목별 학습 진행률(0.0~1.0) — 과목별 문제 수 집계가 아직 없어 초기 상태(0)로 둔다.
 const Map<String, double> mockSubjectProgress = {
-  'economic_law': 0.62,
-  'civil_law': 0.35,
-  'business_admin': 0.08,
+  'economic_law': 0.0,
+  'civil_law': 0.0,
+  'business_admin': 0.0,
 };
 
-/// 과목별 오늘 푼 문제 수 목업
+/// 과목별 오늘 푼 문제 수 — 과목별 일일 집계가 아직 없어 초기 상태(0)로 둔다.
 const Map<String, int> mockSubjectTodaySolved = {
-  'economic_law': 8,
-  'civil_law': 3,
-  'business_admin': 1,
+  'economic_law': 0,
+  'civil_law': 0,
+  'business_admin': 0,
 };
 
 /// 학습 리포트용 — 과목별 가장 취약한 챕터.
