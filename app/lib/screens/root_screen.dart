@@ -128,7 +128,7 @@ class _SiteHeader extends StatelessWidget {
     final accent = dark ? OttColors.accentStart : AppColors.primary;
 
     final navGap = isDesktop ? 32.0 : 16.0;
-    final navFontSize = isDesktop ? 14.0 : 12.5;
+    final navFontSize = isDesktop ? 16.0 : 14.0;
     final hPad = isDesktop ? 24.0 : 16.0;
 
     Widget navText(String label, {required bool selected, required VoidCallback onTap}) {
