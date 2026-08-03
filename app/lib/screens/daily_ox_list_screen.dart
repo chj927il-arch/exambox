@@ -29,30 +29,34 @@ class _DailyOxListScreenState extends State<DailyOxListScreen> {
       appBar: AppBar(title: const Text('데일리 OX 퀴즈'), centerTitle: false),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-            child: Row(
-              children: _certFilters.map((f) {
-                final selected = f.$1 == _certId;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(f.$2),
-                    selected: selected,
-                    onSelected: (_) => setState(() => _certId = f.$1),
-                    labelStyle: TextStyle(
-                      color: selected ? Colors.white : AppColors.textSecondary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
+          // 자격증이 가맹거래사 하나뿐일 때(한능검 비활성 상태)는 필터 선택지가
+          // 하나뿐이라 의미 없는 박스만 차지하므로 숨긴다. 한능검을 다시 켜면
+          // 자동으로 다시 나타난다.
+          if (_certFilters.length > 1)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+              child: Row(
+                children: _certFilters.map((f) {
+                  final selected = f.$1 == _certId;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(f.$2),
+                      selected: selected,
+                      onSelected: (_) => setState(() => _certId = f.$1),
+                      labelStyle: TextStyle(
+                        color: selected ? Colors.white : AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.trackBg,
+                      side: BorderSide.none,
                     ),
-                    selectedColor: AppColors.primary,
-                    backgroundColor: AppColors.trackBg,
-                    side: BorderSide.none,
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
           Expanded(
             child: filtered.isEmpty
                 ? const Center(

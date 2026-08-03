@@ -154,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              const _LectureGrid(),
+              const _IconLectureGrid(lectures: civilLawLectures),
               const SizedBox(height: 22),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
@@ -561,39 +561,6 @@ class SubjectPosterCard extends StatelessWidget {
   }
 }
 
-/// 민법 특강 — 표지 이미지가 카드 전체를 덮는 포스터형 카드. 데이터는 lecture_data.dart의
-/// civilLawLectures를 홈 행과 "더보기"(LectureGridScreen)가 함께 사용한다.
-class _LectureGrid extends StatelessWidget {
-  const _LectureGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return HScrollList(
-      height: kLecturePosterHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: civilLawLectures.length,
-      itemBuilder: (context, index) {
-        final item = civilLawLectures[index];
-        return LectureCoverCard(
-          imageAsset: item.imageAsset!,
-          likeId: item.likeId,
-          onTap: (context) => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => LectureIntroScreen(
-                title: item.title,
-                keyPoints: item.keyPoints,
-                subjectId: item.subjectId,
-                subjectName: item.subjectName,
-                category: item.category,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 /// 한능검 특강 — 민법 특강과 동일한 포스터형 카드. 데이터는 lecture_data.dart의 koreanHistoryLectures.
 class _KoreanHistoryLectureGrid extends StatelessWidget {
   const _KoreanHistoryLectureGrid();
@@ -908,16 +875,16 @@ class _IconLectureGrid extends StatelessWidget {
             onTap: onTap,
           );
         }
-        return _IconLectureCard(item: item, onTap: () => onTap(context));
+        return IconLectureCard(item: item, onTap: () => onTap(context));
       },
     );
   }
 }
 
-class _IconLectureCard extends StatelessWidget {
+class IconLectureCard extends StatelessWidget {
   final LectureItem item;
   final VoidCallback onTap;
-  const _IconLectureCard({required this.item, required this.onTap});
+  const IconLectureCard({super.key, required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
