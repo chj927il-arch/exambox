@@ -29,10 +29,6 @@ const Map<String, SubjectStyle> _subjectStyles = {
   'ba_stp': SubjectStyle(icon: Icons.pie_chart_outline, color: Color(0xFFDB6B3B)),
   'ba_pricing': SubjectStyle(icon: Icons.sell_outlined, color: Color(0xFFD1495B)),
   'ba_channel': SubjectStyle(icon: Icons.storefront_outlined, color: Color(0xFFE0A93E)),
-  'ba_ob_hr': SubjectStyle(icon: Icons.groups_outlined, color: Color(0xFF6B7FB0)),
-  'ba_finance': SubjectStyle(icon: Icons.account_balance_outlined, color: Color(0xFF2E7D6E)),
-  'ba_operations': SubjectStyle(icon: Icons.precision_manufacturing_outlined, color: Color(0xFF8A5A3B)),
-  'ba_mis': SubjectStyle(icon: Icons.dns_outlined, color: Color(0xFF4A6C8C)),
 
   // 경제법 특강(표지 이미지 없어 아이콘 카드로 표시)
   'el_dominant': SubjectStyle(icon: Icons.trending_up_outlined, color: Color(0xFF1B3358)),
