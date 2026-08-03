@@ -17,6 +17,7 @@ import 'daily_ox_list_screen.dart';
 import 'full_mock_exam_screen.dart';
 import 'lecture_grid_screen.dart';
 import 'lecture_intro_screen.dart';
+import 'quiz_screen.dart';
 import 'review_screen.dart';
 import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
@@ -169,6 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: economicLawLectures),
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(title: '함정 피하기'),
+              ),
+              const SizedBox(height: 10),
+              const _TrapQuizGrid(),
               if (kKoreanHistoryEnabled) ...[
                 const SizedBox(height: 22),
                 const Padding(
@@ -779,6 +787,125 @@ class _TimeAttackCard extends StatelessWidget {
               top: 8,
               right: 8,
               child: EngagementBadges(cardId: 'time_attack'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 함정 피하기 그리드 — 3과목(경제법·민법·경영학)에서 자주 틀리고 헷갈리는 문제 30문항을
+/// 하나의 QuizScreen 세션으로 묶어서 풀어보게 한다(실전모의고사와 달리 시간제한 없음).
+class _TrapQuizGrid extends StatelessWidget {
+  const _TrapQuizGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return HScrollList(
+      height: kLecturePosterHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: 1,
+      itemBuilder: (context, index) => _TrapQuizSeasonCard(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const QuizScreen(
+              subjectId: 'trap_quiz_season1',
+              subjectName: '함정 피하기 시즌1',
+              category: '함정 피하기',
+              crossSubjectIds: ['economic_law', 'civil_law', 'business_admin'],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TrapQuizSeasonCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _TrapQuizSeasonCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = subjectStyleOf('trap_quiz_season1');
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: kLecturePosterWidth,
+        height: kLecturePosterHeight,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: OttColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [style.color, style.color.withValues(alpha: 0.7)],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 10,
+              top: 12,
+              child: Icon(style.icon, color: Colors.white, size: 26),
+            ),
+            const Positioned(
+              top: 8,
+              right: 8,
+              child: EngagementBadges(cardId: 'trap_quiz_season1'),
+            ),
+            Positioned(
+              left: 10,
+              top: 46,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  'SEASON 1',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+            ),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                child: Text(
+                  '함정 피하기 시즌1',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

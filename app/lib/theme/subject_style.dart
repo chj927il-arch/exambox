@@ -40,6 +40,7 @@ const Map<String, SubjectStyle> _subjectStyles = {
 
   // 실전모의고사(표지 이미지 없어 아이콘 카드로 표시)
   'mock_exam_season1': SubjectStyle(icon: Icons.emoji_events_outlined, color: Color(0xFFA8352E)),
+  'trap_quiz_season1': SubjectStyle(icon: Icons.warning_amber_rounded, color: Color(0xFF7B2CBF)),
 };
 
 const SubjectStyle _fallback = SubjectStyle(icon: Icons.menu_book_outlined, color: Color(0xFF6B7280));

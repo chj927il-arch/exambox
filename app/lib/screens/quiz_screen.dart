@@ -21,6 +21,14 @@ const _milestoneMessages = [
   '집중력 최고예요. 이대로만 쭉 가요!',
 ];
 
+/// subjectId → 표시용 과목명. 여러 과목이 뒤섞이는 화면(함정 피하기 등)에서
+/// 문제별로 정확한 과목명을 UserProgress에 기록하기 위해 사용한다.
+const Map<String, String> _kSubjectNamesById = {
+  'economic_law': '경제법',
+  'civil_law': '민법',
+  'business_admin': '경영학',
+};
+
 class QuizScreen extends StatefulWidget {
   final String subjectId;
   final String subjectName;
@@ -31,7 +39,19 @@ class QuizScreen extends StatefulWidget {
   /// 지정하면 같은 category 안에서도 이 하위 유형(subTopic)의 문제만 필터링한다.
   final String? subTopic;
 
-  const QuizScreen({super.key, required this.subjectId, required this.subjectName, this.category, this.subTopic});
+  /// 지정하면 subjectId 대신 이 목록에 속한 여러 과목의 문제를 함께 섞어서 보여준다
+  /// (예: 함정 피하기처럼 여러 과목을 넘나드는 모드). 이때 widget.subjectId/subjectName은
+  /// 화면 스타일(색상)·빈 상태 안내용으로만 쓰이고, 실제 학습기록은 문제별 실제 과목으로 저장된다.
+  final List<String>? crossSubjectIds;
+
+  const QuizScreen({
+    super.key,
+    required this.subjectId,
+    required this.subjectName,
+    this.category,
+    this.subTopic,
+    this.crossSubjectIds,
+  });
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -53,9 +73,10 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void initState() {
     super.initState();
+    final crossIds = widget.crossSubjectIds;
     _questions = sampleQuestions
         .where((q) =>
-            q.subjectId == widget.subjectId &&
+            (crossIds != null ? crossIds.contains(q.subjectId) : q.subjectId == widget.subjectId) &&
             (widget.category == null || q.category == widget.category) &&
             (widget.subTopic == null || q.subTopic == widget.subTopic))
         .toList();
@@ -100,8 +121,10 @@ class _QuizScreenState extends State<QuizScreen> {
       UserProgress.instance.markWrong(question.id);
     }
     UserProgress.instance.recordAnswer(
-      subjectId: widget.subjectId,
-      subjectName: widget.subjectName,
+      subjectId: widget.crossSubjectIds != null ? question.subjectId : widget.subjectId,
+      subjectName: widget.crossSubjectIds != null
+          ? (_kSubjectNamesById[question.subjectId] ?? widget.subjectName)
+          : widget.subjectName,
       category: question.category,
       correct: correct,
     );
