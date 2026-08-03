@@ -754,10 +754,6 @@ class _TimeAttackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = SubjectStyle(
-      icon: Icons.bolt_rounded,
-      color: Color(0xFFE0533D),
-    );
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -778,20 +774,7 @@ class _TimeAttackCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [style.color, style.color.withValues(alpha: 0.7)],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 10,
-              top: 12,
-              child: Icon(style.icon, color: Colors.white, size: 26),
-            ),
+            const TintedPoster(imageAsset: 'assets/images/time_attack_cover.jpg'),
             const Positioned(
               top: 8,
               right: 8,
