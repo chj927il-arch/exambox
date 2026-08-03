@@ -8,5 +8,18 @@ service cloud.firestore {
       allow write: if request.auth != null
         && request.resource.data.keys().hasOnly(['likedBy']);
     }
+
+    // 댓글 — 누구나 읽을 수 있고, 로그인(익명 포함)한 사용자가 새 댓글만 작성할 수 있다.
+    // 수정·삭제는 막아 단순하게 유지한다(작성 취소가 필요하면 나중에 별도 검토).
+    match /comments/{cardId}/items/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['text', 'authorUid', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 300;
+      allow update, delete: if false;
+    }
   }
 }

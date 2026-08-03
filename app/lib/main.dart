@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'data/comments_store.dart';
 import 'data/likes_store.dart';
 import 'firebase_options.dart';
 import 'screens/root_screen.dart';
@@ -15,9 +16,10 @@ void main() async {
   GoogleFonts.ibmPlexSansKr();
   await GoogleFonts.pendingFonts();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // 좋아요를 기기별로 구분하기 위한 익명 로그인 — 회원가입/로그인 UI는 아직 없지만,
-  // Firestore 문서에 "누가" 좋아요를 눌렀는지 기록하려면 최소한의 uid가 필요하다.
+  // 좋아요·댓글을 기기별로 구분하기 위한 익명 로그인 — 회원가입/로그인 UI는 아직 없지만,
+  // Firestore 문서에 "누가" 남겼는지 기록하려면 최소한의 uid가 필요하다.
   await LikesStore.instance.init();
+  await CommentsStore.instance.init();
   runApp(const GamyeongExamApp());
 }
 

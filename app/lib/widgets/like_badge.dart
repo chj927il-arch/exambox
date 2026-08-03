@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/likes_store.dart';
+import 'comment_badge.dart';
 
 /// 그리드 카드 우상단에 올려두는 좋아요(하트) 배지 — 누르면 토글되고 개수가 즉시 반영된다.
 /// [likeId]는 카드마다 고유해야 한다(예: 과목ID+카테고리 조합).
@@ -52,6 +53,25 @@ class LikeBadge extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// 좋아요 + 댓글 배지를 나란히 묶어 카드 위에 올리는 편의 위젯 — 카드마다 이거 하나만
+/// 붙이면 됨(같은 [cardId]를 좋아요·댓글 식별자로 함께 사용).
+class EngagementBadges extends StatelessWidget {
+  final String cardId;
+  const EngagementBadges({super.key, required this.cardId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        LikeBadge(likeId: cardId),
+        const SizedBox(width: 6),
+        CommentBadge(cardId: cardId),
+      ],
     );
   }
 }

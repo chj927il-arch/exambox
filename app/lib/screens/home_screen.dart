@@ -552,7 +552,7 @@ class SubjectPosterCard extends StatelessWidget {
             Positioned(
               top: 8,
               right: 8,
-              child: LikeBadge(likeId: 'subject_${subject.id}'),
+              child: EngagementBadges(cardId: 'subject_${subject.id}'),
             ),
           ],
         ),
@@ -660,7 +660,7 @@ class LectureCoverCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             TintedPoster(imageAsset: imageAsset),
-            Positioned(top: 8, right: 8, child: LikeBadge(likeId: likeId)),
+            Positioned(top: 8, right: 8, child: EngagementBadges(cardId: likeId)),
           ],
         ),
       ),
@@ -732,7 +732,7 @@ class _MockExamSeasonCard extends StatelessWidget {
             const Positioned(
               top: 8,
               right: 8,
-              child: LikeBadge(likeId: 'mock_exam_season1'),
+              child: EngagementBadges(cardId: 'mock_exam_season1'),
             ),
             Positioned(
               left: 10,
@@ -828,7 +828,7 @@ class _TimeAttackCard extends StatelessWidget {
             const Positioned(
               top: 8,
               right: 8,
-              child: LikeBadge(likeId: 'time_attack'),
+              child: EngagementBadges(cardId: 'time_attack'),
             ),
             Positioned(
               left: 10,
@@ -959,7 +959,7 @@ class _IconLectureCard extends StatelessWidget {
             Positioned(
               top: 8,
               right: 8,
-              child: LikeBadge(likeId: item.likeId),
+              child: EngagementBadges(cardId: item.likeId),
             ),
             Positioned(
               left: 0,
