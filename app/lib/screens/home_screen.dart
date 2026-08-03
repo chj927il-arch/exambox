@@ -576,7 +576,7 @@ class _LectureGrid extends StatelessWidget {
         final item = civilLawLectures[index];
         return LectureCoverCard(
           imageAsset: item.imageAsset!,
-          likeId: '${item.subjectId}_${item.category}',
+          likeId: item.likeId,
           onTap: (context) => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => LectureIntroScreen(
@@ -608,7 +608,7 @@ class _KoreanHistoryLectureGrid extends StatelessWidget {
         final item = koreanHistoryLectures[index];
         return LectureCoverCard(
           imageAsset: item.imageAsset!,
-          likeId: '${item.subjectId}_${item.category}',
+          likeId: item.likeId,
           onTap: (context) => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => LectureIntroScreen(
@@ -904,7 +904,7 @@ class _IconLectureGrid extends StatelessWidget {
         if (item.imageAsset != null) {
           return LectureCoverCard(
             imageAsset: item.imageAsset!,
-            likeId: '${item.subjectId}_${item.category}',
+            likeId: item.likeId,
             onTap: onTap,
           );
         }
@@ -959,7 +959,7 @@ class _IconLectureCard extends StatelessWidget {
             Positioned(
               top: 8,
               right: 8,
-              child: LikeBadge(likeId: '${item.subjectId}_${item.category}'),
+              child: LikeBadge(likeId: item.likeId),
             ),
             Positioned(
               left: 0,

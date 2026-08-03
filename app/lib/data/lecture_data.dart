@@ -26,6 +26,11 @@ class LectureItem {
     this.subTopic,
     this.styleKey,
   });
+
+  /// 좋아요(LikeBadge) 등 카드별 고유 식별자로 쓰는 키. subTopic까지 포함해야
+  /// 같은 category를 공유하는 카드들(예: 경영학 '회계' 안 3개 카드)이 서로 다른
+  /// 카드인데도 좋아요가 같이 눌리는 문제가 생기지 않는다.
+  String get likeId => subTopic != null ? '${subjectId}_${category}_$subTopic' : '${subjectId}_$category';
 }
 
 const List<LectureItem> civilLawLectures = [
