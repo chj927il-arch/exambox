@@ -1012,8 +1012,12 @@ class _DailyOxMainCard extends StatelessWidget {
             ),
           ],
         ),
-        child: const TintedPoster(
-          imageAsset: 'assets/images/daily_ox_cover.png',
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const TintedPoster(imageAsset: 'assets/images/daily_ox_cover.png'),
+            const Positioned(top: 8, right: 8, child: EngagementBadges(cardId: 'daily_ox_quiz')),
+          ],
         ),
       ),
     );
