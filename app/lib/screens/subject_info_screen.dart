@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../data/chapter_summaries.dart';
 import '../data/topic_stats.dart';
 import '../theme/app_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/glass_card.dart';
+import 'lecture_intro_screen.dart';
 import 'quiz_screen.dart';
 
 const Map<String, String> _subjectDescriptions = {
@@ -130,6 +132,17 @@ class SubjectInfoScreen extends StatelessWidget {
                           builder: (_) => QuizScreen(subjectId: subjectId, subjectName: subjectName, category: stat.topic),
                         ),
                       ),
+                      onSummaryTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => LectureIntroScreen(
+                            title: stat.topic,
+                            keyPoints: summaryFor(subjectId, stat.topic) ?? const ['핵심요약정리를 준비 중입니다.'],
+                            subjectId: subjectId,
+                            subjectName: subjectName,
+                            category: stat.topic,
+                          ),
+                        ),
+                      ),
                     ),
                     if (stat != chapters.last) const SizedBox(height: 14),
                   ],
@@ -186,27 +199,48 @@ class _TopicBar extends StatelessWidget {
   final bool showRatio;
   final Color color;
   final VoidCallback onTap;
-  const _TopicBar({required this.stat, required this.showRatio, required this.color, required this.onTap});
+  final VoidCallback onSummaryTap;
+  const _TopicBar({
+    required this.stat,
+    required this.showRatio,
+    required this.color,
+    required this.onTap,
+    required this.onSummaryTap,
+  });
 
-  Widget _solveButton(BuildContext context) {
+  Widget _pillButton(BuildContext context, {required String label, required IconData icon, required VoidCallback onTap, bool outlined = false}) {
     return Material(
-      color: color.withValues(alpha: 0.12),
+      color: outlined ? Colors.transparent : color.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         borderRadius: BorderRadius.circular(999),
         onTap: onTap,
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: outlined
+              ? BoxDecoration(borderRadius: BorderRadius.circular(999), border: Border.all(color: color.withValues(alpha: 0.5)))
+              : null,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('풀기', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color)),
+              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color)),
               const SizedBox(width: 2),
-              Icon(Icons.chevron_right_rounded, size: 15, color: color),
+              Icon(icon, size: 14, color: color),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _actionButtons(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _pillButton(context, label: '핵심요약', icon: Icons.auto_stories_outlined, onTap: onSummaryTap, outlined: true),
+        const SizedBox(width: 6),
+        _pillButton(context, label: '풀기', icon: Icons.chevron_right_rounded, onTap: onTap),
+      ],
     );
   }
 
@@ -220,7 +254,7 @@ class _TopicBar extends StatelessWidget {
           Expanded(
             child: Text(stat.topic, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           ),
-          _solveButton(context),
+          _actionButtons(context),
         ],
       );
     }
@@ -252,7 +286,7 @@ class _TopicBar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Align(alignment: Alignment.centerRight, child: _solveButton(context)),
+        Align(alignment: Alignment.centerRight, child: _actionButtons(context)),
       ],
     );
   }
