@@ -780,45 +780,6 @@ class _TimeAttackCard extends StatelessWidget {
               right: 8,
               child: EngagementBadges(cardId: 'time_attack'),
             ),
-            Positioned(
-              left: 10,
-              top: 46,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  '1분 제한',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-            ),
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                child: Text(
-                  '타임어택',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
