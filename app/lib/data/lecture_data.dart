@@ -162,6 +162,7 @@ const List<LectureItem> civilLawLectures = [
   ),
   LectureItem(
     styleKey: 'limitation_period',
+    imageAsset: 'assets/images/lecture_cover_limitation_period.png',
     title: '소멸시효',
     keyPoints: [
       '**소멸시효**란 권리자가 권리를 행사할 수 있음에도 **일정 기간 행사하지 않는 상태**가 계속되면 그 권리를 소멸시키는 제도',
@@ -183,6 +184,7 @@ const List<LectureItem> civilLawLectures = [
   ),
   LectureItem(
     styleKey: 'nonperformance',
+    imageAsset: 'assets/images/lecture_cover_nonperformance.png',
     title: '채무불이행과 손해배상',
     keyPoints: [
       '**채무불이행의 3유형** ① **이행지체** — 이행이 가능한데 이행기에 이행하지 않음',
@@ -204,6 +206,7 @@ const List<LectureItem> civilLawLectures = [
   ),
   LectureItem(
     styleKey: 'contract_termination',
+    imageAsset: 'assets/images/lecture_cover_contract_termination.png',
     title: '계약의 해제·해지',
     keyPoints: [
       '**해제**는 유효하게 성립한 계약의 효력을 **소급적으로 소멸**시키는 것 — 계속적 계약이 아닌 **일회적 계약**(매매 등)에 적용',
@@ -375,6 +378,7 @@ const List<LectureItem> businessAdminLectures = [
   LectureItem(
     title: '유형자산과 감가상각',
     styleKey: 'ba_ppe',
+    imageAsset: 'assets/images/lecture_cover_ba_ppe.png',
     keyPoints: [
       '유형자산 **취득원가**에는 **설치비·시운전비** 등 사용 가능한 상태로 만들기까지의 비용이 포함된다',
       '취득 후 발생하는 **수선유지비(수익적 지출)**는 당기 비용 처리되어 취득원가에서 제외된다',
@@ -502,6 +506,7 @@ const List<LectureItem> economicLawLectures = [
   LectureItem(
     title: '재판매가격유지행위',
     styleKey: 'el_rpm',
+    imageAsset: 'assets/images/lecture_cover_el_rpm.png',
     keyPoints: [
       '**재판매가격유지행위**는 사업자가 거래상대방에게 자신이 정한 가격대로만 재판매하도록 강제하는 행위',
       '원칙적으로 **금지**되며, 브랜드 내 가격경쟁을 제한해 소비자 후생을 저해할 수 있다고 본다',

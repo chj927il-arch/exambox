@@ -99,6 +99,11 @@ flutter:
     - assets/images/lecture_cover_el_superior.png
     - assets/images/lecture_cover_el_penalty.png
     - assets/images/lecture_cover_el_clause.png
+    - assets/images/lecture_cover_el_rpm.png
+    - assets/images/lecture_cover_ba_ppe.png
+    - assets/images/lecture_cover_contract_termination.png
+    - assets/images/lecture_cover_nonperformance.png
+    - assets/images/lecture_cover_limitation_period.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
