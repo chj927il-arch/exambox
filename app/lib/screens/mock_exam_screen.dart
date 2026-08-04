@@ -255,48 +255,35 @@ class _MockExamScreenState extends State<MockExamScreen> {
                         color: style.color,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.black87, width: 1),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${_current + 1}. ',
-                                style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.6, color: Colors.black),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  question.stem,
-                                  style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.6, color: Colors.black),
-                                ),
-                              ),
-                            ],
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_current + 1}. ',
+                          style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
+                        ),
+                        Expanded(
+                          child: Text(
+                            question.stem,
+                            style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
                           ),
-                          const SizedBox(height: 18),
-                          ...List.generate(question.choices.length, (i) {
-                            final selected = _answers[_current] == i;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: _ExamOptionTile(
-                                label: _optionLabels[i],
-                                text: question.choices[i],
-                                selected: selected,
-                                onTap: () => _select(i),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 14),
+                    ...List.generate(question.choices.length, (i) {
+                      final selected = _answers[_current] == i;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: _ExamOptionTile(
+                          label: _optionLabels[i],
+                          text: question.choices[i],
+                          selected: selected,
+                          onTap: () => _select(i),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
