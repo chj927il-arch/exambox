@@ -298,19 +298,20 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          RichText(
-                            text: TextSpan(
-                              style: const TextStyle(
-                                fontSize: 16.5,
-                                fontWeight: FontWeight.w700,
-                                height: 1.6,
-                                color: Colors.black,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$_currentLocalNumber. ',
+                                style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.6, color: Colors.black),
                               ),
-                              children: [
-                                TextSpan(text: '$_currentLocalNumber. '),
-                                TextSpan(text: question.stem),
-                              ],
-                            ),
+                              Expanded(
+                                child: Text(
+                                  question.stem,
+                                  style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.6, color: Colors.black),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 18),
                           ...List.generate(question.choices.length, (i) {
@@ -499,19 +500,31 @@ class _ExamOptionTile extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: '$label  '),
-                TextSpan(text: text),
-              ],
-            ),
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.5,
-              fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
-              color: Colors.black,
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1.5,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -587,6 +600,108 @@ class _BottomNavBar extends StatelessWidget {
                     ),
                   ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 문제별 채점 결과 카드 — 해설은 바로 보이지 않고 "해설 보기"를 눌러야 펼쳐진다.
+class _ReviewQuestionTile extends StatefulWidget {
+  final int index;
+  final Question question;
+  final int? userAnswer;
+
+  const _ReviewQuestionTile({
+    required this.index,
+    required this.question,
+    required this.userAnswer,
+  });
+
+  @override
+  State<_ReviewQuestionTile> createState() => _ReviewQuestionTileState();
+}
+
+class _ReviewQuestionTileState extends State<_ReviewQuestionTile> {
+  bool _explanationVisible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final q = widget.question;
+    final userAnswer = widget.userAnswer;
+    final isCorrect = userAnswer == q.correctIndex;
+    final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: resultColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                color: resultColor,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${widget.index + 1}. ${q.category}',
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            q.stem,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.4, color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            userAnswer == null ? '내 답: 미응답' : '내 답: ${_optionLabels[userAnswer]}. ${q.choices[userAnswer]}',
+            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: resultColor),
+          ),
+          if (!isCorrect) ...[
+            const SizedBox(height: 2),
+            Text(
+              '정답: ${_optionLabels[q.correctIndex]}. ${q.choices[q.correctIndex]}',
+              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.correct),
+            ),
+          ],
+          const SizedBox(height: 10),
+          if (!_explanationVisible)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => setState(() => _explanationVisible = true),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: resultColor,
+                  side: BorderSide(color: resultColor.withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                icon: const Icon(Icons.menu_book_outlined, size: 16),
+                label: const Text('해설 보기', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            )
+          else
+            HighlightedText(
+              text: q.summaryExplanation,
+              phrases: q.highlightPhrases,
+              style: const TextStyle(
+                fontSize: 13.5,
+                height: 1.55,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
         ],
       ),
     );
@@ -857,94 +972,13 @@ class _FullMockExamResultView extends StatelessWidget {
               );
               for (var i = 0; i < section.questions.length; i++) {
                 final globalIndex = offset + i;
-                final q = questions[globalIndex];
-                final userAnswer = answers[globalIndex];
-                final isCorrect = userAnswer == q.correctIndex;
-                final resultColor = isCorrect
-                    ? AppColors.correct
-                    : AppColors.wrong;
                 tiles.add(
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: resultColor.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                isCorrect
-                                    ? Icons.check_circle_rounded
-                                    : Icons.cancel_rounded,
-                                color: resultColor,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${i + 1}. ${q.category}',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: resultColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            q.stem,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              height: 1.4,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            userAnswer == null
-                                ? '내 답: 미응답'
-                                : '내 답: ${_optionLabels[userAnswer]}. ${q.choices[userAnswer]}',
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: resultColor,
-                            ),
-                          ),
-                          if (!isCorrect) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              '정답: ${_optionLabels[q.correctIndex]}. ${q.choices[q.correctIndex]}',
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.correct,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 8),
-                          HighlightedText(
-                            text: q.summaryExplanation,
-                            phrases: q.highlightPhrases,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              height: 1.55,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: _ReviewQuestionTile(
+                      index: i,
+                      question: questions[globalIndex],
+                      userAnswer: answers[globalIndex],
                     ),
                   ),
                 );

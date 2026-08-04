@@ -10,7 +10,7 @@ import '../widgets/app_background.dart';
 import '../widgets/highlighted_text.dart';
 import 'certificate_menu_screen.dart' show studyScreenRouteName;
 
-const _optionLabels = ['A', 'B', 'C', 'D', 'E'];
+const _optionLabels = ['①', '②', '③', '④', '⑤'];
 
 /// 10문제마다 보여줄 자극 문구 — 듀오링고식 반복학습의 마일스톤 연출.
 const _milestoneMessages = [
@@ -310,21 +310,17 @@ class _QuizScreenState extends State<QuizScreen> {
                                 _DuoQuestionBlock(
                                   question: question,
                                   color: style.color,
+                                  questionNumber: _current + 1,
                                   subTopicPosition: _subTopicPosition,
                                   subTopicTotal: _subTopicTotal,
+                                  optionCount: question.choices.length,
+                                  optionBuilder: (i) => _OptionTile(
+                                    label: _optionLabels[i],
+                                    text: question.choices[i],
+                                    state: _optionState(i, question.correctIndex),
+                                    onTap: () => _select(i),
+                                  ),
                                 ),
-                                const SizedBox(height: 22),
-                                ...List.generate(question.choices.length, (i) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: _OptionTile(
-                                      label: _optionLabels[i],
-                                      text: question.choices[i],
-                                      state: _optionState(i, question.correctIndex),
-                                      onTap: () => _select(i),
-                                    ),
-                                  );
-                                }),
                               ],
                             ),
                           ),
@@ -574,16 +570,23 @@ class _QuestionListSheet extends StatelessWidget {
   }
 }
 
-/// 문제 텍스트 블록 — 카드 테두리 없이 배지 + 큼직한 문제 텍스트를 배경 위에 바로 배치한다.
+/// 문제 블록 — 실제 시험지 느낌으로 흰 배경 + 검은 테두리 박스 안에 문항번호·지문·보기를
+/// 색 장식 없이 담백하게 담는다. 유형(카테고리)·기출연도 배지만 박스 위에 작게 보여준다.
 class _DuoQuestionBlock extends StatelessWidget {
   final Question question;
   final Color color;
+  final int questionNumber;
   final int subTopicPosition;
   final int subTopicTotal;
+  final int optionCount;
+  final Widget Function(int index) optionBuilder;
 
   const _DuoQuestionBlock({
     required this.question,
     required this.color,
+    required this.questionNumber,
+    required this.optionCount,
+    required this.optionBuilder,
     this.subTopicPosition = 0,
     this.subTopicTotal = 0,
   });
@@ -633,14 +636,29 @@ class _DuoQuestionBlock extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 18),
-        Text(
-          question.stem,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            height: 1.45,
-            color: AppColors.textPrimary,
+        const SizedBox(height: 14),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black87, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$questionNumber. ', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.6, color: Colors.black)),
+                  Expanded(
+                    child: Text(question.stem, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.6, color: Colors.black)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              ...List.generate(optionCount, (i) => optionBuilder(i)),
+            ],
           ),
         ),
       ],
@@ -650,7 +668,8 @@ class _DuoQuestionBlock extends StatelessWidget {
 
 enum _OptionState { idle, selected, correct, wrong, disabled }
 
-/// 보기 버튼 — 아래쪽 테두리를 두껍게 줘서 눌리는 입체감(듀오링고 스타일 3D 버튼)을 흉내낸다.
+/// 실제 시험지 보기 한 줄 — 박스·색 장식 없이 "① 텍스트" 형태로 표시한다.
+/// 채점 후에는 정답/오답만 최소한의 색(초록/빨강)과 아이콘으로 구분해 학습 피드백을 준다.
 class _OptionTile extends StatelessWidget {
   final String label;
   final String text;
@@ -661,33 +680,26 @@ class _OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color borderColor = const Color(0xFFE1E1E8);
-    Color fillColor = Colors.white;
-    Color badgeBg = AppColors.trackBg;
-    Color badgeFg = AppColors.textSecondary;
+    Color textColor = Colors.black;
+    Color bgColor = Colors.transparent;
+    FontWeight weight = FontWeight.w500;
     Widget? trailing;
     double opacity = 1;
 
     switch (state) {
       case _OptionState.selected:
-        borderColor = AppColors.primary;
-        fillColor = AppColors.primary.withValues(alpha: 0.06);
-        badgeBg = AppColors.primary;
-        badgeFg = Colors.white;
+        bgColor = const Color(0xFFEDEDED);
+        weight = FontWeight.w800;
         break;
       case _OptionState.correct:
-        borderColor = AppColors.correct;
-        fillColor = AppColors.correct.withValues(alpha: 0.12);
-        badgeBg = AppColors.correct;
-        badgeFg = Colors.white;
-        trailing = const Icon(Icons.check_circle_rounded, color: AppColors.correct, size: 24);
+        textColor = AppColors.correct;
+        weight = FontWeight.w800;
+        trailing = const Icon(Icons.check_circle_rounded, color: AppColors.correct, size: 20);
         break;
       case _OptionState.wrong:
-        borderColor = AppColors.wrong;
-        fillColor = AppColors.wrong.withValues(alpha: 0.12);
-        badgeBg = AppColors.wrong;
-        badgeFg = Colors.white;
-        trailing = const Icon(Icons.cancel_rounded, color: AppColors.wrong, size: 24);
+        textColor = AppColors.wrong;
+        weight = FontWeight.w800;
+        trailing = const Icon(Icons.cancel_rounded, color: AppColors.wrong, size: 20);
         break;
       case _OptionState.disabled:
         opacity = 0.5;
@@ -698,45 +710,22 @@ class _OptionTile extends StatelessWidget {
 
     return Opacity(
       opacity: opacity,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        decoration: BoxDecoration(
-          color: fillColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border(
-            left: BorderSide(color: borderColor, width: 2),
-            top: BorderSide(color: borderColor, width: 2),
-            right: BorderSide(color: borderColor, width: 2),
-            bottom: BorderSide(color: borderColor, width: 4),
-          ),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(10)),
-                    child: Text(label, style: TextStyle(color: badgeFg, fontWeight: FontWeight.w800, fontSize: 15)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      text,
-                      style: const TextStyle(fontSize: 18.5, height: 1.35, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                    ),
-                  ),
-                  if (trailing != null) ...[const SizedBox(width: 8), trailing],
-                ],
-              ),
+      child: Material(
+        color: bgColor,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 16, height: 1.5, fontWeight: weight, color: textColor)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(text, style: TextStyle(fontSize: 16, height: 1.5, fontWeight: weight, color: textColor)),
+                ),
+                if (trailing != null) ...[const SizedBox(width: 8), trailing],
+              ],
             ),
           ),
         ),
@@ -747,7 +736,8 @@ class _OptionTile extends StatelessWidget {
 
 /// 정답 확인 후 화면 하단에서 올라오는 고정 패널(듀오링고 스타일 바텀시트).
 /// 해설이 길어도 안의 스크롤 영역만 늘어나고, "다음 유사문제" 버튼은 항상 하단에 고정된다.
-class _DuoFeedbackSheet extends StatelessWidget {
+/// 해설/핵심개념은 바로 보이지 않고 "해설 보기"를 눌러야 펼쳐진다(스스로 정답 여부를 먼저 생각해보게).
+class _DuoFeedbackSheet extends StatefulWidget {
   final bool isCorrect;
   final Question question;
   final Color color;
@@ -761,7 +751,17 @@ class _DuoFeedbackSheet extends StatelessWidget {
   });
 
   @override
+  State<_DuoFeedbackSheet> createState() => _DuoFeedbackSheetState();
+}
+
+class _DuoFeedbackSheetState extends State<_DuoFeedbackSheet> {
+  bool _explanationVisible = false;
+
+  @override
   Widget build(BuildContext context) {
+    final isCorrect = widget.isCorrect;
+    final question = widget.question;
+    final onNext = widget.onNext;
     final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
     final panelBg = isCorrect ? const Color(0xFFE3F8E9) : const Color(0xFFFFE9E7);
     final panelHeight = math.min(360.0, MediaQuery.sizeOf(context).height * 0.5);
@@ -823,41 +823,58 @@ class _DuoFeedbackSheet extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    Text(
-                      '해설',
-                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
-                    ),
-                    const SizedBox(height: 6),
-                    HighlightedText(
-                      text: question.summaryExplanation,
-                      phrases: question.highlightPhrases,
-                      style: const TextStyle(fontSize: 17, height: 1.6, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                    ),
-                    if (question.keyPoints.isNotEmpty) ...[
-                      const SizedBox(height: 14),
+                    if (!_explanationVisible)
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => setState(() => _explanationVisible = true),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: resultColor,
+                            side: BorderSide(color: resultColor.withValues(alpha: 0.5)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          icon: const Icon(Icons.menu_book_outlined, size: 18),
+                          label: const Text('해설 보기', style: TextStyle(fontWeight: FontWeight.w800)),
+                        ),
+                      )
+                    else ...[
                       Text(
-                        '핵심 개념',
+                        '해설',
                         style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
                       ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: question.keyPoints
-                            .map((k) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(999),
-                                    border: Border.all(color: resultColor.withValues(alpha: 0.35)),
-                                  ),
-                                  child: Text(
-                                    k,
-                                    style: TextStyle(color: resultColor, fontWeight: FontWeight.w700, fontSize: 13),
-                                  ),
-                                ))
-                            .toList(),
+                      const SizedBox(height: 6),
+                      HighlightedText(
+                        text: question.summaryExplanation,
+                        phrases: question.highlightPhrases,
+                        style: const TextStyle(fontSize: 17, height: 1.6, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
                       ),
+                      if (question.keyPoints.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          '핵심 개념',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: question.keyPoints
+                              .map((k) => Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(color: resultColor.withValues(alpha: 0.35)),
+                                    ),
+                                    child: Text(
+                                      k,
+                                      style: TextStyle(color: resultColor, fontWeight: FontWeight.w700, fontSize: 13),
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
                     ],
                   ],
                 ),
