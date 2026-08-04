@@ -89,6 +89,7 @@ flutter:
     - assets/images/daily_ox_cover.png
     - assets/images/time_attack_cover.png
     - assets/images/trap_quiz_cover.png
+    - assets/images/mock_exam_cover.png
     - assets/images/lecture_cover_ba_financial_statements.png
     - assets/images/lecture_cover_ba_inventory.png
     - assets/images/lecture_cover_ba_stp.png
