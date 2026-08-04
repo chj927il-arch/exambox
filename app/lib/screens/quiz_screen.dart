@@ -334,6 +334,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                           child: _NextQuestionPreview(
                                             question: _questions[_current + 1],
                                             questionNumber: _current + 2,
+                                            color: style.color,
                                           ),
                                         ),
                                       ],
@@ -690,11 +691,13 @@ class _DuoQuestionBlock extends StatelessWidget {
 
 /// 데스크톱 폭에서 오른쪽에 미리 보여주는 다음 문제 — 실제 시험지를 펼친 느낌만 주기 위한
 /// 미리보기라 선택은 할 수 없고(회색 톤), 현재 문제를 다 풀고 넘어가야 실제로 활성화된다.
+/// 왼쪽(현재 문제)과 배지 줄 구성을 동일하게 맞춰서 문항번호·지문 줄이 같은 높이에서 시작하게 한다.
 class _NextQuestionPreview extends StatelessWidget {
   final Question question;
   final int questionNumber;
+  final Color color;
 
-  const _NextQuestionPreview({required this.question, required this.questionNumber});
+  const _NextQuestionPreview({required this.question, required this.questionNumber, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -704,6 +707,31 @@ class _NextQuestionPreview extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
+                  child: Text(
+                    question.category,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
+                  ),
+                ),
+                if (question.sourceYear != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(color: color.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(999)),
+                    child: Text(
+                      '${question.sourceYear}년 기출',
+                      style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

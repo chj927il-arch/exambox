@@ -288,6 +288,7 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
                     if (_selectedIndex != null) ...[
                       const SizedBox(height: 6),
                       _ExplanationPanel(
+                        key: ValueKey(_current.id),
                         question: _current,
                         isCorrect: _selectedIndex == _current.correctIndex,
                         accent: accent,
@@ -315,16 +316,24 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
   }
 }
 
-class _ExplanationPanel extends StatelessWidget {
+/// 정답/오답은 바로 표시하되, 해설은 "해설 보기"를 눌러야 펼쳐진다.
+class _ExplanationPanel extends StatefulWidget {
   final Question question;
   final bool isCorrect;
   final Color accent;
 
-  const _ExplanationPanel({required this.question, required this.isCorrect, required this.accent});
+  const _ExplanationPanel({super.key, required this.question, required this.isCorrect, required this.accent});
+
+  @override
+  State<_ExplanationPanel> createState() => _ExplanationPanelState();
+}
+
+class _ExplanationPanelState extends State<_ExplanationPanel> {
+  bool _explanationVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
+    final resultColor = widget.isCorrect ? AppColors.correct : AppColors.wrong;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -337,20 +346,36 @@ class _ExplanationPanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded, color: resultColor, size: 18),
+              Icon(widget.isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded, color: resultColor, size: 18),
               const SizedBox(width: 6),
               Text(
-                isCorrect ? '정답이에요!' : '아쉬워요, 오답이에요',
+                widget.isCorrect ? '정답이에요!' : '아쉬워요, 오답이에요',
                 style: TextStyle(color: resultColor, fontWeight: FontWeight.w800, fontSize: 14),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          HighlightedText(
-            text: question.summaryExplanation,
-            phrases: question.highlightPhrases,
-            style: const TextStyle(fontSize: 13.5, height: 1.5, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
-          ),
+          if (!_explanationVisible)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => setState(() => _explanationVisible = true),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: resultColor,
+                  side: BorderSide(color: resultColor.withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                icon: const Icon(Icons.menu_book_outlined, size: 16),
+                label: const Text('해설 보기', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            )
+          else
+            HighlightedText(
+              text: widget.question.summaryExplanation,
+              phrases: widget.question.highlightPhrases,
+              style: const TextStyle(fontSize: 13.5, height: 1.5, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+            ),
         ],
       ),
     );
