@@ -156,16 +156,36 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: civilLawLectures),
               const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '부족한 단원만 공부한다_경영학'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '부족한 단원만 공부한다_경영학',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LectureGridScreen(
+                        title: '부족한 단원만 공부한다_경영학',
+                        lectures: businessAdminLectures,
+                      ),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: businessAdminLectures),
               const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '부족한 단원만 공부한다_경제법'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '부족한 단원만 공부한다_경제법',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LectureGridScreen(
+                        title: '부족한 단원만 공부한다_경제법',
+                        lectures: economicLawLectures,
+                      ),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: economicLawLectures),
