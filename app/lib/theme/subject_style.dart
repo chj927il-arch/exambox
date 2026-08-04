@@ -37,6 +37,11 @@ const Map<String, SubjectStyle> _subjectStyles = {
   'el_penalty': SubjectStyle(icon: Icons.payments_outlined, color: Color(0xFF264D73)),
   'el_clause': SubjectStyle(icon: Icons.description_outlined, color: Color(0xFF5C7A99)),
   'el_rpm': SubjectStyle(icon: Icons.price_change_outlined, color: Color(0xFF2E5C8A)),
+  'el_cartel_types': SubjectStyle(icon: Icons.groups_outlined, color: Color(0xFF3D4F6B)),
+  'el_cartel_reqs': SubjectStyle(icon: Icons.fact_check_outlined, color: Color(0xFF46607A)),
+  'el_support': SubjectStyle(icon: Icons.account_balance_outlined, color: Color(0xFF2F4858)),
+  'el_selfdeal': SubjectStyle(icon: Icons.family_restroom_outlined, color: Color(0xFF5B4B6F)),
+  'el_concentration': SubjectStyle(icon: Icons.hub_outlined, color: Color(0xFF3A5A6B)),
 
   // 실전모의고사(표지 이미지 없어 아이콘 카드로 표시)
   'mock_exam_season1': SubjectStyle(icon: Icons.emoji_events_outlined, color: Color(0xFFA8352E)),
