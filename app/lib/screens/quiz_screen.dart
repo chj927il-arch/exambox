@@ -306,24 +306,49 @@ class _QuizScreenState extends State<QuizScreen> {
                       child: isWide
                           ? Column(
                               children: [
-                                Expanded(
+                Expanded(
                                   child: SingleChildScrollView(
                                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                                    child: IntrinsicHeight(
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(child: _buildPairColumn(pairStart, style.color)),
-                                          const SizedBox(width: 24),
-                                          const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
-                                          const SizedBox(width: 24),
-                                          Expanded(
-                                            child: rightIndex != null
-                                                ? _buildPairColumn(rightIndex, style.color)
-                                                : const SizedBox.shrink(),
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        // 지문 줄바꿈 수가 좌우로 달라 문항번호 줄이 어긋나 보이는 문제를 고치기 위해,
+                                        // 각 지문의 실제 렌더링 높이를 미리 계산해서 짧은 쪽에 그 차이만큼 빈 공간을 채운다
+                                        // — 그러면 보기(①~⑤)가 시작되는 줄이 좌우 같은 높이에서 시작한다.
+                                        const numberPrefixWidth = 34.0;
+                                        final columnWidth = (constraints.maxWidth - 24 - 1 - 24) / 2;
+                                        final leftQuestion = _questions[pairStart];
+                                        final rightQuestion = rightIndex != null ? _questions[rightIndex] : null;
+                                        final leftStemHeight = _measureStemHeight(leftQuestion.stem, columnWidth - numberPrefixWidth);
+                                        final rightStemHeight =
+                                            rightQuestion != null ? _measureStemHeight(rightQuestion.stem, columnWidth - numberPrefixWidth) : 0.0;
+                                        final maxStemHeight = leftStemHeight > rightStemHeight ? leftStemHeight : rightStemHeight;
+                                        return IntrinsicHeight(
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: _buildPairColumn(
+                                                  pairStart,
+                                                  style.color,
+                                                  extraStemPadding: maxStemHeight - leftStemHeight,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 24),
+                                              const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
+                                              const SizedBox(width: 24),
+                                              Expanded(
+                                                child: rightIndex != null
+                                                    ? _buildPairColumn(
+                                                        rightIndex,
+                                                        style.color,
+                                                        extraStemPadding: maxStemHeight - rightStemHeight,
+                                                      )
+                                                    : const SizedBox.shrink(),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
@@ -385,7 +410,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   /// 데스크톱 2분할 화면의 한쪽 열 — 문제+보기, 답을 고르면 그 아래에 정답/오답과
   /// "해설 보기" 버튼이 바로 이어서 나온다(왼쪽/오른쪽 모두 독립적으로 풀 수 있다).
-  Widget _buildPairColumn(int index, Color color) {
+  Widget _buildPairColumn(int index, Color color, {double extraStemPadding = 0}) {
     final question = _questions[index];
     final answered = _isAnswered(index);
     return Column(
@@ -397,6 +422,7 @@ class _QuizScreenState extends State<QuizScreen> {
           questionNumber: index + 1,
           optionCount: question.choices.length,
           showBadges: false,
+          stemPadding: extraStemPadding,
           optionBuilder: (i) => _OptionTile(
             label: _optionLabels[i],
             text: question.choices[i],
@@ -473,6 +499,19 @@ class _QuizScreenState extends State<QuizScreen> {
     if (choiceIndex == correctIndex) return _OptionState.correct;
     if (choiceIndex == selected) return _OptionState.wrong;
     return _OptionState.disabled;
+  }
+
+  /// [text]가 [maxWidth] 안에서 _DuoQuestionBlock과 동일한 스타일로 렌더링될 때의 실제 높이를
+  /// 계산한다 — 데스크톱 2분할 화면에서 좌우 지문 줄바꿈 수 차이를 미리 알아내기 위해 쓰인다.
+  double _measureStemHeight(String text, double maxWidth) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth > 0 ? maxWidth : 0);
+    return painter.height;
   }
 }
 
@@ -698,6 +737,10 @@ class _DuoQuestionBlock extends StatelessWidget {
   /// 줄 높이가 달라져 버려서, 그 화면에서는 배지를 아예 숨기고 번호+지문부터 시작한다.
   final bool showBadges;
 
+  /// 지문 줄바꿈 수가 반대쪽보다 적을 때 그 차이만큼 채워 넣는 빈 공간 — 보기(①~⑤)가
+  /// 시작되는 줄을 좌우 같은 높이로 맞추기 위한 값(데스크톱 2분할 화면 전용).
+  final double stemPadding;
+
   const _DuoQuestionBlock({
     required this.question,
     required this.color,
@@ -707,6 +750,7 @@ class _DuoQuestionBlock extends StatelessWidget {
     this.subTopicPosition = 0,
     this.subTopicTotal = 0,
     this.showBadges = true,
+    this.stemPadding = 0,
   });
 
   @override
@@ -766,6 +810,7 @@ class _DuoQuestionBlock extends StatelessWidget {
             ),
           ],
         ),
+        if (stemPadding > 0) SizedBox(height: stemPadding),
         const SizedBox(height: 14),
         ...List.generate(optionCount, (i) => optionBuilder(i)),
       ],
