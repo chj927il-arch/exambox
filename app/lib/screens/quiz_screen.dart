@@ -60,8 +60,6 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   late final List<Question> _questions;
   int _current = 0;
-  int? _selectedIndex;
-  bool _answered = false;
   int _solvedInSession = 0;
   int _correctInRound = 0;
   bool _sessionComplete = false;
@@ -69,6 +67,13 @@ class _QuizScreenState extends State<QuizScreen> {
   /// 문제별 채점 결과 — true(정답)/false(오답)/null(아직 안 풂). 문제 목록에서
   /// 몇 번을 맞혔는지 보여주고, 특정 문제로 바로 이동했을 때도 기록이 유지되게 한다.
   late final List<bool?> _results;
+
+  /// 문제별로 고른 보기 — 데스크톱 2분할 화면에서는 두 문제를 동시에 각자 풀 수 있어야 해서
+  /// (한쪽이 회색으로 잠겨있으면 안 됨) 단일 "현재 선택"이 아니라 문제별로 따로 기억한다.
+  late final List<int?> _selected;
+
+  /// 한 번 "해설 보기"를 눌러 펼친 문제는 인덱스로 기억해 다시 봐도 접히지 않게 한다.
+  final Set<int> _explanationRevealed = {};
 
   final DateTime _startedAt = DateTime.now();
   int _committedSeconds = 0;
@@ -85,6 +90,7 @@ class _QuizScreenState extends State<QuizScreen> {
             (widget.subTopic == null || q.subTopic == widget.subTopic))
         .toList();
     _results = List<bool?>.filled(_questions.length, null);
+    _selected = List<int?>.filled(_questions.length, null);
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -116,12 +122,16 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  void _select(int index) {
-    if (_answered) return;
-    final question = _questions[_current];
-    final correct = index == question.correctIndex;
+  bool _isAnswered(int index) => _selected[index] != null;
+
+  /// [index]번 문제에 [choice]번 보기를 선택한다. 데스크톱 2분할 화면에서는 두 문제가
+  /// 각자 독립적으로 풀 수 있어야 해서 index를 받아 문제별로 채점·기록한다.
+  void _select(int index, int choice) {
+    if (_isAnswered(index)) return;
+    final question = _questions[index];
+    final correct = choice == question.correctIndex;
     // 목록에서 이미 풀었던 문제로 다시 이동해 열어본 경우(리뷰)에는 통계를 중복 반영하지 않는다.
-    final alreadyRecorded = _results[_current] != null;
+    final alreadyRecorded = _results[index] != null;
     if (!alreadyRecorded) {
       if (correct) {
         _correctInRound++;
@@ -138,9 +148,8 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
     setState(() {
-      _results[_current] = correct;
-      _selectedIndex = index;
-      _answered = true;
+      _results[index] = correct;
+      _selected[index] = choice;
       if (!alreadyRecorded) _solvedInSession++;
     });
     if (!alreadyRecorded && _solvedInSession % 10 == 0) {
@@ -151,21 +160,13 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  /// 문제 목록에서 특정 문제를 탭했을 때 그 문제로 바로 이동한다. 이미 풀었던 문제라면
-  /// 정답을 다시 확인할 수 있게 채점 결과를 그대로 복원해서 보여준다.
+  /// 문제 목록에서 특정 문제를 탭했을 때 그 문제로 바로 이동한다. 각 문제의 채점 결과는
+  /// _selected/_results 배열에 이미 남아있어 별도 복원 없이 그대로 보여진다.
   void _jumpTo(int index) {
     if (index < 0 || index >= _questions.length) return;
-    final previousResult = _results[index];
     setState(() {
       _current = index;
       _sessionComplete = false;
-      if (previousResult != null) {
-        _answered = true;
-        _selectedIndex = previousResult ? _questions[index].correctIndex : null;
-      } else {
-        _answered = false;
-        _selectedIndex = null;
-      }
     });
   }
 
@@ -207,11 +208,7 @@ class _QuizScreenState extends State<QuizScreen> {
       setState(() => _sessionComplete = true);
       return;
     }
-    setState(() {
-      _current++;
-      _selectedIndex = null;
-      _answered = false;
-    });
+    setState(() => _current++);
   }
 
   /// 복습하기 — 문제 순서를 다시 섞어서 처음부터 풀어보게 한다.
@@ -219,10 +216,11 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _questions.shuffle();
       _current = 0;
-      _selectedIndex = null;
-      _answered = false;
       _sessionComplete = false;
       _correctInRound = 0;
+      _selected.fillRange(0, _selected.length, null);
+      _results.fillRange(0, _results.length, null);
+      _explanationRevealed.clear();
     });
   }
 
@@ -273,10 +271,13 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    final question = _questions[_current];
-    final isCorrect = _selectedIndex == question.correctIndex;
     final isWide = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
-    final hasNextPreview = isWide && _current + 1 < _questions.length;
+    // 데스크톱 2분할 화면에서는 항상 짝수 인덱스부터 시작하는 한 쌍(pairStart, pairStart+1)을
+    // 보여준다 — 어느 쪽이든 자유롭게(순서 상관없이) 풀 수 있다.
+    final pairStart = isWide ? (_current ~/ 2) * 2 : _current;
+    final rightIndex = isWide && pairStart + 1 < _questions.length ? pairStart + 1 : null;
+    final isLastPair = pairStart + 2 >= _questions.length;
+    final topBarIndex = isWide ? pairStart : _current;
 
     return Scaffold(
       body: AppBackground(
@@ -293,7 +294,7 @@ class _QuizScreenState extends State<QuizScreen> {
               : Column(
                   children: [
                     _DuoTopBar(
-                      current: _current,
+                      current: topBarIndex,
                       total: _questions.length,
                       solved: _solvedInSession,
                       elapsedLabel: _elapsedLabel,
@@ -302,85 +303,78 @@ class _QuizScreenState extends State<QuizScreen> {
                       onOpenList: _openQuestionList,
                     ),
                     Expanded(
-                      child: Stack(
-                        children: [
-                          SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                            child: hasNextPreview
-                                ? IntrinsicHeight(
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: _DuoQuestionBlock(
-                                            question: question,
-                                            color: style.color,
-                                            questionNumber: _current + 1,
-                                            subTopicPosition: _subTopicPosition,
-                                            subTopicTotal: _subTopicTotal,
-                                            optionCount: question.choices.length,
-                                            optionBuilder: (i) => _OptionTile(
-                                              label: _optionLabels[i],
-                                              text: question.choices[i],
-                                              state: _optionState(i, question.correctIndex),
-                                              onTap: () => _select(i),
-                                            ),
+                      child: isWide
+                          ? Column(
+                              children: [
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                                    child: IntrinsicHeight(
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(child: _buildPairColumn(pairStart, style.color)),
+                                          const SizedBox(width: 24),
+                                          const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
+                                          const SizedBox(width: 24),
+                                          Expanded(
+                                            child: rightIndex != null
+                                                ? _buildPairColumn(rightIndex, style.color)
+                                                : const SizedBox.shrink(),
                                           ),
-                                        ),
-                                        const SizedBox(width: 24),
-                                        const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
-                                        const SizedBox(width: 24),
-                                        Expanded(
-                                          child: _NextQuestionPreview(
-                                            question: _questions[_current + 1],
-                                            questionNumber: _current + 2,
-                                            color: style.color,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  )
-                                : Column(
+                                  ),
+                                ),
+                                _buildPairNavBar(pairStart, isLastPair, style.color),
+                              ],
+                            )
+                          : Stack(
+                              children: [
+                                SingleChildScrollView(
+                                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       _DuoQuestionBlock(
-                                        question: question,
+                                        question: _questions[_current],
                                         color: style.color,
                                         questionNumber: _current + 1,
                                         subTopicPosition: _subTopicPosition,
                                         subTopicTotal: _subTopicTotal,
-                                        optionCount: question.choices.length,
+                                        optionCount: _questions[_current].choices.length,
                                         optionBuilder: (i) => _OptionTile(
                                           label: _optionLabels[i],
-                                          text: question.choices[i],
-                                          state: _optionState(i, question.correctIndex),
-                                          onTap: () => _select(i),
+                                          text: _questions[_current].choices[i],
+                                          state: _optionState(_current, i),
+                                          onTap: () => _select(_current, i),
                                         ),
                                       ),
                                     ],
                                   ),
-                          ),
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              ignoring: !_answered,
-                              child: AnimatedSlide(
-                                key: ValueKey(_current),
-                                duration: const Duration(milliseconds: 260),
-                                curve: Curves.easeOutCubic,
-                                offset: _answered ? Offset.zero : const Offset(0, 1),
-                                child: _answered
-                                    ? _DuoFeedbackSheet(
-                                        isCorrect: isCorrect,
-                                        question: question,
-                                        color: style.color,
-                                        onNext: _next,
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
+                                ),
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    ignoring: !_isAnswered(_current),
+                                    child: AnimatedSlide(
+                                      key: ValueKey(_current),
+                                      duration: const Duration(milliseconds: 260),
+                                      curve: Curves.easeOutCubic,
+                                      offset: _isAnswered(_current) ? Offset.zero : const Offset(0, 1),
+                                      child: _isAnswered(_current)
+                                          ? _DuoFeedbackSheet(
+                                              isCorrect: _selected[_current] == _questions[_current].correctIndex,
+                                              question: _questions[_current],
+                                              color: style.color,
+                                              onNext: _next,
+                                            )
+                                          : const SizedBox.shrink(),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                   ],
                 ),
@@ -389,12 +383,94 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  _OptionState _optionState(int index, int correctIndex) {
-    if (!_answered) {
-      return _selectedIndex == index ? _OptionState.selected : _OptionState.idle;
-    }
-    if (index == correctIndex) return _OptionState.correct;
-    if (index == _selectedIndex) return _OptionState.wrong;
+  /// 데스크톱 2분할 화면의 한쪽 열 — 문제+보기, 답을 고르면 그 아래에 정답/오답과
+  /// "해설 보기" 버튼이 바로 이어서 나온다(왼쪽/오른쪽 모두 독립적으로 풀 수 있다).
+  Widget _buildPairColumn(int index, Color color) {
+    final question = _questions[index];
+    final answered = _isAnswered(index);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _DuoQuestionBlock(
+          question: question,
+          color: color,
+          questionNumber: index + 1,
+          optionCount: question.choices.length,
+          optionBuilder: (i) => _OptionTile(
+            label: _optionLabels[i],
+            text: question.choices[i],
+            state: _optionState(index, i),
+            onTap: () => _select(index, i),
+          ),
+        ),
+        if (answered) ...[
+          const SizedBox(height: 10),
+          _InlineFeedback(
+            isCorrect: _selected[index] == question.correctIndex,
+            question: question,
+            color: color,
+            explanationVisible: _explanationRevealed.contains(index),
+            onShowExplanation: () => setState(() => _explanationRevealed.add(index)),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 데스크톱 2분할 화면 하단 고정 내비게이션 — 한 쌍(2문제)씩 이전/다음으로 이동한다.
+  Widget _buildPairNavBar(int pairStart, bool isLastPair, Color color) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.glassBorder))),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: pairStart == 0 ? null : () => setState(() => _current = pairStart - 2),
+              icon: const Icon(Icons.arrow_back_rounded, size: 18),
+              label: const Text('이전'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: isLastPair ? 2 : 1,
+            child: isLastPair
+                ? ElevatedButton.icon(
+                    onPressed: () => setState(() => _sessionComplete = true),
+                    icon: const Icon(Icons.check_circle_rounded, size: 18),
+                    label: const Text('학습 마치기'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: color,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: () => setState(() => _current = pairStart + 2),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                    label: const Text('다음'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: color,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _OptionState _optionState(int questionIndex, int choiceIndex) {
+    final selected = _selected[questionIndex];
+    if (selected == null) return _OptionState.idle;
+    final correctIndex = _questions[questionIndex].correctIndex;
+    if (choiceIndex == correctIndex) return _OptionState.correct;
+    if (choiceIndex == selected) return _OptionState.wrong;
     return _OptionState.disabled;
   }
 }
@@ -689,70 +765,121 @@ class _DuoQuestionBlock extends StatelessWidget {
   }
 }
 
-/// 데스크톱 폭에서 오른쪽에 미리 보여주는 다음 문제 — 실제 시험지를 펼친 느낌만 주기 위한
-/// 미리보기라 선택은 할 수 없고(회색 톤), 현재 문제를 다 풀고 넘어가야 실제로 활성화된다.
-/// 왼쪽(현재 문제)과 배지 줄 구성을 동일하게 맞춰서 문항번호·지문 줄이 같은 높이에서 시작하게 한다.
-class _NextQuestionPreview extends StatelessWidget {
+/// 답을 고른 뒤 문제 바로 아래에 이어서 보여주는 정답/오답 표시 — 데스크톱 2분할 화면에서
+/// 각 열이 독립적으로 갖는다(전체를 덮는 바텀시트가 아니라 그 문제 밑에만 나온다).
+/// 해설은 바로 보이지 않고 "해설 보기"를 눌러야 펼쳐진다.
+class _InlineFeedback extends StatelessWidget {
+  final bool isCorrect;
   final Question question;
-  final int questionNumber;
   final Color color;
+  final bool explanationVisible;
+  final VoidCallback onShowExplanation;
 
-  const _NextQuestionPreview({required this.question, required this.questionNumber, required this.color});
+  const _InlineFeedback({
+    required this.isCorrect,
+    required this.question,
+    required this.color,
+    required this.explanationVisible,
+    required this.onShowExplanation,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: 0.45,
-      child: IgnorePointer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
-                  child: Text(
-                    question.category,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
-                  ),
-                ),
-                if (question.sourceYear != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(color: color.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(999)),
-                    child: Text(
-                      '${question.sourceYear}년 기출',
-                      style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('$questionNumber. ', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
-                Expanded(
-                  child: Text(question.stem, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            ...List.generate(question.choices.length, (i) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+    final resultColor = isCorrect ? AppColors.correct : AppColors.wrong;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: resultColor.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: resultColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded, color: resultColor, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
                 child: Text(
-                  '${_optionLabels[i]}  ${question.choices[i]}',
-                  style: const TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w500, color: Colors.black),
+                  isCorrect ? '정답이에요!' : '아쉬워요, 오답이에요',
+                  style: TextStyle(color: resultColor, fontWeight: FontWeight.w900, fontSize: 15.5),
                 ),
-              );
-            }),
+              ),
+              ListenableBuilder(
+                listenable: UserProgress.instance,
+                builder: (context, _) {
+                  final compiled = UserProgress.instance.isCompiled(question.id);
+                  return IconButton(
+                    onPressed: () => UserProgress.instance.toggleCompiled(question.id),
+                    icon: Icon(
+                      compiled ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                      color: compiled ? AppColors.primary : AppColors.textMuted,
+                    ),
+                    tooltip: '단권화 노트에 저장',
+                    visualDensity: VisualDensity.compact,
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (!explanationVisible)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onShowExplanation,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: resultColor,
+                  side: BorderSide(color: resultColor.withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                icon: const Icon(Icons.menu_book_outlined, size: 16),
+                label: const Text('해설 보기', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            )
+          else ...[
+            HighlightedText(
+              text: question.summaryExplanation,
+              phrases: question.highlightPhrases,
+              style: const TextStyle(fontSize: 14.5, height: 1.55, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+            ),
+            if (question.keyPoints.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: resultColor.withValues(alpha: 0.25)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('오답 노트', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4)),
+                    const SizedBox(height: 8),
+                    ...question.keyPoints.map((k) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('•  ', style: TextStyle(color: resultColor, fontWeight: FontWeight.w800, fontSize: 13.5)),
+                              Expanded(
+                                child: Text(
+                                  k,
+                                  style: const TextStyle(fontSize: 13.5, height: 1.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ),
+        ],
       ),
     );
   }
@@ -943,28 +1070,38 @@ class _DuoFeedbackSheetState extends State<_DuoFeedbackSheet> {
                       ),
                       if (question.keyPoints.isNotEmpty) ...[
                         const SizedBox(height: 14),
-                        Text(
-                          '핵심 개념',
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: question.keyPoints
-                              .map((k) => Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(color: resultColor.withValues(alpha: 0.35)),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: resultColor.withValues(alpha: 0.25)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '오답 노트',
+                                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
+                              ),
+                              const SizedBox(height: 8),
+                              ...question.keyPoints.map((k) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('•  ', style: TextStyle(color: resultColor, fontWeight: FontWeight.w800, fontSize: 14)),
+                                        Expanded(
+                                          child: Text(
+                                            k,
+                                            style: const TextStyle(fontSize: 14, height: 1.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    child: Text(
-                                      k,
-                                      style: TextStyle(color: resultColor, fontWeight: FontWeight.w700, fontSize: 13),
-                                    ),
-                                  ))
-                              .toList(),
+                                  )),
+                            ],
+                          ),
                         ),
                       ],
                     ],

@@ -733,7 +733,7 @@ class _ReviewQuestionTileState extends State<_ReviewQuestionTile> {
                 label: const Text('해설 보기', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
               ),
             )
-          else
+          else ...[
             HighlightedText(
               text: q.summaryExplanation,
               phrases: q.highlightPhrases,
@@ -744,6 +744,39 @@ class _ReviewQuestionTileState extends State<_ReviewQuestionTile> {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            if (q.keyPoints.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.trackBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('오답 노트', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4)),
+                    const SizedBox(height: 8),
+                    ...q.keyPoints.map((k) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('•  ', style: TextStyle(color: resultColor, fontWeight: FontWeight.w800, fontSize: 13.5)),
+                              Expanded(
+                                child: Text(
+                                  k,
+                                  style: const TextStyle(fontSize: 13.5, height: 1.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ],
       ),
     );
