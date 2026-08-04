@@ -275,6 +275,8 @@ class _QuizScreenState extends State<QuizScreen> {
 
     final question = _questions[_current];
     final isCorrect = _selectedIndex == question.correctIndex;
+    final isWide = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+    final hasNextPreview = isWide && _current + 1 < _questions.length;
 
     return Scaffold(
       body: AppBackground(
@@ -304,25 +306,58 @@ class _QuizScreenState extends State<QuizScreen> {
                         children: [
                           SingleChildScrollView(
                             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _DuoQuestionBlock(
-                                  question: question,
-                                  color: style.color,
-                                  questionNumber: _current + 1,
-                                  subTopicPosition: _subTopicPosition,
-                                  subTopicTotal: _subTopicTotal,
-                                  optionCount: question.choices.length,
-                                  optionBuilder: (i) => _OptionTile(
-                                    label: _optionLabels[i],
-                                    text: question.choices[i],
-                                    state: _optionState(i, question.correctIndex),
-                                    onTap: () => _select(i),
+                            child: hasNextPreview
+                                ? IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: _DuoQuestionBlock(
+                                            question: question,
+                                            color: style.color,
+                                            questionNumber: _current + 1,
+                                            subTopicPosition: _subTopicPosition,
+                                            subTopicTotal: _subTopicTotal,
+                                            optionCount: question.choices.length,
+                                            optionBuilder: (i) => _OptionTile(
+                                              label: _optionLabels[i],
+                                              text: question.choices[i],
+                                              state: _optionState(i, question.correctIndex),
+                                              onTap: () => _select(i),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
+                                        const SizedBox(width: 24),
+                                        Expanded(
+                                          child: _NextQuestionPreview(
+                                            question: _questions[_current + 1],
+                                            questionNumber: _current + 2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _DuoQuestionBlock(
+                                        question: question,
+                                        color: style.color,
+                                        questionNumber: _current + 1,
+                                        subTopicPosition: _subTopicPosition,
+                                        subTopicTotal: _subTopicTotal,
+                                        optionCount: question.choices.length,
+                                        optionBuilder: (i) => _OptionTile(
+                                          label: _optionLabels[i],
+                                          text: question.choices[i],
+                                          state: _optionState(i, question.correctIndex),
+                                          onTap: () => _select(i),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
                           ),
                           Positioned.fill(
                             child: IgnorePointer(
@@ -649,6 +684,48 @@ class _DuoQuestionBlock extends StatelessWidget {
         const SizedBox(height: 14),
         ...List.generate(optionCount, (i) => optionBuilder(i)),
       ],
+    );
+  }
+}
+
+/// 데스크톱 폭에서 오른쪽에 미리 보여주는 다음 문제 — 실제 시험지를 펼친 느낌만 주기 위한
+/// 미리보기라 선택은 할 수 없고(회색 톤), 현재 문제를 다 풀고 넘어가야 실제로 활성화된다.
+class _NextQuestionPreview extends StatelessWidget {
+  final Question question;
+  final int questionNumber;
+
+  const _NextQuestionPreview({required this.question, required this.questionNumber});
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: 0.45,
+      child: IgnorePointer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$questionNumber. ', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
+                Expanded(
+                  child: Text(question.stem, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            ...List.generate(question.choices.length, (i) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                child: Text(
+                  '${_optionLabels[i]}  ${question.choices[i]}',
+                  style: const TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w500, color: Colors.black),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 }
