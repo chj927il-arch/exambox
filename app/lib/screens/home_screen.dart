@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: _RowHeader(
-                  title: '부족한 단원만 공부한_민법',
+                  title: '부족한 단원만 공부한다_민법',
                   onMore: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => const LectureGridScreen(),
@@ -159,14 +159,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 22),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '부족한 단원만 공부한_경영학'),
+                child: _RowHeader(title: '부족한 단원만 공부한다_경영학'),
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: businessAdminLectures),
               const SizedBox(height: 22),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '부족한 단원만 공부한_경제법'),
+                child: _RowHeader(title: '부족한 단원만 공부한다_경제법'),
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: economicLawLectures),

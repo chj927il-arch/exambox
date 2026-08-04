@@ -15,7 +15,7 @@ class LectureGridScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: OttColors.bg,
         foregroundColor: Colors.white,
-        title: const Text('부족한 단원만 공부한_민법'),
+        title: const Text('부족한 단원만 공부한다_민법'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

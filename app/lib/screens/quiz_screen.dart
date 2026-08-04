@@ -396,6 +396,7 @@ class _QuizScreenState extends State<QuizScreen> {
           color: color,
           questionNumber: index + 1,
           optionCount: question.choices.length,
+          showBadges: false,
           optionBuilder: (i) => _OptionTile(
             label: _optionLabels[i],
             text: question.choices[i],
@@ -693,6 +694,10 @@ class _DuoQuestionBlock extends StatelessWidget {
   final int optionCount;
   final Widget Function(int index) optionBuilder;
 
+  /// 데스크톱 2분할 화면에서는 배지 유무(기출연도 있고 없고 등)에 따라 왼쪽/오른쪽 문항번호
+  /// 줄 높이가 달라져 버려서, 그 화면에서는 배지를 아예 숨기고 번호+지문부터 시작한다.
+  final bool showBadges;
+
   const _DuoQuestionBlock({
     required this.question,
     required this.color,
@@ -701,6 +706,7 @@ class _DuoQuestionBlock extends StatelessWidget {
     required this.optionBuilder,
     this.subTopicPosition = 0,
     this.subTopicTotal = 0,
+    this.showBadges = true,
   });
 
   @override
@@ -708,47 +714,49 @@ class _DuoQuestionBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
-              child: Text(
-                question.category,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
-              ),
-            ),
-            if (question.sourceYear != null)
+        if (showBadges) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
                 child: Text(
-                  '${question.sourceYear}년 기출',
-                  style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+                  question.category,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
                 ),
               ),
-            if (question.subTopic != null && subTopicTotal > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: color.withValues(alpha: 0.3)),
+              if (question.sourceYear != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${question.sourceYear}년 기출',
+                    style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+                  ),
                 ),
-                child: Text(
-                  '${question.subTopic} 집중 $subTopicPosition/$subTopicTotal',
-                  style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11),
+              if (question.subTopic != null && subTopicTotal > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    '${question.subTopic} 집중 $subTopicPosition/$subTopicTotal',
+                    style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11),
+                  ),
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -857,7 +865,7 @@ class _InlineFeedback extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('오답 노트', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4)),
+                    Text('핵심 포인트', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4)),
                     const SizedBox(height: 8),
                     ...question.keyPoints.map((k) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
@@ -1081,7 +1089,7 @@ class _DuoFeedbackSheetState extends State<_DuoFeedbackSheet> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '오답 노트',
+                                '핵심 포인트',
                                 style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4),
                               ),
                               const SizedBox(height: 8),

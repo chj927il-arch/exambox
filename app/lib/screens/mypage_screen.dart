@@ -10,6 +10,7 @@ import '../theme/subject_style.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/progress_ring.dart';
 import '../widgets/weak_chapter_row.dart';
+import 'compiled_note_screen.dart';
 import 'login_screen.dart';
 import 'subject_chapters_screen.dart';
 import 'wrong_note_screen.dart';
@@ -88,6 +89,12 @@ class MyPageScreen extends StatelessWidget {
                     icon: Icons.error_outline_rounded,
                     label: '오답노트',
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WrongNoteScreen())),
+                  ),
+                  const Divider(height: 1),
+                  _MenuTile(
+                    icon: Icons.bookmark_border_rounded,
+                    label: '단권화 노트',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CompiledNoteScreen())),
                   ),
                   if (AuthService.instance.isLoggedIn) ...[
                     const Divider(height: 1),

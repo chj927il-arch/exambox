@@ -730,7 +730,7 @@ class _ReviewQuestionTileState extends State<_ReviewQuestionTile> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('오답 노트', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4)),
+                    Text('핵심 포인트', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: resultColor, letterSpacing: 0.4)),
                     const SizedBox(height: 8),
                     ...q.keyPoints.map((k) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
