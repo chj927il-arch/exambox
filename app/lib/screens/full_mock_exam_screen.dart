@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/highlighted_text.dart';
 
-const _optionLabels = ['A', 'B', 'C', 'D', 'E'];
+const _optionLabels = ['①', '②', '③', '④', '⑤'];
 const _kQuestionsPerSubject = 40;
 const _kFailingScore = 40; // 과락 기준(과목별)
 const _kPassingAverage = 60; // 합격 기준(3과목 평균)
@@ -102,6 +102,14 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
       if (_current < offset) return i;
     }
     return _sections.length - 1;
+  }
+
+  /// 과목 안에서 몇 번째 문제인지 — 실제 시험지처럼 과목별로 1번부터 다시 번호를 매긴다.
+  int get _currentLocalNumber {
+    final sectionStart = _sections
+        .take(_currentSectionIndex)
+        .fold<int>(0, (a, s) => a + s.questions.length);
+    return _current - sectionStart + 1;
   }
 
   void _select(int index) => setState(() => _answers[_current] = index);
@@ -277,30 +285,49 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
                         color: style.color,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      question.stem,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                        height: 1.5,
-                        color: AppColors.textPrimary,
+                    const SizedBox(height: 10),
+                    // 실제 시험지 느낌 — 흰 배경 + 검은 얇은 테두리 박스 안에 문항 번호와
+                    // 지문, ①~⑤ 보기를 색 장식 없이 담백하게 배치한다.
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.black87, width: 1),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w700,
+                                height: 1.6,
+                                color: Colors.black,
+                              ),
+                              children: [
+                                TextSpan(text: '$_currentLocalNumber. '),
+                                TextSpan(text: question.stem),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          ...List.generate(question.choices.length, (i) {
+                            final selected = _answers[_current] == i;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: _ExamOptionTile(
+                                label: _optionLabels[i],
+                                text: question.choices[i],
+                                selected: selected,
+                                onTap: () => _select(i),
+                              ),
+                            );
+                          }),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    ...List.generate(question.choices.length, (i) {
-                      final selected = _answers[_current] == i;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _ExamOptionTile(
-                          label: _optionLabels[i],
-                          text: question.choices[i],
-                          selected: selected,
-                          color: style.color,
-                          onTap: () => _select(i),
-                        ),
-                      );
-                    }),
                   ],
                 ),
               ),
@@ -449,70 +476,42 @@ class _AnswerSheetStrip extends StatelessWidget {
   }
 }
 
+/// 실제 시험지 보기 한 줄 — 박스·색 장식 없이 "① 텍스트" 형태로만 표시하고,
+/// 선택된 보기만 옅은 회색 배경 + 굵은 글씨로 표시한다(실제 시험지에 표시하듯).
 class _ExamOptionTile extends StatelessWidget {
   final String label;
   final String text;
   final bool selected;
-  final Color color;
   final VoidCallback onTap;
 
   const _ExamOptionTile({
     required this.label,
     required this.text,
     required this.selected,
-    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? color.withValues(alpha: 0.08) : Colors.white,
-      borderRadius: BorderRadius.circular(14),
+      color: selected ? const Color(0xFFEDEDED) : Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: selected ? color : AppColors.glassBorder,
-              width: selected ? 1.6 : 1,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: '$label  '),
+                TextSpan(text: text),
+              ],
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: selected ? color : AppColors.trackBg,
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: selected ? Colors.white : AppColors.textSecondary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    fontSize: 15.5,
-                    height: 1.35,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-            ],
+            style: TextStyle(
+              fontSize: 16,
+              height: 1.5,
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+              color: Colors.black,
+            ),
           ),
         ),
       ),
