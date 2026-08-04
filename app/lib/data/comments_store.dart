@@ -27,6 +27,11 @@ class CommentsStore extends ChangeNotifier {
     }
   }
 
+  /// 로그인/로그아웃으로 uid가 바뀌면 호출 — 이후 댓글 작성이 새 uid 기준으로 동작한다.
+  void setUid(String? uid) {
+    _uid = uid;
+  }
+
   List<CommentItem> commentsFor(String cardId) {
     _ensureSubscribed(cardId);
     return _comments[cardId] ?? const [];

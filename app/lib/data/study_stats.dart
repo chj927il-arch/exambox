@@ -9,9 +9,7 @@ class DailyActivity {
 }
 
 class StudyStats {
-  // 연속 학습일·주간활동 그래프는 날짜별 이력 저장이 아직 없어(로그인·서버 저장 붙기 전)
-  // 실제 값 대신 초기 상태(0)로 둔다. 로그인 기능 붙을 때 실제 값으로 교체 예정.
-  static const int streakDays = 0;
+  static int get streakDays => UserProgress.instance.streakDays;
   static const int todayGoal = 20;
 
   static int get todaySolved => UserProgress.instance.todaySolved;
@@ -23,14 +21,16 @@ class StudyStats {
 
   static const List<String> _weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
 
-  /// 최근 7일 학습 시간(분) — 과거 → 오늘 순서. 날짜별 이력 저장이 아직 없어
-  /// 오늘 이전 6일은 0으로 초기화하고, 오늘 칸만 실제 todayMinutes로 채운다.
+  /// 최근 7일 학습 시간(분) — 과거 → 오늘 순서. 로그인 사용자는 클라우드 기록,
+  /// 게스트는 오늘 칸만 실제 값(나머지는 0)으로 채운다.
   static List<DailyActivity> get weeklyActivity {
     final now = DateTime.now();
     return List.generate(7, (i) {
       final daysAgo = 6 - i;
+      final day = now.subtract(Duration(days: daysAgo));
       final label = _weekdayLabels[(now.weekday - 1 - daysAgo) % 7];
-      return DailyActivity(label: label, minutes: daysAgo == 0 ? todayMinutes : 0);
+      final minutes = daysAgo == 0 ? todayMinutes : UserProgress.instance.minutesOn(day);
+      return DailyActivity(label: label, minutes: minutes);
     });
   }
 

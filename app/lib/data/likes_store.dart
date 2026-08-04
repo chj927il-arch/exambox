@@ -27,6 +27,12 @@ class LikesStore extends ChangeNotifier {
     }
   }
 
+  /// 로그인/로그아웃으로 uid가 바뀌면 호출 — 이후 좋아요 토글·표시가 새 uid 기준으로 동작한다.
+  void setUid(String? uid) {
+    _uid = uid;
+    notifyListeners();
+  }
+
   int countFor(String id) {
     _ensureSubscribed(id);
     return _counts[id] ?? 0;

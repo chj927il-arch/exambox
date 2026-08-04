@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'data/comments_store.dart';
 import 'data/likes_store.dart';
+import 'data/user_progress.dart';
 import 'firebase_options.dart';
 import 'screens/root_screen.dart';
+import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -20,6 +22,10 @@ void main() async {
   // Firestore 문서에 "누가" 남겼는지 기록하려면 최소한의 uid가 필요하다.
   await LikesStore.instance.init();
   await CommentsStore.instance.init();
+  AuthService.instance.init();
+  // 이메일 계정으로 로그인된 상태라면(예: 새로고침) 학습 기록을 클라우드에서 불러온다.
+  final loggedInUid = AuthService.instance.isLoggedIn ? AuthService.instance.currentUser?.uid : null;
+  await UserProgress.instance.attachUser(loggedInUid);
   runApp(const GamyeongExamApp());
 }
 

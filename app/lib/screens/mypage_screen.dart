@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import '../data/comments_store.dart';
+import '../data/likes_store.dart';
 import '../data/study_stats.dart';
 import '../data/user_progress.dart';
 import '../models/exam_subject.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/progress_ring.dart';
 import '../widgets/weak_chapter_row.dart';
+import 'login_screen.dart';
 import 'subject_chapters_screen.dart';
 import 'wrong_note_screen.dart';
 
@@ -19,7 +23,7 @@ class MyPageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: UserProgress.instance,
+      listenable: Listenable.merge([UserProgress.instance, AuthService.instance]),
       builder: (context, _) {
         final weakChapters = computeWeakChapters();
         return ListView(
@@ -78,10 +82,28 @@ class MyPageScreen extends StatelessWidget {
             const SizedBox(height: 24),
             GlassCard(
               padding: EdgeInsets.zero,
-              child: _MenuTile(
-                icon: Icons.error_outline_rounded,
-                label: '오답노트',
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WrongNoteScreen())),
+              child: Column(
+                children: [
+                  _MenuTile(
+                    icon: Icons.error_outline_rounded,
+                    label: '오답노트',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WrongNoteScreen())),
+                  ),
+                  if (AuthService.instance.isLoggedIn) ...[
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: Icons.logout_rounded,
+                      label: '로그아웃',
+                      onTap: () async {
+                        await AuthService.instance.signOut();
+                        final uid = AuthService.instance.currentUser?.uid;
+                        LikesStore.instance.setUid(uid);
+                        CommentsStore.instance.setUid(uid);
+                        await UserProgress.instance.attachUser(null);
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -96,6 +118,8 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = AuthService.instance.isLoggedIn;
+    final email = AuthService.instance.currentUser?.email;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -116,16 +140,34 @@ class _ProfileHeader extends StatelessWidget {
             child: const Icon(Icons.person_rounded, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('수험생님, 환영해요 👋', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-                SizedBox(height: 4),
-                Text('오늘도 목표한 만큼 학습해보세요', style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w500)),
+                Text(
+                  isLoggedIn ? (email ?? '수험생님, 환영해요 👋') : '수험생님, 환영해요 👋',
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isLoggedIn ? '학습 기록이 안전하게 저장되고 있어요' : '로그인하면 학습 기록이 저장돼요',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w500),
+                ),
               ],
             ),
           ),
+          if (!isLoggedIn)
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.accentGold,
+                foregroundColor: AppColors.ink,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
+              child: const Text('로그인', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+            ),
         ],
       ),
     );
