@@ -80,23 +80,24 @@ class _MockExamScreenState extends State<MockExamScreen> {
     return count;
   }
 
-  void _select(int index) {
-    setState(() => _answers[_current] = index);
-  }
-
   void _goTo(int index) {
     setState(() => _current = index);
   }
 
+  /// 데스크톱 폭에서는 두 문제를 좌우로 나란히 보여준다(실제 시험지 펼침 면 느낌).
+  bool get _isWide => MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+
   void _next() {
-    if (_current + 1 < _questions.length) {
-      setState(() => _current++);
+    final step = _isWide ? 2 : 1;
+    if (_current + step < _questions.length) {
+      setState(() => _current += step);
     }
   }
 
   void _prev() {
-    if (_current > 0) {
-      setState(() => _current--);
+    final step = _isWide ? 2 : 1;
+    if (_current - step >= 0) {
+      setState(() => _current -= step);
     }
   }
 
@@ -176,7 +177,6 @@ class _MockExamScreenState extends State<MockExamScreen> {
       );
     }
 
-    final question = _questions[_current];
     final isLowTime = _remaining.inMinutes < 5;
 
     return Scaffold(
@@ -256,41 +256,14 @@ class _MockExamScreenState extends State<MockExamScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${_current + 1}. ',
-                          style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
-                        ),
-                        Expanded(
-                          child: Text(
-                            question.stem,
-                            style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    ...List.generate(question.choices.length, (i) {
-                      final selected = _answers[_current] == i;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: _ExamOptionTile(
-                          label: _optionLabels[i],
-                          text: question.choices[i],
-                          selected: selected,
-                          onTap: () => _select(i),
-                        ),
-                      );
-                    }),
+                    if (_isWide) _buildQuestionPair() else _buildQuestionColumn(_current),
                   ],
                 ),
               ),
             ),
             _BottomNavBar(
               isFirst: _current == 0,
-              isLast: _current == _questions.length - 1,
+              isLast: _isWide ? (_current ~/ 2) * 2 + 2 >= _questions.length : _current == _questions.length - 1,
               color: style.color,
               onPrev: _prev,
               onNext: _next,
@@ -298,6 +271,56 @@ class _MockExamScreenState extends State<MockExamScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 좁은 화면(모바일)용 — 문제 1개만 세로로 보여준다.
+  Widget _buildQuestionColumn(int index) {
+    final q = _questions[index];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${index + 1}. ', style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
+            Expanded(
+              child: Text(q.stem, style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        ...List.generate(q.choices.length, (i) {
+          final selected = _answers[index] == i;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: _ExamOptionTile(
+              label: _optionLabels[i],
+              text: q.choices[i],
+              selected: selected,
+              onTap: () => setState(() => _answers[index] = i),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// 넓은 화면(데스크톱)용 — 실제 시험지를 펼친 것처럼 두 문제를 좌우로 나란히 보여준다.
+  Widget _buildQuestionPair() {
+    final pairStart = (_current ~/ 2) * 2;
+    final rightIndex = pairStart + 1 < _questions.length ? pairStart + 1 : null;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: _buildQuestionColumn(pairStart)),
+          const SizedBox(width: 24),
+          const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
+          const SizedBox(width: 24),
+          Expanded(child: rightIndex != null ? _buildQuestionColumn(rightIndex) : const SizedBox.shrink()),
+        ],
       ),
     );
   }

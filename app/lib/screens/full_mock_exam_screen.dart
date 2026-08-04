@@ -104,22 +104,29 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
     return _sections.length - 1;
   }
 
-  /// 과목 안에서 몇 번째 문제인지 — 실제 시험지처럼 과목별로 1번부터 다시 번호를 매긴다.
-  int get _currentLocalNumber {
-    final sectionStart = _sections
-        .take(_currentSectionIndex)
-        .fold<int>(0, (a, s) => a + s.questions.length);
-    return _current - sectionStart + 1;
-  }
-
-  void _select(int index) => setState(() => _answers[_current] = index);
   void _goTo(int index) => setState(() => _current = index);
+
+  /// 데스크톱 폭에서는 두 문제를 좌우로 나란히 보여준다(실제 시험지 펼침 면 느낌).
+  bool get _isWide => MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
+
   void _next() {
-    if (_current + 1 < _questions.length) setState(() => _current++);
+    final step = _isWide ? 2 : 1;
+    if (_current + step < _questions.length) setState(() => _current += step);
   }
 
   void _prev() {
-    if (_current > 0) setState(() => _current--);
+    final step = _isWide ? 2 : 1;
+    if (_current - step >= 0) setState(() => _current -= step);
+  }
+
+  /// 과목 구간을 넘나들지 않고 전역 인덱스 [globalIndex]가 과목 안에서 몇 번째 문제인지.
+  int _localNumberFor(int globalIndex) {
+    var offset = 0;
+    for (final s in _sections) {
+      if (globalIndex < offset + s.questions.length) return globalIndex - offset + 1;
+      offset += s.questions.length;
+    }
+    return globalIndex + 1;
   }
 
   Future<void> _confirmSubmit() async {
@@ -197,7 +204,6 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
     final sectionIndex = _currentSectionIndex;
     final section = _sections[sectionIndex];
     final style = subjectStyleOf(section.subjectId);
-    final question = _questions[_current];
     final isLowTime = _remaining.inMinutes < 10;
 
     return Scaffold(
@@ -288,41 +294,14 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
                     const SizedBox(height: 16),
                     // 실제 시험지 느낌 — 박스 없이 흰 배경 위에 문항 번호와 지문, ①~⑤ 보기를
                     // 색 장식 없이 담백하게 배치한다(줄바꿈 시 지문 첫 글자 위치로 정렬).
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$_currentLocalNumber. ',
-                          style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
-                        ),
-                        Expanded(
-                          child: Text(
-                            question.stem,
-                            style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    ...List.generate(question.choices.length, (i) {
-                      final selected = _answers[_current] == i;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: _ExamOptionTile(
-                          label: _optionLabels[i],
-                          text: question.choices[i],
-                          selected: selected,
-                          onTap: () => _select(i),
-                        ),
-                      );
-                    }),
+                    if (_isWide) _buildQuestionPair() else _buildQuestionColumn(_current),
                   ],
                 ),
               ),
             ),
             _BottomNavBar(
               isFirst: _current == 0,
-              isLast: _current == _questions.length - 1,
+              isLast: _isWide ? (_current ~/ 2) * 2 + 2 >= _questions.length : _current == _questions.length - 1,
               color: style.color,
               onPrev: _prev,
               onNext: _next,
@@ -330,6 +309,57 @@ class _FullMockExamScreenState extends State<FullMockExamScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 좁은 화면(모바일)용 — 문제 1개만 세로로 보여준다.
+  Widget _buildQuestionColumn(int globalIndex) {
+    final q = _questions[globalIndex];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${_localNumberFor(globalIndex)}. ', style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
+            Expanded(
+              child: Text(q.stem, style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, height: 1.7, color: Colors.black)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        ...List.generate(q.choices.length, (i) {
+          final selected = _answers[globalIndex] == i;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: _ExamOptionTile(
+              label: _optionLabels[i],
+              text: q.choices[i],
+              selected: selected,
+              onTap: () => setState(() => _answers[globalIndex] = i),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// 넓은 화면(데스크톱)용 — 실제 시험지를 펼친 것처럼 두 문제를 좌우로 나란히 보여준다.
+  /// 과목별 문제 수(40)가 짝수라 한 쌍이 과목 경계를 걸치는 일은 없다.
+  Widget _buildQuestionPair() {
+    final pairStart = (_current ~/ 2) * 2;
+    final rightIndex = pairStart + 1 < _questions.length ? pairStart + 1 : null;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: _buildQuestionColumn(pairStart)),
+          const SizedBox(width: 24),
+          const VerticalDivider(width: 1, thickness: 1, color: AppColors.glassBorder),
+          const SizedBox(width: 24),
+          Expanded(child: rightIndex != null ? _buildQuestionColumn(rightIndex) : const SizedBox.shrink()),
+        ],
       ),
     );
   }
