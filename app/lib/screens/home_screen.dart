@@ -13,7 +13,6 @@ import '../widgets/like_badge.dart';
 import '../widgets/marquee_row.dart';
 import '../widgets/rolling_banner.dart';
 import 'certificate_menu_screen.dart';
-import 'daily_ox_list_screen.dart';
 import 'full_mock_exam_screen.dart';
 import 'lecture_grid_screen.dart';
 import 'lecture_intro_screen.dart';
@@ -157,23 +156,43 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: civilLawLectures),
               const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '부족한 단원만 공부한다_경영학'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '부족한 단원만 공부한다_경영학',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LectureGridScreen(
+                        title: '부족한 단원만 공부한다_경영학',
+                        lectures: businessAdminLectures,
+                      ),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: businessAdminLectures),
               const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '부족한 단원만 공부한다_경제법'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(
+                  title: '부족한 단원만 공부한다_경제법',
+                  onMore: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LectureGridScreen(
+                        title: '부족한 단원만 공부한다_경제법',
+                        lectures: economicLawLectures,
+                      ),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: economicLawLectures),
               const SizedBox(height: 22),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '함정 피하기'),
+                child: _RowHeader(title: '틀리기 쉬운 문제'),
               ),
               const SizedBox(height: 10),
               const _TrapQuizGrid(),
@@ -189,23 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 22),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '킬링타임'),
+                child: _RowHeader(title: '타임어택'),
               ),
               const SizedBox(height: 10),
               HScrollList(
                 height: kLecturePosterHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: 2,
+                itemCount: 1,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _DailyOxMainCard(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const DailyOxListScreen(),
-                        ),
-                      ),
-                    );
-                  }
                   return _TimeAttackCard(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
@@ -669,7 +679,6 @@ class _MockExamSeasonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = subjectStyleOf('mock_exam_season1');
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -690,63 +699,11 @@ class _MockExamSeasonCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [style.color, style.color.withValues(alpha: 0.7)],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 10,
-              top: 12,
-              child: Icon(style.icon, color: Colors.white, size: 26),
-            ),
+            const TintedPoster(imageAsset: 'assets/images/mock_exam_cover.png'),
             const Positioned(
               top: 8,
               right: 8,
               child: EngagementBadges(cardId: 'mock_exam_season1'),
-            ),
-            Positioned(
-              left: 10,
-              top: 46,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'SEASON 1',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-            ),
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                child: Text(
-                  '실전모의고사 시즌1',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -811,7 +768,7 @@ class _TrapQuizGrid extends StatelessWidget {
           MaterialPageRoute(
             builder: (_) => const QuizScreen(
               subjectId: 'trap_quiz_season1',
-              subjectName: '함정 피하기 시즌1',
+              subjectName: '틀리기 쉬운 문제 시즌1',
               category: '함정 피하기',
               crossSubjectIds: kKoreanHistoryEnabled
                   ? ['economic_law', 'civil_law', 'business_admin', 'korean_history']
@@ -967,43 +924,6 @@ class IconLectureCard extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 오늘의 OX 퀴즈 — 회차별로 나누지 않고 "데일리 OX퀴즈" 대표 카드 하나만 노출.
-/// 표지 이미지(daily_ox_cover.png)가 민법 특강 포스터와 동일한 규격(138x196)을 그대로 채운다.
-class _DailyOxMainCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _DailyOxMainCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: kLecturePosterWidth,
-        height: kLecturePosterHeight,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: OttColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const TintedPoster(imageAsset: 'assets/images/daily_ox_cover.png'),
-            const Positioned(top: 8, right: 8, child: EngagementBadges(cardId: 'daily_ox_quiz')),
           ],
         ),
       ),
