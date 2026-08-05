@@ -23,6 +23,9 @@ import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
 import 'time_attack_screen.dart';
 
+/// 누적 방문 수 배지 노출 여부 — 요청으로 일단 숨김(카운트 자체는 계속 기록됨). true로 되돌리면 다시 보인다.
+const bool _kShowVisitCounter = false;
+
 /// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -89,9 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              const _VisitCounterBadge(),
-              const SizedBox(height: 12),
+              // 누적 방문 수 배지는 일단 숨김(요청) — 카운트 자체는 계속 기록되고,
+              // _kShowVisitCounter만 true로 되돌리면 다시 보인다.
+              if (_kShowVisitCounter) ...[
+                const SizedBox(height: 10),
+                const _VisitCounterBadge(),
+              ],
+              const SizedBox(height: 22),
               // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
               if (isDesktop)
                 const Padding(
