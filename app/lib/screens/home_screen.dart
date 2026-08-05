@@ -189,13 +189,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 10),
               const _IconLectureGrid(lectures: economicLawLectures),
-              const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '틀리기 쉬운 문제'),
-              ),
-              const SizedBox(height: 10),
-              const _TrapQuizGrid(),
               if (kKoreanHistoryEnabled) ...[
                 const SizedBox(height: 22),
                 const Padding(
@@ -205,6 +198,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 10),
                 const _KoreanHistoryLectureGrid(),
               ],
+              const SizedBox(height: 22),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _RowHeader(title: '틀리기 쉬운 문제'),
+              ),
+              const SizedBox(height: 10),
+              const _TrapQuizGrid(),
               const SizedBox(height: 22),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),

@@ -248,7 +248,7 @@ const List<LectureItem> koreanHistoryLectures = [
     category: '조선전기',
   ),
   LectureItem(
-    imageAsset: 'assets/images/lecture_cover_modern_history.jpg',
+    imageAsset: 'assets/images/lecture_cover_modern_history.png',
     title: '근현대사',
     keyPoints: ['추후 업데이트 예정'],
     subjectId: 'korean_history',
