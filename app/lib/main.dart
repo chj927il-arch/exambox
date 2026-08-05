@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'data/comments_store.dart';
 import 'data/likes_store.dart';
 import 'data/user_progress.dart';
+import 'data/visit_counter.dart';
 import 'firebase_options.dart';
 import 'screens/root_screen.dart';
 import 'services/auth_service.dart';
@@ -26,6 +27,8 @@ void main() async {
   // 이메일 계정으로 로그인된 상태라면(예: 새로고침) 학습 기록을 클라우드에서 불러온다.
   final loggedInUid = AuthService.instance.isLoggedIn ? AuthService.instance.currentUser?.uid : null;
   await UserProgress.instance.attachUser(loggedInUid);
+  // 첫 프레임을 늦추지 않도록 기다리지 않고 백그라운드로 기록한다.
+  VisitCounter.instance.recordVisit();
   runApp(const GamyeongExamApp());
 }
 
