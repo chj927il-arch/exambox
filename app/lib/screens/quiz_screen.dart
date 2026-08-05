@@ -27,6 +27,7 @@ const Map<String, String> _kSubjectNamesById = {
   'economic_law': '경제법',
   'civil_law': '민법',
   'business_admin': '경영학',
+  'korean_history': '한능검',
 };
 
 class QuizScreen extends StatefulWidget {
@@ -170,6 +171,55 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
+  /// 그 과목의 첫 문제로 바로 이동한다(함정 피하기처럼 여러 과목이 뒤섞인 세션에서
+  /// 상단 과목 탭을 눌렀을 때 쓰인다). 아직 그 과목 문제가 없으면 아무 동작도 하지 않는다.
+  void _jumpToSubject(String subjectId) {
+    final index = _questions.indexWhere((q) => q.subjectId == subjectId);
+    if (index != -1) _jumpTo(index);
+  }
+
+  /// 함정 피하기처럼 여러 과목을 넘나드는 세션 상단에 보여줄 과목 구분 탭 — 실제로 이 세션에
+  /// 포함된 과목만(문제가 0개인 과목은 제외) 순서대로 보여주고, 현재 보고 있는 과목을 강조한다.
+  Widget _buildSubjectTabsBar() {
+    final seen = <String>{};
+    final subjectIds = <String>[];
+    for (final q in _questions) {
+      if (seen.add(q.subjectId)) subjectIds.add(q.subjectId);
+    }
+    final currentSubjectId = _questions[_current].subjectId;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Row(
+        children: subjectIds.map((id) {
+          final isCurrent = id == currentSubjectId;
+          final subjectColor = subjectStyleOf(id).color;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => _jumpToSubject(id),
+              child: Container(
+                margin: EdgeInsets.only(right: id == subjectIds.last ? 0 : 8),
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                decoration: BoxDecoration(
+                  color: isCurrent ? subjectColor : AppColors.trackBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _kSubjectNamesById[id] ?? id,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: isCurrent ? Colors.white : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   void _openQuestionList() {
     showModalBottomSheet(
       context: context,
@@ -302,6 +352,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       onClose: () => Navigator.of(context).maybePop(),
                       onOpenList: _openQuestionList,
                     ),
+                    if (widget.crossSubjectIds != null) _buildSubjectTabsBar(),
                     Expanded(
                       child: isWide
                           ? Column(

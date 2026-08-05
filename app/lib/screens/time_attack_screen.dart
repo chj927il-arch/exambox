@@ -1,14 +1,26 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../config/feature_flags.dart';
 import '../data/sample_questions.dart';
 import '../models/question.dart';
 import '../theme/app_theme.dart';
+import '../theme/subject_style.dart';
 import '../widgets/highlighted_text.dart';
 
 const _optionLabels = ['A', 'B', 'C', 'D', 'E'];
-const _kTimeAttackSubjects = ['economic_law', 'civil_law', 'business_admin'];
-const _kSubjectNames = {'economic_law': '경제법', 'civil_law': '민법', 'business_admin': '경영학'};
+final _kTimeAttackSubjects = [
+  'economic_law',
+  'civil_law',
+  'business_admin',
+  if (kKoreanHistoryEnabled) 'korean_history',
+];
+const _kSubjectNames = {
+  'economic_law': '경제법',
+  'civil_law': '민법',
+  'business_admin': '경영학',
+  'korean_history': '한능검',
+};
 const _kTimeAttackDuration = Duration(seconds: 60);
 
 /// 타임어택 — 제한시간 1분 동안 경제법·민법·경영학 문제가 뒤섞여 계속 나오고,
@@ -213,6 +225,8 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
+            _SubjectTabsStrip(currentSubjectId: _current.subjectId),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
@@ -317,6 +331,45 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
 }
 
 /// 정답/오답은 바로 표시하되, 해설은 "해설 보기"를 눌러야 펼쳐진다.
+/// 지금 뒤섞여 나오는 과목이 무엇인지 상단에 구분해 보여준다 — 현재 문제의 과목만 강조되고
+/// (문제가 랜덤으로 계속 바뀌는 미니게임이라 탭을 눌러 이동하지는 않는다), 나머지는 흐리게 표시된다.
+class _SubjectTabsStrip extends StatelessWidget {
+  final String currentSubjectId;
+  const _SubjectTabsStrip({required this.currentSubjectId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: _kTimeAttackSubjects.map((id) {
+          final isCurrent = id == currentSubjectId;
+          final subjectColor = subjectStyleOf(id).color;
+          return Expanded(
+            child: Container(
+              margin: EdgeInsets.only(right: id == _kTimeAttackSubjects.last ? 0 : 6),
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              decoration: BoxDecoration(
+                color: isCurrent ? subjectColor : AppColors.trackBg,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _kSubjectNames[id] ?? id,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: isCurrent ? Colors.white : AppColors.textMuted,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
 class _ExplanationPanel extends StatefulWidget {
   final Question question;
   final bool isCorrect;

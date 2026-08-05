@@ -181,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 22),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '한능검 특강'),
+                  child: _RowHeader(title: '부족한 단원만 공부한다_한능검'),
                 ),
                 const SizedBox(height: 10),
                 const _KoreanHistoryLectureGrid(),
@@ -813,7 +813,9 @@ class _TrapQuizGrid extends StatelessWidget {
               subjectId: 'trap_quiz_season1',
               subjectName: '함정 피하기 시즌1',
               category: '함정 피하기',
-              crossSubjectIds: ['economic_law', 'civil_law', 'business_admin'],
+              crossSubjectIds: kKoreanHistoryEnabled
+                  ? ['economic_law', 'civil_law', 'business_admin', 'korean_history']
+                  : ['economic_law', 'civil_law', 'business_admin'],
             ),
           ),
         ),
