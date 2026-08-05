@@ -45,6 +45,23 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
   Timer? _tickTimer;
   final _random = Random();
 
+  /// 상단 과목 탭을 눌러 그 과목 문제만 나오게 좁힌 상태 — 다시 누르면 전체로 돌아간다.
+  String? _subjectFilter;
+
+  List<Question> get _activePool =>
+      _subjectFilter == null ? _pool : _pool.where((q) => q.subjectId == _subjectFilter).toList();
+
+  /// 상단 과목 탭을 탭했을 때 호출 — 그 과목으로 필터링하고(다시 누르면 해제) 바로 그 과목의
+  /// 새 문제로 넘어간다.
+  void _onTapSubjectTab(String subjectId) {
+    if (_showResult) return;
+    setState(() {
+      _subjectFilter = _subjectFilter == subjectId ? null : subjectId;
+      _current = _pickQuestion();
+      _selectedIndex = null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -68,7 +85,10 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
     super.dispose();
   }
 
-  Question _pickQuestion() => _pool[_random.nextInt(_pool.length)];
+  Question _pickQuestion() {
+    final pool = _activePool;
+    return pool[_random.nextInt(pool.length)];
+  }
 
   void _finish() {
     _tickTimer?.cancel();
@@ -96,6 +116,7 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
   void _restart() {
     setState(() {
       _pool = sampleQuestions.where((q) => _kTimeAttackSubjects.contains(q.subjectId)).toList();
+      _subjectFilter = null;
       _current = _pickQuestion();
       _selectedIndex = null;
       _showResult = false;
@@ -226,7 +247,11 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            _SubjectTabsStrip(currentSubjectId: _current.subjectId),
+            _SubjectTabsStrip(
+              currentSubjectId: _current.subjectId,
+              activeFilter: _subjectFilter,
+              onTapSubject: _onTapSubjectTab,
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
@@ -335,7 +360,13 @@ class _TimeAttackScreenState extends State<TimeAttackScreen> {
 /// (문제가 랜덤으로 계속 바뀌는 미니게임이라 탭을 눌러 이동하지는 않는다), 나머지는 흐리게 표시된다.
 class _SubjectTabsStrip extends StatelessWidget {
   final String currentSubjectId;
-  const _SubjectTabsStrip({required this.currentSubjectId});
+  final String? activeFilter;
+  final ValueChanged<String> onTapSubject;
+  const _SubjectTabsStrip({
+    required this.currentSubjectId,
+    required this.activeFilter,
+    required this.onTapSubject,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -343,23 +374,27 @@ class _SubjectTabsStrip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: _kTimeAttackSubjects.map((id) {
-          final isCurrent = id == currentSubjectId;
+          final isActive = activeFilter != null ? id == activeFilter : id == currentSubjectId;
           final subjectColor = subjectStyleOf(id).color;
           return Expanded(
-            child: Container(
-              margin: EdgeInsets.only(right: id == _kTimeAttackSubjects.last ? 0 : 6),
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              decoration: BoxDecoration(
-                color: isCurrent ? subjectColor : AppColors.trackBg,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _kSubjectNames[id] ?? id,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
-                  color: isCurrent ? Colors.white : AppColors.textMuted,
+            child: GestureDetector(
+              onTap: () => onTapSubject(id),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                margin: EdgeInsets.only(right: id == _kTimeAttackSubjects.last ? 0 : 6),
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                decoration: BoxDecoration(
+                  color: isActive ? subjectColor : AppColors.trackBg,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _kSubjectNames[id] ?? id,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    color: isActive ? Colors.white : AppColors.textMuted,
+                  ),
                 ),
               ),
             ),
