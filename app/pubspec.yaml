@@ -105,6 +105,7 @@ flutter:
     - assets/images/lecture_cover_contract_termination.png
     - assets/images/lecture_cover_nonperformance.png
     - assets/images/lecture_cover_limitation_period.png
+    - assets/images/blog_banner_wise_examlife.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
