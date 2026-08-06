@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/visit_counter.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../widgets/app_background.dart';
@@ -105,9 +106,10 @@ class _RootScreenState extends State<RootScreen> {
   }
 }
 
-/// 상단 헤더 — PC/모바일 공통. 로고 + 홈/마이페이지 + 회원가입/로그인.
+/// 상단 헤더 — PC/모바일 공통. 로고 + 홈.
 /// 자격증/공지사항/FAQ는 영상 히어로 오버레이 메뉴와 동일하게 여기서도 숨긴다
 /// (하단 CTA로 가맹거래사 상세로 바로 진입하므로 상단 메뉴에서는 노출하지 않음).
+/// 회원가입/로그인/마이페이지는 일단 숨기고, 그 자리에 오늘/누적 방문자 수를 표시한다.
 class _SiteHeader extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
@@ -127,7 +129,6 @@ class _SiteHeader extends StatelessWidget {
     final textSecondary = dark ? OttColors.textSecondary : AppColors.textSecondary;
     final accent = dark ? OttColors.accentStart : AppColors.primary;
 
-    final navGap = isDesktop ? 32.0 : 16.0;
     final navFontSize = isDesktop ? 16.0 : 14.0;
     final hPad = isDesktop ? 24.0 : 16.0;
 
@@ -146,7 +147,6 @@ class _SiteHeader extends StatelessWidget {
     }
 
     final home = kNavItems.firstWhere((item) => item.label == '홈');
-    final myPage = kNavItems.firstWhere((item) => item.label == '마이페이지');
 
     return Container(
       width: double.infinity,
@@ -161,28 +161,68 @@ class _SiteHeader extends StatelessWidget {
               children: [
                 navText(home.label, selected: home.tabIndex == selectedIndex, onTap: () => onSelected(home.tabIndex)),
                 const Spacer(),
-                navText(
-                  '회원가입',
-                  selected: false,
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('회원가입 기능은 준비 중이에요.')),
-                  ),
-                ),
-                SizedBox(width: navGap * 0.6),
-                navText(
-                  '로그인',
-                  selected: false,
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('로그인 기능은 준비 중이에요.')),
-                  ),
-                ),
-                SizedBox(width: navGap * 0.6),
-                navText(myPage.label, selected: myPage.tabIndex == selectedIndex, onTap: () => onSelected(myPage.tabIndex)),
+                _VisitCountDisplay(textColor: textSecondary, accent: accent, isDesktop: isDesktop),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// 상단 헤더 우측 — 회원가입/로그인/마이페이지 대신 임시로 넣은 오늘/누적 방문자 수 표시.
+/// 값을 아직 못 불러왔으면(초기 로딩 중) 아무것도 보여주지 않는다.
+class _VisitCountDisplay extends StatelessWidget {
+  final Color textColor;
+  final Color accent;
+  final bool isDesktop;
+  const _VisitCountDisplay({required this.textColor, required this.accent, required this.isDesktop});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: VisitCounter.instance,
+      builder: (context, _) {
+        final today = VisitCounter.instance.today;
+        final total = VisitCounter.instance.total;
+        if (today == null || total == null) return const SizedBox.shrink();
+        final labelSize = isDesktop ? 13.0 : 11.5;
+        final valueSize = isDesktop ? 15.0 : 13.0;
+
+        Widget stat(String label, int value) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label, style: TextStyle(fontSize: labelSize, fontWeight: FontWeight.w600, color: textColor)),
+              Text(
+                _formatCount(value),
+                style: TextStyle(fontSize: valueSize, fontWeight: FontWeight.w800, color: accent),
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            stat('오늘 방문자', today),
+            SizedBox(width: isDesktop ? 20 : 14),
+            stat('누적 방문자', total),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatCount(int count) {
+    final s = count.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(s[i]);
+    }
+    return buffer.toString();
   }
 }

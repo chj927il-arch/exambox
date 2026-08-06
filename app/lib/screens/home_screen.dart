@@ -3,7 +3,6 @@ import '../config/feature_flags.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
 import '../data/user_reviews.dart';
-import '../data/visit_counter.dart';
 import '../models/exam_subject.dart';
 import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
@@ -22,9 +21,6 @@ import 'review_screen.dart';
 import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
 import 'time_attack_screen.dart';
-
-/// 누적 방문 수 배지 노출 여부 — 요청으로 일단 숨김(카운트 자체는 계속 기록됨). true로 되돌리면 다시 보인다.
-const bool _kShowVisitCounter = false;
 
 /// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
 class HomeScreen extends StatefulWidget {
@@ -92,12 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              // 누적 방문 수 배지는 일단 숨김(요청) — 카운트 자체는 계속 기록되고,
-              // _kShowVisitCounter만 true로 되돌리면 다시 보인다.
-              if (_kShowVisitCounter) ...[
-                const SizedBox(height: 10),
-                const _VisitCounterBadge(),
-              ],
               const SizedBox(height: 22),
               // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
               if (isDesktop)
@@ -252,53 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-}
-
-/// 누적 방문 수 배지 — 값을 아직 못 불러왔으면(초기 로딩 중이거나 오프라인) 아무것도 보여주지 않는다.
-class _VisitCounterBadge extends StatelessWidget {
-  const _VisitCounterBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: VisitCounter.instance,
-      builder: (context, _) {
-        final count = VisitCounter.instance.count;
-        if (count == null) return const SizedBox.shrink();
-        return Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: OttColors.border),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.groups_outlined, size: 14, color: OttColors.textSecondary),
-                const SizedBox(width: 6),
-                Text(
-                  '누적 방문 ${_formatCount(count)}회',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: OttColors.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  String _formatCount(int count) {
-    final s = count.toString();
-    final buffer = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buffer.write(',');
-      buffer.write(s[i]);
-    }
-    return buffer.toString();
   }
 }
 
