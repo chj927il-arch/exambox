@@ -3,8 +3,8 @@ import '../services/blog_gate.dart';
 import '../theme/app_theme.dart';
 
 /// 블로그를 거치지 않고 들어온 경우(직접 URL·즐겨찾기 등) 보여주는 안내 화면.
-/// TODO: 실제 블로그 주소로 교체하세요.
-const _kBlogUrl = 'https://blog.naver.com/여기에_블로그_주소를_넣어주세요';
+/// TODO: 문제은행 소개 포스팅을 올리면, 그 포스팅 주소로 바꿔주세요(지금은 블로그 메인 주소).
+const _kBlogUrl = 'https://blog.naver.com/franchisestory';
 
 class BlogGateScreen extends StatelessWidget {
   const BlogGateScreen({super.key});
