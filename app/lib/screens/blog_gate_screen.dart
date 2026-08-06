@@ -45,13 +45,14 @@ class BlogGateScreen extends StatelessWidget {
                   onPressed: () => goToBlog(_kBlogUrl),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
                     elevation: 4,
                   ),
                   child: const Text(
                     '슬기로운 수험생활 블로그로 이동하기',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white),
                   ),
                 ),
               ],
