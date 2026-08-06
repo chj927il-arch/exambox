@@ -7,9 +7,9 @@ const _kBlogHost = 'blog.naver.com';
 const _kSessionKey = 'entered_via_blog';
 
 /// 관리자(사이트 운영자)가 블로그를 거치지 않고 항상 들어올 수 있게 하는 우회 키.
-/// 주소 끝에 `?admin=etoos247manager`를 한 번만 붙여서 접속하면 이 기기(브라우저)에
+/// 주소 끝에 `?admin=manager`를 한 번만 붙여서 접속하면 이 기기(브라우저)에
 /// localStorage로 영구 기록되어, 이후로는 탭/창을 닫아도(sessionStorage와 달리) 계속 통과된다.
-const _kAdminKey = 'etoos247manager';
+const _kAdminKey = 'manager';
 const _kAdminStorageKey = 'exambox_admin_bypass';
 
 /// `document.referrer`(브라우저가 실제 이전 페이지 주소를 담아 보내주는 값)가
