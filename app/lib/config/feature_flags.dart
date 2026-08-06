@@ -10,3 +10,9 @@ const bool kKoreanHistoryEnabled = true;
 /// 2026-07-30: 초반엔 가맹거래사 전문 앱으로 집중하기 위해 비활성화.
 /// 자격증 탭에서 카테고리 탭 없이 가맹거래사 하나만 보여준다. 다시 노출하려면 true로 변경.
 const bool kOtherCertsEnabled = false;
+
+/// 블로그 포스팅의 "바로가기" 링크(`?ref=blog`)를 거쳐야만 입장할 수 있게 막는 기능.
+/// 새로고침은 계속 허용되지만(세션 유지), 탭/창을 닫고 다시 열면 블로그를 다시 거쳐야 한다.
+/// 2026-08-05: 테스트 삼아 우선 켜둠 — `lib/screens/blog_gate_screen.dart`의 블로그 주소부터
+/// 실제 주소로 바꾼 뒤 사용하세요. false로 바꾸면 원래대로 누구나 바로 들어올 수 있다.
+const bool kBlogGateEnabled = true;

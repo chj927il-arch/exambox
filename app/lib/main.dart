@@ -1,19 +1,31 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'config/feature_flags.dart';
 import 'data/comments_store.dart';
 import 'data/likes_store.dart';
 import 'data/user_progress.dart';
 import 'data/visit_counter.dart';
 import 'firebase_options.dart';
+import 'screens/blog_gate_screen.dart';
 import 'screens/root_screen.dart';
 import 'services/auth_service.dart';
+import 'services/blog_gate.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   // 폰트가 늦게 로드되면 마키(ticker) 위젯들이 초기 측정 이후 폭이 달라져
   // 텍스트가 겹쳐 보이는 문제가 있어, 첫 프레임 전에 폰트를 미리 받아둔다.
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 블로그를 거쳐 들어왔는지 가장 먼저 확인한다 — 통과 못 하면 나머지 초기화(폰트·Firebase 등)
+  // 없이 바로 안내 화면만 띄운다.
+  if (kBlogGateEnabled && kIsWeb && !checkBlogGateAccess()) {
+    runApp(const MaterialApp(home: BlogGateScreen(), debugShowCheckedModeBanner: false));
+    return;
+  }
+
   // 실제로 쓰는 폰트를 한 번 참조해야 로딩이 트리거된다.
   GoogleFonts.blackHanSans();
   GoogleFonts.ibmPlexSansKr();
