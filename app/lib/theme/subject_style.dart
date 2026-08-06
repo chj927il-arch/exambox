@@ -21,6 +21,9 @@ const Map<String, SubjectStyle> _subjectStyles = {
   'limitation_period': SubjectStyle(icon: Icons.timer_outlined, color: Color(0xFF4A5D8C)), // 인디고(소멸시효 특강)
   'nonperformance': SubjectStyle(icon: Icons.report_gmailerrorred_outlined, color: Color(0xFFA13D3D)), // 레드브라운(채무불이행과 손해배상 특강)
   'contract_termination': SubjectStyle(icon: Icons.link_off_outlined, color: Color(0xFF5C7A5C)), // 세이지그린(계약의 해제·해지 특강)
+  'revocable_act': SubjectStyle(icon: Icons.undo_outlined, color: Color(0xFF6B5B3E)), // 브론즈(취소할 수 있는 법률행위 특강)
+  'void_act': SubjectStyle(icon: Icons.cancel_outlined, color: Color(0xFF7A3E3E)), // 다크레드(무효인 법률행위 특강)
+  'minor_act': SubjectStyle(icon: Icons.child_care_outlined, color: Color(0xFF3E6B7A)), // 스카이블루(미성년자의 법률행위 특강)
 
   // 경영학 특강(회계·마케팅, 표지 이미지 없어 아이콘 카드로 표시)
   'ba_financial_statements': SubjectStyle(icon: Icons.receipt_long_outlined, color: Color(0xFFC98A2B)),
