@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../config/feature_flags.dart';
 import '../data/board_data.dart';
 import '../data/lecture_data.dart';
 import '../data/user_reviews.dart';
@@ -8,11 +7,8 @@ import '../theme/app_theme.dart';
 import '../theme/ott_theme.dart';
 import '../theme/subject_style.dart';
 import '../widgets/hscroll_list.dart';
-import '../widgets/home_intro_video.dart';
 import '../widgets/like_badge.dart';
 import '../widgets/marquee_row.dart';
-import '../widgets/rolling_banner.dart';
-import 'certificate_menu_screen.dart';
 import 'full_mock_exam_screen.dart';
 import 'lecture_grid_screen.dart';
 import 'lecture_intro_screen.dart';
@@ -22,7 +18,9 @@ import 'subject_grid_screen.dart';
 import 'subject_info_screen.dart';
 import 'time_attack_screen.dart';
 
-/// 홈 화면 — 넷플릭스/디즈니+/쿠팡플레이 같은 OTT 스타일(다크모드 + 가로 포스터행)로 개편.
+const double kLecturePosterWidth = 152;
+const double kLecturePosterHeight = 216;
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -30,12 +28,20 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final _scrollController = ScrollController();
+  late final TabController _lectureTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _lectureTab = TabController(length: 3, vsync: this);
+  }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _lectureTab.dispose();
     super.dispose();
   }
 
@@ -44,12 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDesktop = MediaQuery.sizeOf(context).width >= kDesktopBreakpoint;
     return ColoredBox(
       color: OttColors.bg,
-      // 항상 보이는 드래그 가능한 스크롤바 — 휠/터치 스크롤이 어쩌다 버벅여도
-      // 스크롤바 막대를 직접 끌어서 강제로 이동할 수 있는 대체 수단을 제공한다.
-      // 다크 배경(OttColors.bg)에서도 잘 보이도록 ScrollbarTheme으로 밝은 색을 지정한다.
       child: ScrollbarTheme(
-        data: ScrollbarThemeData(
-          thumbColor: const WidgetStatePropertyAll(Color(0xFFB8BFCC)),
+        data: const ScrollbarThemeData(
+          thumbColor: WidgetStatePropertyAll(Color(0xFF3A4055)),
         ),
         child: Scrollbar(
           controller: _scrollController,
@@ -57,185 +60,56 @@ class _HomeScreenState extends State<HomeScreen> {
           interactive: true,
           child: ListView(
             controller: _scrollController,
-            padding: const EdgeInsets.only(top: 22, bottom: 28),
+            padding: const EdgeInsets.only(top: 0, bottom: 56),
             children: [
+              _DashboardHeader(isDesktop: isDesktop),
+              const SizedBox(height: 32),
+
+              // 과목별 학습
+              _SectionTitle(
+                icon: Icons.menu_book_outlined,
+                title: '과목별 학습',
+                subtitle: '가맹거래사 1차 3과목',
+                onMore: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SubjectGridScreen()),
+                ),
+              ),
+              const SizedBox(height: 14),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Stack(
-                  children: [
-                    const HomeIntroVideo(),
-                    // 영상 속에 그려진 "시작하기" 버튼 위치에 맞춰 투명한 탭 영역을 얹는다.
-                    // 눌리면 "과목별 학습" 그리드(경제법·민법·경영학)로 바로 이동한다.
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 64,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: const BorderRadius.vertical(
-                            bottom: Radius.circular(18),
-                          ),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SubjectGridScreen(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                child: _SubjectCardGrid(isDesktop: isDesktop),
               ),
-              const SizedBox(height: 22),
-              // PC: 세 배너를 나란히 병렬 배치(한눈에 다 보이게). 모바일: 폭이 좁아 기존처럼 롤링으로 유지.
-              if (isDesktop)
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _ParallelPromoBanners(),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 440),
-                      child: const RollingBanner(
-                        banners: [
-                          BannerItem(
-                            imageAsset:
-                                'assets/images/rolling_banner_update.png',
-                          ),
-                          BannerItem(
-                            imageAsset:
-                                'assets/images/rolling_banner_chapter.png',
-                          ),
-                          BannerItem(
-                            imageAsset:
-                                'assets/images/rolling_banner_premium.png',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 32),
+
+              // 실전 연습
+              const _SectionTitle(
+                icon: Icons.flash_on_outlined,
+                title: '실전 연습',
+                subtitle: '시험 직전 점검',
+              ),
+              const SizedBox(height: 14),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(
-                  title: '과목별 학습',
-                  onMore: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SubjectGridScreen(),
-                    ),
-                  ),
-                ),
+                child: _PracticeGrid(isDesktop: isDesktop),
               ),
-              const SizedBox(height: 10),
-              const _SubjectPosterRow(),
-              const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '실전모의고사'),
+              const SizedBox(height: 32),
+
+              // 단원별 강의
+              const _SectionTitle(
+                icon: Icons.play_lesson_outlined,
+                title: '단원별 강의',
+                subtitle: '챕터별 핵심 특강',
               ),
-              const SizedBox(height: 10),
-              const _MockExamGrid(),
-              const SizedBox(height: 22),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(
-                  title: '부족한 단원만 공부한다_민법',
-                  onMore: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const LectureGridScreen(),
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 12),
+              _LectureTabs(controller: _lectureTab),
+              const SizedBox(height: 32),
+
+              // 수강후기
+              const _SectionTitle(
+                icon: Icons.star_outline_rounded,
+                title: '수강후기',
               ),
-              const SizedBox(height: 10),
-              const _IconLectureGrid(lectures: civilLawLectures),
-              const SizedBox(height: 22),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(
-                  title: '부족한 단원만 공부한다_경영학',
-                  onMore: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const LectureGridScreen(
-                        title: '부족한 단원만 공부한다_경영학',
-                        lectures: businessAdminLectures,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const _IconLectureGrid(lectures: businessAdminLectures),
-              const SizedBox(height: 22),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(
-                  title: '부족한 단원만 공부한다_경제법',
-                  onMore: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const LectureGridScreen(
-                        title: '부족한 단원만 공부한다_경제법',
-                        lectures: economicLawLectures,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const _IconLectureGrid(lectures: economicLawLectures),
-              if (kKoreanHistoryEnabled) ...[
-                const SizedBox(height: 22),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: _RowHeader(title: '부족한 단원만 공부한다_한능검'),
-                ),
-                const SizedBox(height: 10),
-                const _KoreanHistoryLectureGrid(),
-              ],
-              const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '틀리기 쉬운 문제'),
-              ),
-              const SizedBox(height: 10),
-              const _TrapQuizGrid(),
-              const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(title: '타임어택'),
-              ),
-              const SizedBox(height: 10),
-              HScrollList(
-                height: kLecturePosterHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: 1,
-                itemBuilder: (context, index) {
-                  return _TimeAttackCard(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const TimeAttackScreen(),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 22),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _RowHeader(
-                  title: '수강후기',
-                  onMore: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ReviewScreen()),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               const _ReviewCarousel(),
             ],
           ),
@@ -245,279 +119,242 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// PC 전용 — 영상 바로 아래 프로모션 배너 3개를 롤링 대신 나란히 병렬 배치.
-/// (모바일은 폭이 좁아 계속 롤링 캐러셀을 사용한다.)
-const List<String> _kParallelBannerAssets = [
-  'assets/images/rolling_banner_update.png',
-  'assets/images/rolling_banner_chapter.png',
-  'assets/images/rolling_banner_premium.png',
-];
+// ── 상단 대시보드 헤더 ──────────────────────────────────────────────────────
 
-class _ParallelPromoBanners extends StatelessWidget {
-  const _ParallelPromoBanners();
+class _DashboardHeader extends StatelessWidget {
+  final bool isDesktop;
+  const _DashboardHeader({required this.isDesktop});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final now = DateTime.now();
+    final dateStr = '${now.year}년 ${now.month}월 ${now.day}일';
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 40 : 20,
+        isDesktop ? 36 : 28,
+        isDesktop ? 40 : 20,
+        isDesktop ? 36 : 28,
+      ),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: OttColors.border)),
+      ),
+      child: isDesktop
+          ? Row(
+              children: [
+                _HeaderText(dateStr: dateStr),
+                const Spacer(),
+                _ExamBadge(),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HeaderText(dateStr: dateStr),
+                const SizedBox(height: 12),
+                _ExamBadge(),
+              ],
+            ),
+    );
+  }
+}
+
+class _HeaderText extends StatelessWidget {
+  final String dateStr;
+  const _HeaderText({required this.dateStr});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < _kParallelBannerAssets.length; i++) ...[
-          if (i > 0) const SizedBox(width: 16),
-          Expanded(
-            child: _ParallelBannerCard(asset: _kParallelBannerAssets[i]),
+        Text(
+          dateStr,
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: OttColors.textMuted,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          '스터디박스',
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          '가맹거래사 1차 시험 · 민법 · 경제법 · 경영학',
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w500,
+            color: OttColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ExamBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: OttColors.accentStart.withValues(alpha: 0.14),
+        border: Border.all(color: OttColors.accentStart.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.emoji_events_outlined, color: OttColors.accentStart, size: 16),
+          SizedBox(width: 7),
+          Text(
+            '가맹거래사 1차',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: OttColors.accentStart,
+            ),
           ),
         ],
-      ],
-    );
-  }
-}
-
-class _ParallelBannerCard extends StatelessWidget {
-  final String asset;
-  const _ParallelBannerCard({required this.asset});
-
-  @override
-  Widget build(BuildContext context) {
-    // CanvasKit(웹)이 큰 원본 이미지를 카드 실제 표시 크기보다 훨씬 크게 그리면서
-    // 스케일링을 잘못 잡아 흐릿하게 보이는 문제가 있어(TintedPoster와 동일한 원인),
-    // LayoutBuilder로 실제 렌더 폭을 구해 devicePixelRatio 반영한 디코드 크기를 지정한다.
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    return AspectRatio(
-      // 배너 원본 이미지가 대략 3:1 비율이라 셋 다 동일하게 맞춘다.
-      aspectRatio: 3,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final cacheWidth = (constraints.maxWidth * dpr).round();
-            return Image(
-              image: ResizeImage(
-                AssetImage(asset),
-                width: cacheWidth > 0 ? cacheWidth : null,
-              ),
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.high,
-            );
-          },
-        ),
       ),
     );
   }
 }
 
-/// 포스터 카드 공통 규격 — 민법 특강·과목별 학습 표지 이미지 모두 세로형(약 0.71 비율)이라
-/// 넷플릭스 포스터 비율에 가깝게 좁고 촘촘한 크기 하나로 통일한다.
-const double kLecturePosterWidth = 152;
-const double kLecturePosterHeight = 216;
+// ── 섹션 타이틀 ─────────────────────────────────────────────────────────────
 
-/// 원본 표지 이미지(밝은 배경의 홍보 배너 톤)를 다크 테마에 맞게 어둡게 톤다운하고,
-/// 하단에 텍스트 가독용 그라데이션 스크림을 얹는 공통 래퍼.
-class TintedPoster extends StatelessWidget {
-  final String imageAsset;
-  final Widget? bottomOverlay;
-  const TintedPoster({super.key, required this.imageAsset, this.bottomOverlay});
-
-  @override
-  Widget build(BuildContext context) {
-    // CanvasKit(웹)이 큰 원본 이미지를 화면에 그릴 때 스케일을 잘못 잡아 흐릿하게 보이는 문제가 있어,
-    // 카드 실제 표시 크기(devicePixelRatio 반영)에 맞춰 미리 디코드 크기를 지정해 선명하게 그린다.
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth = (kLecturePosterWidth * dpr).round();
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image(
-          image: ResizeImage(AssetImage(imageAsset), width: cacheWidth),
-          fit: BoxFit.cover,
-          filterQuality: FilterQuality.high,
-        ),
-        // 밝은 홍보 배너 톤을 다크 테마에 맞게 살짝만 톤다운(원본이 안 보일 정도로 어둡게 하지 않음).
-        Positioned.fill(
-          child: ColoredBox(color: Colors.black.withValues(alpha: 0.18)),
-        ),
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.0),
-                  Colors.black.withValues(alpha: 0.45),
-                ],
-                stops: const [0.6, 1.0],
-              ),
-            ),
-          ),
-        ),
-        if (bottomOverlay != null)
-          Positioned(left: 0, right: 0, bottom: 0, child: bottomOverlay!),
-      ],
-    );
-  }
-}
-
-/// 가로 스크롤 섹션 타이틀 + "더보기" 버튼(있을 때만) — 누르면 해당 그리드 전체를 새 화면에서 보여준다.
-class _RowHeader extends StatelessWidget {
+class _SectionTitle extends StatelessWidget {
+  final IconData icon;
   final String title;
+  final String? subtitle;
   final VoidCallback? onMore;
-  const _RowHeader({required this.title, this.onMore});
+  const _SectionTitle({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.onMore,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: 0.2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: OttColors.accentStart.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: Icon(icon, color: OttColors.accentStart, size: 18),
           ),
-        ),
-        if (onMore != null)
-          InkWell(
-            onTap: onMore,
-            borderRadius: BorderRadius.circular(8),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (subtitle != null)
                   Text(
-                    '더보기',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: OttColors.textSecondary,
-                      fontWeight: FontWeight.w700,
+                    subtitle!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: OttColors.textMuted,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: OttColors.textSecondary,
-                  ),
-                ],
+              ],
+            ),
+          ),
+          if (onMore != null)
+            InkWell(
+              onTap: onMore,
+              borderRadius: BorderRadius.circular(8),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '더보기',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: OttColors.textMuted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, size: 16, color: OttColors.textMuted),
+                  ],
+                ),
               ),
             ),
-          ),
-      ],
-    );
-  }
-}
-
-/// 과목(경제법·민법·경영학[·한국사능력검정]) 포스터 카드 — 표지 이미지 + 하단 정보 패널(다크 카드).
-/// 한국사능력검정은 가맹거래사 시험과목이 아닌 별도 자격증이라 examSubjects에는 넣지 않고,
-/// 이 행 끝에만 조건부로 덧붙여 CertificateMenuScreen(korean_history)로 바로 연결한다.
-class _SubjectPosterRow extends StatelessWidget {
-  const _SubjectPosterRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final itemCount = examSubjects.length + (kKoreanHistoryEnabled ? 1 : 0);
-    return HScrollList(
-      height: kLecturePosterHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (index < examSubjects.length) {
-          return SubjectPosterCard(subject: examSubjects[index]);
-        }
-        return const _KoreanHistorySubjectCard();
-      },
-    );
-  }
-}
-
-class _KoreanHistorySubjectCard extends StatelessWidget {
-  const _KoreanHistorySubjectCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const CertificateMenuScreen(
-            certId: 'korean_history',
-            certName: '한국사능력검정',
-          ),
-        ),
-      ),
-      child: Container(
-        width: kLecturePosterWidth,
-        height: kLecturePosterHeight,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: OttColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: const TintedPoster(
-          imageAsset: 'assets/images/subject_cover_korean_history.png',
-        ),
+        ],
       ),
     );
   }
 }
 
-/// 경영학은 아직 표지 이미지가 없어 자리만 잡아둔 상태 — 이미지 도착하면 여기 추가.
-String? subjectCoverImage(String subjectId) {
-  switch (subjectId) {
-    case 'economic_law':
-      return 'assets/images/subject_cover_economic_law.png';
-    case 'civil_law':
-      return 'assets/images/subject_cover_civil_law.png';
-    default:
-      return null;
+// ── 과목 카드 그리드 ─────────────────────────────────────────────────────────
+
+class _SubjectCardGrid extends StatelessWidget {
+  final bool isDesktop;
+  const _SubjectCardGrid({required this.isDesktop});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isDesktop) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: examSubjects
+            .map((s) => Expanded(child: Padding(
+                  padding: EdgeInsets.only(
+                    right: s == examSubjects.last ? 0 : 14,
+                  ),
+                  child: _SubjectDashCard(subject: s),
+                )))
+            .toList(),
+      );
+    }
+    return Column(
+      children: examSubjects
+          .map((s) => Padding(
+                padding: EdgeInsets.only(bottom: s == examSubjects.last ? 0 : 12),
+                child: _SubjectDashCard(subject: s),
+              ))
+          .toList(),
+    );
   }
 }
 
-class SubjectPosterCard extends StatelessWidget {
+class _SubjectDashCard extends StatelessWidget {
   final ExamSubject subject;
-  const SubjectPosterCard({super.key, required this.subject});
+  const _SubjectDashCard({required this.subject});
 
   @override
   Widget build(BuildContext context) {
     final style = subjectStyleOf(subject.id);
-    final coverImage = subjectCoverImage(subject.id);
-
-    final titleOverlay = Padding(
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            subject.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subject.categories.join(' · '),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: OttColors.textSecondary,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
 
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
@@ -529,84 +366,429 @@ class SubjectPosterCard extends StatelessWidget {
         ),
       ),
       child: Container(
-        width: kLecturePosterWidth,
-        height: kLecturePosterHeight,
-        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: OttColors.border),
+          color: OttColors.card,
+          borderRadius: BorderRadius.circular(18),
+          border: Border(
+            left: BorderSide(color: style.color, width: 3),
+            top: BorderSide(color: OttColors.border),
+            right: BorderSide(color: OttColors.border),
+            bottom: BorderSide(color: OttColors.border),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
+              color: Colors.black.withValues(alpha: 0.30),
+              blurRadius: 18,
               offset: const Offset(0, 8),
             ),
           ],
         ),
-        // 표지 이미지가 있으면 민법 특강 포스터처럼 이미지 안에 제목이 포함돼 있어 별도 오버레이 없이 그대로 보여준다.
-        // 아직 이미지가 없는 과목(경영학)만 색상 배경 위에 아이콘+과목명 오버레이로 자리를 채운다.
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (coverImage != null)
-              TintedPoster(imageAsset: coverImage)
-            else ...[
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [style.color, style.color.withValues(alpha: 0.7)],
-                  ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => SubjectInfoScreen(
+                  subjectId: subject.id,
+                  subjectName: subject.name,
                 ),
               ),
-              Positioned(
-                left: 10,
-                top: 12,
-                child: Icon(style.icon, color: Colors.white, size: 26),
-              ),
-              Positioned(left: 0, right: 0, bottom: 0, child: titleOverlay),
-            ],
-            Positioned(
-              top: 8,
-              right: 8,
-              child: EngagementBadges(cardId: 'subject_${subject.id}'),
             ),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: style.color.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(style.icon, color: style.color, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        subject.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: subject.categories
+                        .map((c) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: style.color.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(7),
+                                border: Border.all(color: style.color.withValues(alpha: 0.25)),
+                              ),
+                              child: Text(
+                                c,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: style.color,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      Text(
+                        '챕터별 학습하기',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: style.color,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 12, color: style.color),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// 한능검 특강 — 민법 특강과 동일한 포스터형 카드. 데이터는 lecture_data.dart의 koreanHistoryLectures.
-class _KoreanHistoryLectureGrid extends StatelessWidget {
-  const _KoreanHistoryLectureGrid();
+// ── 실전 연습 그리드 ─────────────────────────────────────────────────────────
+
+class _PracticeGrid extends StatelessWidget {
+  final bool isDesktop;
+  const _PracticeGrid({required this.isDesktop});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _PracticeItem(
+        icon: Icons.assignment_outlined,
+        label: '실전모의고사',
+        desc: '전범위 70문항',
+        color: const Color(0xFF3B5BFF),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FullMockExamScreen()),
+        ),
+      ),
+      _PracticeItem(
+        icon: Icons.timer_outlined,
+        label: '타임어택',
+        desc: '1분 제한 스피드 풀기',
+        color: const Color(0xFFE0A93B),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const TimeAttackScreen()),
+        ),
+      ),
+      _PracticeItem(
+        icon: Icons.warning_amber_outlined,
+        label: '틀리기 쉬운 문제',
+        desc: '함정 유형 집중 풀이',
+        color: const Color(0xFFE05050),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const QuizScreen(
+              subjectId: 'trap_quiz_season1',
+              subjectName: '틀리기 쉬운 문제 시즌1',
+              category: '함정 피하기',
+              crossSubjectIds: ['economic_law', 'civil_law', 'business_admin'],
+            ),
+          ),
+        ),
+      ),
+    ];
+
+    if (isDesktop) {
+      return Row(
+        children: items
+            .map((item) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: item == items.last ? 0 : 14),
+                    child: _PracticeCard(item: item),
+                  ),
+                ))
+            .toList(),
+      );
+    }
+
+    return Column(
+      children: items
+          .map((item) => Padding(
+                padding: EdgeInsets.only(bottom: item == items.last ? 0 : 10),
+                child: _PracticeCard(item: item),
+              ))
+          .toList(),
+    );
+  }
+}
+
+class _PracticeItem {
+  final IconData icon;
+  final String label;
+  final String desc;
+  final Color color;
+  final VoidCallback onTap;
+  const _PracticeItem({
+    required this.icon,
+    required this.label,
+    required this.desc,
+    required this.color,
+    required this.onTap,
+  });
+}
+
+class _PracticeCard extends StatelessWidget {
+  final _PracticeItem item;
+  const _PracticeCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: OttColors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: OttColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: item.onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: item.color.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(item.icon, color: item.color, size: 24),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.label,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.desc,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: OttColors.textMuted,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: OttColors.textMuted, size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── 강의 탭 섹션 ─────────────────────────────────────────────────────────────
+
+class _LectureTabs extends StatelessWidget {
+  final TabController controller;
+  const _LectureTabs({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              color: OttColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: OttColors.border),
+            ),
+            child: TabBar(
+              controller: controller,
+              indicator: BoxDecoration(
+                color: OttColors.accentStart.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: OttColors.accentStart.withValues(alpha: 0.40)),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelColor: Colors.white,
+              unselectedLabelColor: OttColors.textMuted,
+              labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              padding: const EdgeInsets.all(4),
+              tabs: const [
+                Tab(text: '민법'),
+                Tab(text: '경제법'),
+                Tab(text: '경영학'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: kLecturePosterHeight,
+          child: TabBarView(
+            controller: controller,
+            children: [
+              _LectureRow(lectures: civilLawLectures, subjectId: 'civil_law'),
+              _LectureRow(lectures: economicLawLectures, subjectId: 'economic_law'),
+              _LectureRow(lectures: businessAdminLectures, subjectId: 'business_admin'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LectureGridScreen()),
+              ),
+              borderRadius: BorderRadius.circular(8),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '전체 강의 보기',
+                      style: TextStyle(fontSize: 12.5, color: OttColors.textMuted, fontWeight: FontWeight.w700),
+                    ),
+                    Icon(Icons.chevron_right_rounded, size: 16, color: OttColors.textMuted),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LectureRow extends StatelessWidget {
+  final List<LectureItem> lectures;
+  final String subjectId;
+  const _LectureRow({required this.lectures, required this.subjectId});
 
   @override
   Widget build(BuildContext context) {
     return HScrollList(
       height: kLecturePosterHeight,
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: koreanHistoryLectures.length,
+      itemCount: lectures.length,
       itemBuilder: (context, index) {
-        final item = koreanHistoryLectures[index];
-        return LectureCoverCard(
-          imageAsset: item.imageAsset!,
-          likeId: item.likeId,
-          onTap: (context) => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => LectureIntroScreen(
-                title: item.title,
-                keyPoints: item.keyPoints,
-                subjectId: item.subjectId,
-                subjectName: item.subjectName,
-                category: item.category,
-              ),
+        final item = lectures[index];
+        final onTap = (BuildContext ctx) => Navigator.of(ctx).push(
+          MaterialPageRoute(
+            builder: (_) => LectureIntroScreen(
+              title: item.title,
+              keyPoints: item.keyPoints,
+              subjectId: item.subjectId,
+              subjectName: item.subjectName,
+              category: item.category,
+              subTopic: item.subTopic,
             ),
           ),
         );
+        if (item.imageAsset != null) {
+          return LectureCoverCard(
+            imageAsset: item.imageAsset!,
+            likeId: item.likeId,
+            onTap: onTap,
+          );
+        }
+        return IconLectureCard(item: item, onTap: () => onTap(context));
       },
+    );
+  }
+}
+
+// ── 강의 카드 공통 ────────────────────────────────────────────────────────────
+
+class TintedPoster extends StatelessWidget {
+  final String imageAsset;
+  final Widget? bottomOverlay;
+  const TintedPoster({super.key, required this.imageAsset, this.bottomOverlay});
+
+  @override
+  Widget build(BuildContext context) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (kLecturePosterWidth * dpr).round();
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image(
+          image: ResizeImage(AssetImage(imageAsset), width: cacheWidth),
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
+        ),
+        Positioned.fill(child: ColoredBox(color: Colors.black.withValues(alpha: 0.18))),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black.withValues(alpha: 0.0), Colors.black.withValues(alpha: 0.45)],
+                stops: const [0.6, 1.0],
+              ),
+            ),
+          ),
+        ),
+        if (bottomOverlay != null)
+          Positioned(left: 0, right: 0, bottom: 0, child: bottomOverlay!),
+      ],
     );
   }
 }
@@ -634,11 +816,7 @@ class LectureCoverCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
           ],
         ),
         child: Stack(
@@ -649,211 +827,6 @@ class LectureCoverCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// 실전모의고사 그리드 — 지금은 시즌1 한 장뿐이라 특강 그리드와 같은 가로 스크롤 행에
-/// 아이콘 카드 한 장만 놓는다(표지 이미지는 추후 추가 예정).
-class _MockExamGrid extends StatelessWidget {
-  const _MockExamGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return HScrollList(
-      height: kLecturePosterHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: 1,
-      itemBuilder: (context, index) => _MockExamSeasonCard(
-        onTap: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const FullMockExamScreen())),
-      ),
-    );
-  }
-}
-
-class _MockExamSeasonCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _MockExamSeasonCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: kLecturePosterWidth,
-        height: kLecturePosterHeight,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: OttColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const TintedPoster(imageAsset: 'assets/images/mock_exam_cover.png'),
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: EngagementBadges(cardId: 'mock_exam_season1'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 타임어택 — 제한시간 1분 동안 3과목이 뒤섞인 문제를 최대한 많이 푸는 킬링타임 카드.
-class _TimeAttackCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _TimeAttackCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: kLecturePosterWidth,
-        height: kLecturePosterHeight,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: OttColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const TintedPoster(imageAsset: 'assets/images/time_attack_cover.png'),
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: EngagementBadges(cardId: 'time_attack'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 함정 피하기 그리드 — 3과목(경제법·민법·경영학)에서 자주 틀리고 헷갈리는 문제 30문항을
-/// 하나의 QuizScreen 세션으로 묶어서 풀어보게 한다(실전모의고사와 달리 시간제한 없음).
-class _TrapQuizGrid extends StatelessWidget {
-  const _TrapQuizGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return HScrollList(
-      height: kLecturePosterHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: 1,
-      itemBuilder: (context, index) => _TrapQuizSeasonCard(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const QuizScreen(
-              subjectId: 'trap_quiz_season1',
-              subjectName: '틀리기 쉬운 문제 시즌1',
-              category: '함정 피하기',
-              crossSubjectIds: kKoreanHistoryEnabled
-                  ? ['economic_law', 'civil_law', 'business_admin', 'korean_history']
-                  : ['economic_law', 'civil_law', 'business_admin'],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TrapQuizSeasonCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _TrapQuizSeasonCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: kLecturePosterWidth,
-        height: kLecturePosterHeight,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: OttColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const TintedPoster(imageAsset: 'assets/images/trap_quiz_cover.png'),
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: EngagementBadges(cardId: 'trap_quiz_season1'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 경영학·경제법 특강 그리드 — imageAsset이 있으면 포스터형 카드, 없으면 아이콘형 카드로 표시.
-class _IconLectureGrid extends StatelessWidget {
-  final List<LectureItem> lectures;
-  const _IconLectureGrid({required this.lectures});
-
-  @override
-  Widget build(BuildContext context) {
-    return HScrollList(
-      height: kLecturePosterHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: lectures.length,
-      itemBuilder: (context, index) {
-        final item = lectures[index];
-        final onTap = (BuildContext context) => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => LectureIntroScreen(
-              title: item.title,
-              keyPoints: item.keyPoints,
-              subjectId: item.subjectId,
-              subjectName: item.subjectName,
-              category: item.category,
-              subTopic: item.subTopic,
-            ),
-          ),
-        );
-        if (item.imageAsset != null) {
-          return LectureCoverCard(
-            imageAsset: item.imageAsset!,
-            likeId: item.likeId,
-            onTap: onTap,
-          );
-        }
-        return IconLectureCard(item: item, onTap: () => onTap(context));
-      },
     );
   }
 }
@@ -876,11 +849,7 @@ class IconLectureCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: OttColors.border),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8)),
           ],
         ),
         child: Stack(
@@ -895,16 +864,8 @@ class IconLectureCard extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              left: 10,
-              top: 12,
-              child: Icon(style.icon, color: Colors.white, size: 26),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: EngagementBadges(cardId: item.likeId),
-            ),
+            Positioned(left: 10, top: 12, child: Icon(style.icon, color: Colors.white, size: 26)),
+            Positioned(top: 8, right: 8, child: EngagementBadges(cardId: item.likeId)),
             Positioned(
               left: 0,
               right: 0,
@@ -931,7 +892,8 @@ class IconLectureCard extends StatelessWidget {
   }
 }
 
-/// 수강후기 — 카드가 여백 없이 옆으로 흘러가는 롤링 스트립(다크 카드).
+// ── 수강후기 ─────────────────────────────────────────────────────────────────
+
 class _ReviewCarousel extends StatelessWidget {
   const _ReviewCarousel();
 
@@ -945,10 +907,7 @@ class _ReviewCarousel extends StatelessWidget {
           height: 132,
           pixelsPerSecond: 32,
           itemBuilder: (context) {
-            final cards = List.generate(
-              5,
-              (i) => allReviews[i % allReviews.length],
-            );
+            final cards = List.generate(5, (i) => allReviews[i % allReviews.length]);
             return Row(
               children: [
                 for (final review in cards) ...[
@@ -971,9 +930,7 @@ class _ReviewMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const ReviewScreen())),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReviewScreen())),
       child: Container(
         width: 220,
         padding: const EdgeInsets.all(14),
@@ -989,9 +946,7 @@ class _ReviewMiniCard extends StatelessWidget {
               children: List.generate(
                 5,
                 (i) => Icon(
-                  i < review.rating
-                      ? Icons.star_rounded
-                      : Icons.star_outline_rounded,
+                  i < review.rating ? Icons.star_rounded : Icons.star_outline_rounded,
                   size: 14,
                   color: OttColors.accentGold,
                 ),
@@ -1002,12 +957,7 @@ class _ReviewMiniCard extends StatelessWidget {
               review.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                height: 1.3,
-              ),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white, height: 1.3),
             ),
             const SizedBox(height: 6),
             Expanded(
@@ -1015,22 +965,92 @@ class _ReviewMiniCard extends StatelessWidget {
                 review.body,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11.5,
-                  color: OttColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  height: 1.35,
-                ),
+                style: const TextStyle(fontSize: 11.5, color: OttColors.textSecondary, fontWeight: FontWeight.w500, height: 1.35),
               ),
             ),
             Text(
               review.date,
-              style: const TextStyle(
-                fontSize: 10.5,
-                color: OttColors.textMuted,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 10.5, color: OttColors.textMuted, fontWeight: FontWeight.w600),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── 과목별 포스터 카드 (외부에서 참조용으로 유지) ─────────────────────────────
+
+String? subjectCoverImage(String subjectId) {
+  switch (subjectId) {
+    case 'economic_law':
+      return 'assets/images/subject_cover_economic_law.png';
+    case 'civil_law':
+      return 'assets/images/subject_cover_civil_law.png';
+    default:
+      return null;
+  }
+}
+
+class SubjectPosterCard extends StatelessWidget {
+  final ExamSubject subject;
+  const SubjectPosterCard({super.key, required this.subject});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = subjectStyleOf(subject.id);
+    final coverImage = subjectCoverImage(subject.id);
+
+    final titleOverlay = Padding(
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(subject.name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 2),
+          Text(
+            subject.categories.join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: OttColors.textSecondary, fontSize: 10.5, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => SubjectInfoScreen(subjectId: subject.id, subjectName: subject.name)),
+      ),
+      child: Container(
+        width: kLecturePosterWidth,
+        height: kLecturePosterHeight,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: OttColors.border),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 8))],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (coverImage != null)
+              TintedPoster(imageAsset: coverImage)
+            else ...[
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [style.color, style.color.withValues(alpha: 0.7)],
+                  ),
+                ),
+              ),
+              Positioned(left: 10, top: 12, child: Icon(style.icon, color: Colors.white, size: 26)),
+              Positioned(left: 0, right: 0, bottom: 0, child: titleOverlay),
+            ],
+            Positioned(top: 8, right: 8, child: EngagementBadges(cardId: 'subject_${subject.id}')),
           ],
         ),
       ),
