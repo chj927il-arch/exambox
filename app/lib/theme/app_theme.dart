@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// 이 폭(가로) 이상이면 PC/데스크톱 레이아웃(사이드 내비게이션)으로 전환한다.
 const double kDesktopBreakpoint = 900;
@@ -48,10 +47,33 @@ class AppTheme {
         brightness: Brightness.light,
       ),
     );
-    final textTheme = GoogleFonts.ibmPlexSansKrTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.textPrimary,
-      displayColor: AppColors.textPrimary,
-    );
+    // S-Core Dream: 웹폰트는 index.html @font-face로 로드, 여기서 fontFamily만 지정
+    const kFontFamily = 'S-Core Dream';
+
+    final textTheme = base.textTheme
+        .apply(
+          fontFamily: kFontFamily,
+          bodyColor: AppColors.textPrimary,
+          displayColor: AppColors.textPrimary,
+        )
+        .copyWith(
+          // Display/Headline: Ultra Bold (900)
+          displayLarge: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+          displayMedium: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+          displaySmall: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+          headlineLarge: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+          headlineMedium: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+          headlineSmall: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+          titleLarge: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+          titleMedium: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          titleSmall: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          bodyLarge: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w400, color: AppColors.textPrimary),
+          bodyMedium: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w400, color: AppColors.textPrimary),
+          bodySmall: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w400, color: AppColors.textSecondary),
+          labelLarge: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          labelMedium: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+          labelSmall: TextStyle(fontFamily: kFontFamily, fontWeight: FontWeight.w500, color: AppColors.textMuted),
+        );
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.bgBase,
@@ -64,9 +86,10 @@ class AppTheme {
         shadowColor: Colors.black.withValues(alpha: 0.08),
         foregroundColor: AppColors.textPrimary,
         centerTitle: true,
-        titleTextStyle: textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-          fontSize: 21,
+        titleTextStyle: const TextStyle(
+          fontFamily: kFontFamily,
+          fontWeight: FontWeight.w900,
+          fontSize: 20,
           color: AppColors.textPrimary,
         ),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
