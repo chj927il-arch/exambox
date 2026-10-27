@@ -700,22 +700,31 @@ class _QuickCard extends StatelessWidget {
 
 // ── 챕터 문제 목록 화면 ───────────────────────────────────────────────────────
 
-class _ChapterQuestionsView extends StatelessWidget {
+enum _QuestionViewMode { card, paper }
+
+class _ChapterQuestionsView extends StatefulWidget {
   final String subjectId;
   final String topic;
   const _ChapterQuestionsView({required this.subjectId, required this.topic, super.key});
 
   @override
+  State<_ChapterQuestionsView> createState() => _ChapterQuestionsViewState();
+}
+
+class _ChapterQuestionsViewState extends State<_ChapterQuestionsView> {
+  _QuestionViewMode _mode = _QuestionViewMode.card;
+
+  @override
   Widget build(BuildContext context) {
-    final style = subjectStyleOf(subjectId);
-    final questions = sampleQuestions.where((q) => q.subjectId == subjectId && q.category == topic).toList();
+    final style = subjectStyleOf(widget.subjectId);
+    final questions = sampleQuestions.where((q) => q.subjectId == widget.subjectId && q.category == widget.topic).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // 헤더
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 22),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
           decoration: const BoxDecoration(
             color: Colors.white,
             border: Border(bottom: BorderSide(color: AppColors.glassBorder)),
@@ -735,7 +744,7 @@ class _ChapterQuestionsView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      topic,
+                      widget.topic,
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -0.3),
                     ),
                     Text(
@@ -745,20 +754,577 @@ class _ChapterQuestionsView extends StatelessWidget {
                   ],
                 ),
               ),
+              // 모드 토글
+              if (questions.isNotEmpty)
+                _ModeToggle(
+                  mode: _mode,
+                  onChanged: (m) => setState(() => _mode = m),
+                ),
             ],
           ),
         ),
-        // 문제 목록
+        // 문제 내용
         Expanded(
           child: questions.isEmpty
               ? const _EmptyChapter()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(32),
-                  itemCount: questions.length,
-                  itemBuilder: (context, i) => _QuestionCard(question: questions[i], number: i + 1, subjectStyle: style),
-                ),
+              : _mode == _QuestionViewMode.card
+                  ? ListView.builder(
+                      padding: const EdgeInsets.all(32),
+                      itemCount: questions.length,
+                      itemBuilder: (context, i) => _QuestionCard(question: questions[i], number: i + 1, subjectStyle: style),
+                    )
+                  : _ExamPaperView(
+                      key: ValueKey('paper/${widget.subjectId}/${widget.topic}'),
+                      questions: questions,
+                      subjectName: examSubjects.firstWhere((s) => s.id == widget.subjectId).name,
+                      topic: widget.topic,
+                      style: style,
+                    ),
         ),
       ],
+    );
+  }
+}
+
+class _ModeToggle extends StatelessWidget {
+  final _QuestionViewMode mode;
+  final void Function(_QuestionViewMode) onChanged;
+  const _ModeToggle({required this.mode, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F1F5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ToggleBtn(
+            icon: Icons.view_list_rounded,
+            label: '카드 풀기',
+            active: mode == _QuestionViewMode.card,
+            onTap: () => onChanged(_QuestionViewMode.card),
+          ),
+          _ToggleBtn(
+            icon: Icons.article_outlined,
+            label: '문제지 모드',
+            active: mode == _QuestionViewMode.paper,
+            onTap: () => onChanged(_QuestionViewMode.paper),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToggleBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+  const _ToggleBtn({required this.icon, required this.label, required this.active, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.all(3),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+          boxShadow: active ? [BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 6, offset: const Offset(0, 2))] : [],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: active ? AppColors.primary : AppColors.textMuted),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                color: active ? AppColors.primary : AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── 시험지 모드 ───────────────────────────────────────────────────────────────
+
+class _ExamPaperView extends StatefulWidget {
+  final List<Question> questions;
+  final String subjectName;
+  final String topic;
+  final SubjectStyle style;
+  const _ExamPaperView({
+    required this.questions,
+    required this.subjectName,
+    required this.topic,
+    required this.style,
+    super.key,
+  });
+
+  @override
+  State<_ExamPaperView> createState() => _ExamPaperViewState();
+}
+
+class _ExamPaperViewState extends State<_ExamPaperView> {
+  final Map<int, int> _answers = {}; // index → selected choice index
+  bool _submitted = false;
+
+  int get _correct => _answers.entries.where((e) => widget.questions[e.key].correctIndex == e.value).length;
+
+  void _submit() {
+    setState(() => _submitted = true);
+  }
+
+  void _reset() {
+    setState(() {
+      _answers.clear();
+      _submitted = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final questions = widget.questions;
+    final allAnswered = _answers.length == questions.length;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Column(
+            children: [
+              // A4 시험지
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 24, offset: const Offset(0, 8)),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 6, offset: const Offset(0, 2)),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 시험지 헤더
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(40, 32, 40, 24),
+                      decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.grey.shade300, width: 2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '가맹거래사 1차 시험',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade500,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      widget.subjectName,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF111111),
+                                        letterSpacing: -0.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      widget.topic,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: widget.style.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // 점수 표시 (채점 후)
+                              if (_submitted)
+                                _ScoreBadge(correct: _correct, total: questions.length)
+                              else
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey.shade300),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '${questions.length}문항',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade600),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (_submitted) ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _correct == questions.length
+                                    ? AppColors.correct.withValues(alpha: 0.08)
+                                    : _correct >= questions.length * 0.6
+                                        ? const Color(0xFFFFF3CD)
+                                        : AppColors.wrong.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _correct == questions.length
+                                      ? AppColors.correct.withValues(alpha: 0.25)
+                                      : _correct >= questions.length * 0.6
+                                          ? const Color(0xFFE6C200)
+                                          : AppColors.wrong.withValues(alpha: 0.20),
+                                ),
+                              ),
+                              child: Text(
+                                _correct == questions.length
+                                    ? '완벽합니다! 모든 문제를 맞혔어요 🎉'
+                                    : _correct >= questions.length * 0.6
+                                        ? '${questions.length - _correct}문제를 틀렸어요. 해설을 확인하세요.'
+                                        : '${questions.length - _correct}문제 오답 — 해당 유형을 다시 복습해보세요.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _correct == questions.length
+                                      ? AppColors.correct
+                                      : _correct >= questions.length * 0.6
+                                          ? const Color(0xFF8A6800)
+                                          : AppColors.wrong,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    // 문제들
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(40, 28, 40, 36),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(questions.length, (i) {
+                          return _ExamQuestion(
+                            question: questions[i],
+                            number: i + 1,
+                            selectedIndex: _answers[i],
+                            submitted: _submitted,
+                            onSelect: _submitted ? null : (ci) => setState(() => _answers[i] = ci),
+                          );
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // 하단 버튼
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_submitted) ...[
+                    OutlinedButton.icon(
+                      onPressed: _reset,
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: const Text('다시 풀기'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        side: const BorderSide(color: AppColors.glassBorder),
+                        foregroundColor: AppColors.textSecondary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ] else ...[
+                    if (!allAnswered)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Text(
+                          '${_answers.length}/${questions.length} 문항 선택됨',
+                          style: const TextStyle(fontSize: 13, color: AppColors.textMuted, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    FilledButton.icon(
+                      onPressed: allAnswered ? _submit : null,
+                      icon: const Icon(Icons.grading_rounded, size: 16),
+                      label: const Text('채점하기'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                        backgroundColor: AppColors.primary,
+                        disabledBackgroundColor: AppColors.glassBorder,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScoreBadge extends StatelessWidget {
+  final int correct;
+  final int total;
+  const _ScoreBadge({required this.correct, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = total == 0 ? 0 : (correct * 100 ~/ total);
+    final color = pct >= 80
+        ? AppColors.correct
+        : pct >= 60
+            ? const Color(0xFFD4890A)
+            : AppColors.wrong;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '$correct/$total',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color),
+          ),
+          Text('$pct점', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 시험지 문항 ───────────────────────────────────────────────────────────────
+
+const _kCircledNums = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
+
+class _ExamQuestion extends StatelessWidget {
+  final Question question;
+  final int number;
+  final int? selectedIndex;
+  final bool submitted;
+  final void Function(int)? onSelect;
+
+  const _ExamQuestion({
+    required this.question,
+    required this.number,
+    required this.selectedIndex,
+    required this.submitted,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final q = question;
+    final isCorrect = submitted && selectedIndex == q.correctIndex;
+    final isWrong = submitted && selectedIndex != null && selectedIndex != q.correctIndex;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 문제 번호 + 문제
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 번호 원
+              Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                margin: const EdgeInsets.only(top: 1, right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: submitted
+                      ? (isCorrect ? AppColors.correct : isWrong ? AppColors.wrong : const Color(0xFF888888))
+                      : const Color(0xFF333333),
+                  border: submitted && !isCorrect && !isWrong
+                      ? null
+                      : null,
+                ),
+                child: Text(
+                  '$number',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      q.stem,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111111),
+                        height: 1.6,
+                      ),
+                    ),
+                    if (q.sourceYear != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          '[${q.sourceYear}년 기출]',
+                          style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // 선택지
+          Padding(
+            padding: const EdgeInsets.only(left: 36),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(q.choices.length, (i) {
+                final circled = i < _kCircledNums.length ? _kCircledNums[i] : '${i + 1}.';
+                final isSelected = selectedIndex == i;
+                final isAnswer = i == q.correctIndex;
+
+                Color textColor = const Color(0xFF222222);
+                Color? bgColor;
+                FontWeight fw = FontWeight.w400;
+
+                if (submitted) {
+                  if (isAnswer) {
+                    textColor = AppColors.correct;
+                    bgColor = AppColors.correct.withValues(alpha: 0.07);
+                    fw = FontWeight.w700;
+                  } else if (isSelected && !isAnswer) {
+                    textColor = AppColors.wrong;
+                    bgColor = AppColors.wrong.withValues(alpha: 0.06);
+                    fw = FontWeight.w600;
+                  } else {
+                    textColor = Colors.grey.shade400;
+                  }
+                } else if (isSelected) {
+                  textColor = AppColors.primary;
+                  bgColor = AppColors.primarySoft;
+                  fw = FontWeight.w600;
+                }
+
+                return GestureDetector(
+                  onTap: onSelect != null ? () => onSelect!(i) : null,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          circled,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: submitted
+                                ? (isAnswer ? AppColors.correct : isSelected ? AppColors.wrong : Colors.grey.shade400)
+                                : isSelected
+                                    ? AppColors.primary
+                                    : const Color(0xFF444444),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            q.choices[i],
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: fw,
+                              color: textColor,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                        if (submitted && isAnswer)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 6),
+                            child: Icon(Icons.check_circle, color: AppColors.correct, size: 16),
+                          ),
+                        if (submitted && isSelected && !isAnswer)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 6),
+                            child: Icon(Icons.cancel, color: AppColors.wrong, size: 16),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          // 해설 (채점 후, 오답인 경우)
+          if (submitted && isWrong && q.summaryExplanation.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 36, top: 8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFFE082)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('💡 ', style: TextStyle(fontSize: 13)),
+                    Expanded(
+                      child: Text(
+                        q.summaryExplanation,
+                        style: const TextStyle(fontSize: 12.5, color: Color(0xFF5D4037), height: 1.55, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          // 구분선
+          if (number < 99)
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Divider(color: Colors.grey.shade200, height: 1),
+            ),
+        ],
+      ),
     );
   }
 }
